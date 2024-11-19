@@ -1,0 +1,16 @@
+[package]
+name = "production"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[dependencies]
+fs = "0.0.5"
+git2 = "0.19.0"
+hallomai = "0.1.5"
+home = "0.5.9"
+rocket = "0.5.0"
+rocket-multipart-form-data = "0.10.7"
+s2n-quic = "1.48.0"
+serde = "1.0.210"
+serde_json = "1.0.132"

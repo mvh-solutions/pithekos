@@ -1,0 +1,10 @@
+@font-face {
+    font-family: AwamiNastaliqRW;
+    src: url(./awami/AwamiNastaliq-Regular.woff2);
+}
+.awami {
+    font-family: AwamiNastaliqRW;
+    font-size: 200%;
+    direction: rtl;
+    padding: 2em;
+}

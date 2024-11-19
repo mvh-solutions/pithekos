@@ -1,0 +1,52 @@
+p {
+    margin: 0;
+    padding: 0;
+}
+
+.bare-text {
+    break-before: avoid;
+    break-after: auto;
+}
+
+.para-tool {
+    float: right;
+    font-family: monospace;
+    font-size: 18pt;
+    color: #FFFFFF;
+    background-color: #000000;
+    padding: 2px;
+}
+
+.usfm-p, .usfm-m {
+    font-size: 18pt;
+    line-height: 18pt;
+}
+
+.usfm-c {
+    font-size: 60pt;
+    line-height: 60pt;
+}
+
+.usfm-v {
+    font-weight: bold;
+    font-style: italic;
+    font-size: 18pt;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    break-after: avoid;
+}
+
+.usfm-mt {
+    font-size: 48pt;
+    line-height: 48pt;
+}
+
+.usfm-s {
+    font-size: 36pt;
+    line-height: 36pt;
+}
+
+.usfm-unknown {
+    color: red;
+    background-color: yellow;
+}

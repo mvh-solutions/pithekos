@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/client/static/css/main.e49eb768.css",
+    "main.js": "/client/static/js/main.5fd88607.js",
+    "static/media/AwamiNastaliq-Regular.woff2": "/client/static/media/AwamiNastaliq-Regular.92a60b486c6291d29bcd.woff2",
+    "static/media/cardo-latin-ext-400-normal.woff": "/client/static/media/cardo-latin-ext-400-normal.448cff0b9a0afb700151.woff",
+    "static/media/cardo-latin-ext-400-normal.woff2": "/client/static/media/cardo-latin-ext-400-normal.d90efa9a5c52b57c81be.woff2",
+    "static/media/cardo-latin-700-normal.woff": "/client/static/media/cardo-latin-700-normal.e6dc1220ebeaa6fb7110.woff",
+    "static/media/cardo-latin-ext-700-normal.woff": "/client/static/media/cardo-latin-ext-700-normal.7a5241053d0aeeae5499.woff",
+    "static/media/cardo-latin-700-normal.woff2": "/client/static/media/cardo-latin-700-normal.97748bcb064020c369cf.woff2",
+    "static/media/cardo-latin-400-normal.woff": "/client/static/media/cardo-latin-400-normal.a3fc903c20de90e51735.woff",
+    "static/media/cardo-latin-ext-700-normal.woff2": "/client/static/media/cardo-latin-ext-700-normal.93b5a4582cb7bc549f75.woff2",
+    "static/media/cardo-greek-700-normal.woff": "/client/static/media/cardo-greek-700-normal.dc355ddeab7ebf0cddce.woff",
+    "static/media/cardo-latin-400-normal.woff2": "/client/static/media/cardo-latin-400-normal.4911b85d7a3867b3911f.woff2",
+    "static/media/cardo-greek-700-normal.woff2": "/client/static/media/cardo-greek-700-normal.1d0050bf150767c2472c.woff2",
+    "static/media/cardo-greek-400-normal.woff": "/client/static/media/cardo-greek-400-normal.82ddcf833fd34281b75d.woff",
+    "static/media/cardo-greek-400-normal.woff2": "/client/static/media/cardo-greek-400-normal.79d37e879083ce714bd7.woff2",
+    "static/media/cardo-greek-ext-700-normal.woff": "/client/static/media/cardo-greek-ext-700-normal.c8a0970917114e667731.woff",
+    "static/media/cardo-greek-ext-400-normal.woff": "/client/static/media/cardo-greek-ext-400-normal.f2008e9d17e15badfffd.woff",
+    "static/media/cardo-greek-ext-700-normal.woff2": "/client/static/media/cardo-greek-ext-700-normal.85ceddcc2960c7e3e628.woff2",
+    "static/media/cardo-greek-ext-400-normal.woff2": "/client/static/media/cardo-greek-ext-400-normal.134b821611b16e279388.woff2",
+    "index.html": "/client/index.html",
+    "main.e49eb768.css.map": "/client/static/css/main.e49eb768.css.map",
+    "main.5fd88607.js.map": "/client/static/js/main.5fd88607.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e49eb768.css",
+    "static/js/main.5fd88607.js"
+  ]
+}
