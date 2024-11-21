@@ -11,7 +11,10 @@ Tested on Ubuntu 24.04 with
 
 See https://www.rust-lang.org/tools/install
 
-### Installation
+## For Windows only
+Install cmake from https://cmake.org/download/
+
+### Installation 
 ```
 mkdir ~/GITTEST # Currently required
 cd client
