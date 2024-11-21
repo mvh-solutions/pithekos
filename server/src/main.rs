@@ -11,10 +11,18 @@ use rocket::response::{status, Redirect};
 use rocket::http::{Status, ContentType};
 use rocket::form::Form;
 use std::path::{PathBuf, Components, Path};
-use std::fs;
+use std::{fs, env};
 use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
+
+
+fn os_slash_str() ->  &'static str {
+  match env::consts::OS {
+  "windows" => "\\",
+  _ => "/"
+  }
+}
 
 const REACT_STATIC_PATH: &str = relative!("../client/build");
 const WEBFONTS_STATIC_PATH: &str = relative!("./webfonts/");
@@ -189,7 +197,7 @@ async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
 
 #[get("/list-local-repos")]
 fn list_local_repos() -> status::Custom<(ContentType, String)> {
-    let root_path = home_dir_string() + "/GITTEST";
+    let root_path = home_dir_string() + os_slash_str() + "GITTEST";
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
@@ -205,7 +213,7 @@ fn list_local_repos() -> status::Custom<(ContentType, String)> {
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split("/").collect::<Vec<&str>>()[4..].join("/")
+                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join(os_slash_str())
             )
         )
         .collect();
@@ -276,7 +284,7 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
             let short_repo_string = short_repo.join("/");
             repo = short_repo_string.as_str().to_owned();
         }
-        let url = "https://".to_string() + &repo_path.display().to_string();
+        let url = "https://".to_string() + &repo_path.display().to_string().replace("\\", "/");
         match Repository::clone(
             &url,
             home_dir_string() +
@@ -294,13 +302,16 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
                     make_good_json_data_response("ok".to_string())
                 ),
             ),
-            Err(e) => status::Custom(
+            Err(e) => {
+              println!("Error:{}", e);
+              return status::Custom(
                 Status::BadRequest,
                 (
                     ContentType::JSON,
                     make_bad_json_data_response(format!("could not clone repo: {}", e).to_string())
                 ),
-            ),
+            )
+          },
         }
     } else {
         status::Custom(
@@ -442,11 +453,11 @@ async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, St
             Status::BadRequest,
             (
                 ContentType::JSON,
-                make_bad_json_data_response("bad repo path".to_string())
+                make_bad_json_data_response("bad repo path!".to_string())
             ),
         )
     }
-}
+  }
 
 // INGREDIENT OPERATIONS
 
@@ -455,7 +466,6 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
         let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
-        println!("{}", path_to_serve);
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
