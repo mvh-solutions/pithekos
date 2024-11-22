@@ -1,7 +1,9 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import {Box, Grid2, Typography} from "@mui/material";
+import { NetContext } from "../../contexts/NetContext";
 
 function VideoLinksViewerMuncher({metadata, systemBcv}) {
+    const {enableNet} = useContext(NetContext);
     const [ingredient, setIngredient] = useState([]);
     const [verseNotes, setVerseNotes] = useState([]);
 
@@ -53,19 +55,22 @@ function VideoLinksViewerMuncher({metadata, systemBcv}) {
             </Typography>
             <Typography variant="h6">Video Links Handler</Typography>
             <Grid2 container spacing={2}>
-                {
-                    (verseNotes.length > 0) ?
-                        verseNotes.map(
-                            note =>
-                                <Grid2 size={6}>
-                                    <video width="320" height="240" controls>
-                                        <source src={note} type="video/mp4"/>
-                                        No video support!
-                                    </video>
-                                </Grid2>
-                        ) :
-                        "No video found for this verse"
-                }
+              {verseNotes.length === 0 && "No content for this verse"}
+              {
+                  verseNotes.length > 0 && enableNet &&
+                      verseNotes.map(
+                          note =>
+                              <Grid2 size={6}>
+                                  <video width="320" height="240" controls>
+                                      <source src={note} type="video/mp4"/>
+                                      No video support!
+                                  </video>
+                              </Grid2>
+                      ) 
+              }
+              {
+                  verseNotes.length > 0 && !enableNet && <b>Offline Mode</b>
+              }
             </Grid2>
         </Box>
     );
