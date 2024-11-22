@@ -11,11 +11,19 @@ use rocket::response::{status, Redirect};
 use rocket::http::{Status, ContentType};
 use rocket::form::Form;
 use std::path::{PathBuf, Components, Path};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::{fs, env};
 use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
 
+// CONSTANTS AND STATE
+
+const REACT_STATIC_PATH: &str = relative!("../client/build");
+const WEBFONTS_STATIC_PATH: &str = relative!("./webfonts/");
+static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
+
+// UTILITY FUNCTIONS
 
 fn os_slash_str() ->  &'static str {
   match env::consts::OS {
@@ -23,11 +31,6 @@ fn os_slash_str() ->  &'static str {
   _ => "/"
   }
 }
-
-const REACT_STATIC_PATH: &str = relative!("../client/build");
-const WEBFONTS_STATIC_PATH: &str = relative!("./webfonts/");
-
-// UTILITY FUNCTIONS
 
 fn forbidden_path_strings() -> Vec<String> {
     Vec::from([
@@ -114,6 +117,10 @@ struct JsonDataResponse {
     is_good: bool,
     reason: String,
 }
+#[derive(Serialize, Deserialize)]
+struct JsonNetStatusResponse {
+    is_enabled: bool
+}
 
 fn check_path_components(path_components: &mut Components<'_>) -> bool {
     let mut ret = true;
@@ -162,11 +169,16 @@ fn make_json_data_response(is_good: bool, reason: String) -> String {
     serde_json::to_string(&jr).unwrap()
 }
 
-fn make_good_json_data_response(reason: String) -> String {
-    make_json_data_response(true, reason)
+fn make_net_status_response(is_enabled: bool) -> String {
+    let nsr: JsonNetStatusResponse = JsonNetStatusResponse { is_enabled };
+    serde_json::to_string(&nsr).unwrap()
 }
 fn make_bad_json_data_response(reason: String) -> String {
     make_json_data_response(false, reason)
+}
+
+fn make_good_json_data_response(reason: String) -> String {
+    make_json_data_response(true, reason)
 }
 fn home_dir_string() -> String {
     home_dir().unwrap().as_os_str().to_str().unwrap().to_string()
@@ -191,6 +203,39 @@ async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
             ),
         )
     }
+}
+
+// NETWORK OPERATIONS
+#[get("/status")]
+fn net_status() -> status::Custom<(ContentType, String)> {
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_net_status_response(NET_IS_ENABLED.load(Ordering::Relaxed))
+        ),
+    )
+}
+
+#[get("/enable")]
+fn net_enable() -> status::Custom<(ContentType, String)> {
+    NET_IS_ENABLED.store(true, Ordering::Relaxed);
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
+}
+
+#[get("/disable")]
+fn net_disable() -> status::Custom<(ContentType, String)> {
+    NET_IS_ENABLED.store(false, Ordering::Relaxed);
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
 }
 
 // REPO OPERATIONS
@@ -662,6 +707,11 @@ fn rocket() -> _ {
         ])
         .mount("/webfonts", FileServer::from(WEBFONTS_STATIC_PATH))
         .mount("/client", FileServer::from(REACT_STATIC_PATH))
+        .mount("/net", routes![
+            net_status,
+            net_enable,
+            net_disable
+        ])
         .mount("/git", routes![
             fetch_repo,
             list_local_repos,
