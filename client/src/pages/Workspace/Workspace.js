@@ -18,7 +18,7 @@ const paneStyle = {
     overflow: 'scroll',
     padding: "5px"
 }
-const Workspace = ({enableNet, systemBcv, setSystemBcv}) => {
+const Workspace = ({enableNet, systemBcv, setSystemBcv, setEnableNet}) => {
     const resources = Object.entries(useLocation().state)
         .map(kv => {
             return {...kv[1], local_path: kv[0]}
@@ -53,6 +53,7 @@ const Workspace = ({enableNet, systemBcv, setSystemBcv}) => {
                 subtitle="Workspace"
                 widget={<BcvPicker systemBcv={systemBcv} setSystemBcv={setSystemBcv}/>}
                 enableNet={enableNet}
+                setEnableNet={setEnableNet}
             />
             <TileProvider
                 tilePanes={paneList}

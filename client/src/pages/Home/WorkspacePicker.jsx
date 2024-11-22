@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState, useContext} from "react";
 import {useNavigate} from "react-router-dom";
 import dcopy from "deep-copy";
 import {
@@ -15,12 +15,14 @@ import {
     IconButton,
     Switch,
 } from "@mui/material";
+import { NetContext } from "../../contexts/NetContext";
 import DeleteProjectButton from "./DeleteProjectButton";
-import {Cloud, CloudOff, EditNote, ReadMore} from "@mui/icons-material";
+import {EditNote, ReadMore} from "@mui/icons-material";
 import DownloadProjectButton from "./DownloadProjectButton";
 import NewProjectButton from "./NewProjectButton";
 
-function WorkspacePicker({enableNet, setEnableNet}) {
+function WorkspacePicker() {
+    const {enableNet} = useContext(NetContext);
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
     const [showDetails, setShowDetails] = useState(false);
@@ -38,7 +40,7 @@ function WorkspacePicker({enableNet, setEnableNet}) {
         const startPolling = () => {
             pollingRef.current = setInterval(() => {
                 pollingFunc();
-            }, 2000); // Poll every 5 seconds
+            }, 2000); // Poll every 2 seconds
         };
         startPolling();
 
@@ -134,25 +136,17 @@ function WorkspacePicker({enableNet, setEnableNet}) {
     return (
         <Grid2 container spacing={0}>
             <Grid2 size={12} container spacing={0} sx={{background: "#DDCCEE"}}>
-                <Grid2 size={3}>
-                    <Box alignItems="center" justifyContent="center" display="flex" flexDirection="column">
-                        {enableNet ? <Cloud fontSize="large" sx={{color: "#FF0000"}}/> : <CloudOff fontSize="large"/>}
-                        <Switch
-                            onClick={() => setEnableNet(!enableNet)}
-                        />
-                    </Box>
-                </Grid2>
-                <Grid2 size={3}>
+                <Grid2 size={4}>
                     <Box alignItems="stretch" justifyContent="center" display="flex">
                         <DownloadProjectButton enabled={enableNet}/>
                     </Box>
                 </Grid2>
-                <Grid2 size={3}>
+                <Grid2 size={4}>
                     <Box alignItems="center" justifyContent="center" display="flex">
                         <NewProjectButton/>
                     </Box>
                 </Grid2>
-                <Grid2 size={3}>
+                <Grid2 size={4}>
                     <Box alignItems="center" justifyContent="center" display="flex" flexDirection="column">
                         <ReadMore
                             fontSize="large"

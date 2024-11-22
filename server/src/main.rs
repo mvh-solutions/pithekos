@@ -318,6 +318,15 @@ async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, Stri
 }
 #[get("/fetch-repo/<repo_path..>")]
 async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+    if !NET_IS_ENABLED.load(Ordering::Relaxed) {
+      return status::Custom(
+        Status::Unauthorized,
+        (
+            ContentType::JSON,
+            make_bad_json_data_response("offline mode".to_string())
+        ),
+      )
+    }
     let mut path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
         let source = path_components.next().unwrap().as_os_str().to_str().unwrap();

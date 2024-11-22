@@ -3,12 +3,12 @@ import WorkspacePicker from "./WorkspacePicker";
 import {Box, Paper} from "@mui/material";
 import React from "react";
 
-function Home({enableNet, setEnableNet}) {
+function Home() {
     return (
         <Paper>
             <Box>
-                <Header isHome={true} enableNet={enableNet}/>
-                <WorkspacePicker enableNet={enableNet} setEnableNet={setEnableNet}/>
+                <Header isHome={true}/>
+                <WorkspacePicker/>
             </Box>
         </Paper>
     );

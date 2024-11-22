@@ -1,3 +1,4 @@
+import {useEffect, useRef, useContext} from "react";
 import {AppBar, Box, Icon, IconButton, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
@@ -5,9 +6,13 @@ import {useNavigate} from "react-router-dom";
 import '@fontsource/cardo/400.css';
 import '@fontsource/cardo/700.css';
 import {Cloud, CloudOff} from "@mui/icons-material";
+import { NetContext } from "../contexts/NetContext";
+import React from "react";
 
-function Header({isHome, subtitle, widget, enableNet}) {
+function Header({isHome, subtitle, widget}) {
     const navigate = useNavigate();
+    const {enableNet, setEnableNet} = useContext(NetContext);
+
     return <Box sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -33,8 +38,29 @@ function Header({isHome, subtitle, widget, enableNet}) {
                     </Box>
                 }
                 <Box sx={{mr: "1em"}}>
-                    {enableNet ? <Cloud edge="start" fontSize="large" sx={{color: "#FF0000"}}/> :
-                        <CloudOff edge="start" fontSize="large"/>}
+                    {
+                      enableNet ? 
+                        <Cloud
+                          onClick = {
+                            () => {
+                              fetch(`/net/disable`);
+                              setEnableNet(false);
+                            }
+                          }
+                          edge="start"
+                          fontSize="large"
+                          sx={{color: "#FF0000"}}
+                        /> :
+                        <CloudOff
+                          onClick = {
+                            () => {
+                              fetch(`/net/enable`);
+                              setEnableNet(true);
+                            }
+                          }
+                          edge="start"
+                          fontSize="large"
+                        />}
                 </Box>
                 {isHome && <IconButton
                     edge="start"

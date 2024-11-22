@@ -1,9 +1,11 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {useNavigate} from "react-router-dom";
 import {Grid2, IconButton, TextField} from "@mui/material";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import { NetContext } from "../../contexts/NetContext";
 
 function DownloadProjectForm() {
+    const {enableNet} = useContext(NetContext);
     const [inputText, setInputText] = useState("");
     const navigate = useNavigate();
     return <>
@@ -18,6 +20,7 @@ function DownloadProjectForm() {
         </Grid2>
         <Grid2 size={2}>
             <IconButton
+                disabled={!enableNet}
                 onClick={
                     () => {
                         fetch(`/git/fetch-repo/${inputText.replace(/^https?:\/\//, "")}`);

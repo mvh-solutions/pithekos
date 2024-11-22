@@ -10,12 +10,26 @@ import Workspace from './pages/Workspace/Workspace';
 import DownloadProject from './pages/DownloadProject/DownloadProject';
 import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
+import { NetContext } from "./contexts/NetContext";
 import './index.css';
-import {useState} from "react";
 
 function RootElement() {
-    const [enableNet, setEnableNet] = useState(false);
-    const [systemBcv, setSystemBcv] = useState({
+  const [enableNet, setEnableNet] = React.useState(false)
+  const value = React.useMemo(
+    () => ({ enableNet, setEnableNet }), 
+    [enableNet]
+  )
+
+return <NetContext.Provider value={value}>
+        {React.useMemo(() => (
+          <RouterElement/>
+      ), [])}
+</NetContext.Provider>
+}
+
+function RouterElement() {
+  console.log('root');
+    const [systemBcv, setSystemBcv] = React.useState({
         bookCode: "TIT",
         chapterNum: 1,
         verseNum: 1
@@ -25,8 +39,6 @@ function RootElement() {
             path: "/",
             element: (
                 <Home
-                    enableNet={enableNet}
-                    setEnableNet={setEnableNet}
                 />
             ),
         },
@@ -34,7 +46,6 @@ function RootElement() {
             path: "/workspace/*",
             element: (
                 <Workspace
-                    enableNet={enableNet}
                     systemBcv={systemBcv}
                     setSystemBcv={setSystemBcv}
                 />
@@ -43,19 +54,22 @@ function RootElement() {
         {
             path: "/download-project",
             element: (
-                <DownloadProject enableNet={enableNet}/>
+                <DownloadProject
+                />
             ),
         },
         {
             path: "/new-project",
             element: (
-                <NewProject enableNet={enableNet}/>
+                <NewProject
+                />
             ),
         },
         {
             path: "/settings",
             element: (
-                <Settings enableNet={enableNet}/>
+                <Settings
+                />
             ),
         }
     ]);
