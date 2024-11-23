@@ -258,7 +258,7 @@ fn list_local_repos() -> status::Custom<(ContentType, String)> {
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join(os_slash_str())
+                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join("/")
             )
         )
         .collect();
@@ -449,6 +449,8 @@ struct MetadataSummary {
     description: String,
     flavor_type: String,
     flavor: String,
+    language_code: String,
+    script_direction: String,
 }
 
 #[get("/metadata/summary/<repo_path..>")]
@@ -485,6 +487,11 @@ async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, St
             },
             flavor_type: raw_metadata_struct["type"]["flavorType"]["name"].as_str().unwrap().to_string(),
             flavor: raw_metadata_struct["type"]["flavorType"]["flavor"]["name"].as_str().unwrap().to_string(),
+            language_code: raw_metadata_struct["languages"][0]["tag"].as_str().unwrap().to_string(),
+            script_direction: match raw_metadata_struct["languages"][0]["scriptDirection"].clone() {
+                serde_json::Value::String(v) => v.as_str().to_string(),
+                _ => "?".to_string()
+            },
         };
         match serde_json::to_string(&summary) {
             Ok(v) => status::Custom(

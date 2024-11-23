@@ -19,7 +19,8 @@ const paneStyle = {
     padding: "5px"
 }
 const Workspace = ({enableNet, systemBcv, setSystemBcv, setEnableNet}) => {
-    const resources = Object.entries(useLocation().state)
+    const locationState = Object.entries(useLocation().state);
+    const resources = locationState
         .map(kv => {
             return {...kv[1], local_path: kv[0]}
         })

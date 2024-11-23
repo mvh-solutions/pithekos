@@ -28,7 +28,6 @@ return <NetContext.Provider value={value}>
 }
 
 function RouterElement() {
-  console.log('root');
     const [systemBcv, setSystemBcv] = React.useState({
         bookCode: "TIT",
         chapterNum: 1,
