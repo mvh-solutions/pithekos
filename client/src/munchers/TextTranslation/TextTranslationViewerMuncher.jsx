@@ -179,6 +179,16 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
         [state]
     );
 
+    const renderWrapper = element => {
+        if (typeof element === "string") {
+            return element;
+        }
+        if (element.type === "ms") {
+            return " ";
+        }
+        return <span className={`usfm-${element.marker}`}>{element.content.map(e => renderWrapper(e))}</span>
+    }
+
     return state.rendered ?
         <div className="awami">
             <Grid2 container spacing={2}>
@@ -203,8 +213,20 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
                                 return <div key={n}>?</div>;
                             }
                             if (cj.marker === "c") {
-                                return <p>{JSON.stringify(cj)}</p>
-                            } else return <p>{JSON.stringify(cj)}</p>
+                                return <p className="usfm-c">{cj.number}</p>
+                            } else return <p className={`usfm-${cj.marker}`}>{
+                                cj.content.map(
+                                    ii => {
+                                        if (typeof ii === "string") {
+                                            return ii;
+                                        }
+                                        if (ii.marker === "v") {
+                                            return <span className="usfm-v">{ii.number}</span>;
+                                        }
+                                        return renderWrapper(ii)
+                                    }
+                                )
+                            }</p>
                         }
                     )
             }

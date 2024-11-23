@@ -17,9 +17,14 @@ p {
     padding: 2px;
 }
 
-.usfm-p, .usfm-m {
+.usfm-p, .usfm-m, .usfm-q, .usfm-q1 {
     font-size: 18pt;
-    line-height: 18pt;
+    line-height: 24pt;
+    padding-bottom: 18pt;
+}
+
+.usfm-q, .usfm-q1 {
+    padding-left: 1em;
 }
 
 .usfm-c {
@@ -30,7 +35,7 @@ p {
 .usfm-v {
     font-weight: bold;
     font-style: italic;
-    font-size: 18pt;
+    font-size: 14pt;
     margin-left: 0.5em;
     margin-right: 0.5em;
     break-after: avoid;
@@ -38,14 +43,28 @@ p {
 
 .usfm-mt {
     font-size: 48pt;
-    line-height: 48pt;
+    line-height: 60pt;
 }
 
 .usfm-s {
     font-size: 36pt;
     line-height: 36pt;
 }
-
+.usfm-s2 {
+    font-size: 24pt;
+    line-height: 36pt;
+}
+.usfm-add {
+    font-style: italic;
+}
+.usfm-pn {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+.usfm-png {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+}
 .usfm-unknown {
     color: red;
     background-color: yellow;
