@@ -258,7 +258,7 @@ fn list_local_repos() -> status::Custom<(ContentType, String)> {
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join(os_slash_str())
+                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join("/")
             )
         )
         .collect();
