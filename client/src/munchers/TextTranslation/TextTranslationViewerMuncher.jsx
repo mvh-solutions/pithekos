@@ -21,7 +21,6 @@ async function getData(url) {
 }
 
 function TextTranslationViewerMuncher({metadata, systemBcv}) {
-    console.log(metadata);
     const [state, setState] = useState({
         usj: {
             working: null,
@@ -181,7 +180,7 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
     );
 
     return state.rendered ?
-        <div className={`awami ${metadata.script_direction === 'rtl' ? 'rtl' : 'ltr'}`}>
+        <div className="awami">
             <Grid2 container spacing={2}>
                 {
                     Object.entries(state.rendered.headers).map(
