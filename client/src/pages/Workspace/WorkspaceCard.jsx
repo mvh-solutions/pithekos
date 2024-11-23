@@ -1,4 +1,5 @@
 import TextTranslationEditorMuncher from "../../munchers/TextTranslation/TextTranslationEditorMuncher";
+import TextTranslationViewerMuncher from "../../munchers/TextTranslation/TextTranslationViewerMuncher";
 import BcvNotesViewerMuncher from "../../munchers/BcvNotes/BcvNotesViewerMuncher";
 import TastelessMuncher from "../../munchers/Tasteless/TastelessMuncher";
 import React from "react";
@@ -9,6 +10,15 @@ function WorkspaceCard({metadata, style, systemBcv, setSystemBcv}) {
     if (metadata.primary && metadata.flavor === "textTranslation") {
         return <div style={style}>
             <TextTranslationEditorMuncher
+                metadata={metadata}
+                systemBcv={systemBcv}
+                setSystemBcv={setSystemBcv}
+            />
+        </div>
+    }
+    if (metadata.flavor === "textTranslation") {
+        return <div style={style}>
+            <TextTranslationViewerMuncher
                 metadata={metadata}
                 systemBcv={systemBcv}
                 setSystemBcv={setSystemBcv}

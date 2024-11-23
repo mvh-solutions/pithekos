@@ -20,5 +20,12 @@ code {
 }
 .awami {
   font-family: AwamiNastaliqRW, serif;
+}
+
+.rtl {
   direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
 }
