@@ -183,6 +183,9 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
         if (typeof element === "string") {
             return element;
         }
+        if (element.marker === "v") {
+            return <span className="usfm-v">{element.number}</span>;
+        }
         if (element.type === "ms") {
             return " ";
         }
