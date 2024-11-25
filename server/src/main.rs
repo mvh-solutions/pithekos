@@ -1,5 +1,4 @@
 #[macro_use]
-
 #[cfg(test)]
 mod tests;
 
@@ -27,11 +26,11 @@ static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
 // UTILITY FUNCTIONS
 
-fn os_slash_str() ->  &'static str {
-  match env::consts::OS {
-  "windows" => "\\",
-  _ => "/"
-  }
+fn os_slash_str() -> &'static str {
+    match env::consts::OS {
+        "windows" => "\\",
+        _ => "/"
+    }
 }
 
 fn forbidden_path_strings() -> Vec<String> {
@@ -121,7 +120,7 @@ struct JsonDataResponse {
 }
 #[derive(Serialize, Deserialize)]
 struct JsonNetStatusResponse {
-    is_enabled: bool
+    is_enabled: bool,
 }
 
 fn check_path_components(path_components: &mut Components<'_>) -> bool {
@@ -321,13 +320,13 @@ async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, Stri
 #[get("/fetch-repo/<repo_path..>")]
 async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     if !NET_IS_ENABLED.load(Ordering::Relaxed) {
-      return status::Custom(
-        Status::Unauthorized,
-        (
-            ContentType::JSON,
-            make_bad_json_data_response("offline mode".to_string())
-        ),
-      )
+        return status::Custom(
+            Status::Unauthorized,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response("offline mode".to_string())
+            ),
+        );
     }
     let mut path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
@@ -359,15 +358,15 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
                 ),
             ),
             Err(e) => {
-              println!("Error:{}", e);
-              return status::Custom(
-                Status::BadRequest,
-                (
-                    ContentType::JSON,
-                    make_bad_json_data_response(format!("could not clone repo: {}", e).to_string())
-                ),
-            )
-          },
+                println!("Error:{}", e);
+                return status::Custom(
+                    Status::BadRequest,
+                    (
+                        ContentType::JSON,
+                        make_bad_json_data_response(format!("could not clone repo: {}", e).to_string())
+                    ),
+                );
+            }
         }
     } else {
         status::Custom(
@@ -520,7 +519,7 @@ async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, St
             ),
         )
     }
-  }
+}
 
 // INGREDIENT OPERATIONS
 
@@ -532,7 +531,7 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
-                let mut  suffix = "unknown";
+                let mut suffix = "unknown";
                 if let Some(_) = split_ipath.next() {
                     if let Some(second) = split_ipath.next() {
                         suffix = second;
@@ -548,7 +547,7 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
                         v
                     ),
                 )
-            },
+            }
             Err(e) => status::Custom(
                 Status::BadRequest,
                 (
@@ -701,14 +700,27 @@ fn redirect_root() -> Redirect {
 }
 
 // ERROR HANDLING
+
+#[catch(404)]
+fn not_found_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
+    status::Custom(
+        Status::NotFound,
+        (
+            ContentType::JSON,
+            make_bad_json_data_response(format!("Resource {} was not found", req.uri())).to_string()
+        ),
+    )
+}
+
 #[catch(default)]
 fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
     status::Custom(
         Status::InternalServerError,
         (
             ContentType::JSON,
-            make_bad_json_data_response(format!("unknown error while serving {:?}", req.route())).to_string())
-        )
+            make_bad_json_data_response(format!("unknown error while serving {}", req.uri())).to_string()
+        ),
+    )
 }
 
 // BUILD SERVER
@@ -728,8 +740,8 @@ fn rocket() -> _ {
         if !settings_file_exists {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
-                "resources_dir": root_path.clone() + "pithekos_resources",
-                "client_dir": root_path.clone() + "pithekos_client",
+                "resources_dir": relative!("."),
+                "client_dir": relative!("../client/build"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -740,7 +752,7 @@ fn rocket() -> _ {
                 }
             };
             match file_handle.write_all(&default_settings.to_string().as_bytes()) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     println!("Could not write default settings file to '{}: {}' to write default", settings_path, e);
                     exit(1);
@@ -764,11 +776,11 @@ fn rocket() -> _ {
         }
     };
     // Find or make repo_dir
-    let repo_dir_path = settings_json["repo_dir"].to_string();
+    let repo_dir_path = settings_json["repo_dir"].as_str().unwrap().to_string();
     let repo_dir_path_exists = Path::new(&repo_dir_path).is_dir();
     if !repo_dir_path_exists {
         match fs::create_dir_all(&repo_dir_path) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 println!("Could not create repo dir '{}': {}", repo_dir_path, e);
                 exit(1);
@@ -792,7 +804,10 @@ fn rocket() -> _ {
     let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
     println!("{}", webfonts_dir_path);
     rocket::build()
-        .register("/", catchers![default_catcher])
+        .register("/", catchers![
+            not_found_catcher,
+            default_catcher
+        ])
         .mount("/", routes![
             redirect_root,
             serve_client_index,
