@@ -4,6 +4,7 @@ mod tests;
 
 use std::collections::BTreeMap;
 use git2::{Repository};
+use rocket::State;
 use rocket::fs::{FileServer, relative, NamedFile, TempFile};
 use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
 use rocket::response::{status, Redirect};
@@ -18,6 +19,10 @@ use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Value};
+
+struct MyConfig {
+    user_val: String
+}
 
 // CONSTANTS AND STATE
 
@@ -187,7 +192,8 @@ fn home_dir_string() -> String {
 
 // CHECK PATHS FOR DEBUGGING
 #[get("/check-path/<repo_path..>")]
-async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn check_path(state: &State<MyConfig>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+    println!("The config value is: {}", state.user_val);
     if !check_path_components(&mut repo_path.components()) {
         status::Custom(
             Status::BadRequest,
@@ -802,12 +808,13 @@ fn rocket() -> _ {
         exit(1);
     }
     let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
-    println!("{}", webfonts_dir_path);
+
     rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
         ])
+        .manage(MyConfig { user_val: "Banaaaaana".to_string()})
         .mount("/", routes![
             redirect_root,
             serve_client_index,
