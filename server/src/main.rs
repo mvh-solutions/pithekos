@@ -10,12 +10,15 @@ use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
 use rocket::response::{status, Redirect};
 use rocket::http::{Status, ContentType};
 use rocket::form::Form;
+use std::io::Write;
 use std::path::{PathBuf, Components, Path};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{fs, env};
+use std::process::exit;
 use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
+use serde_json::{json, Value};
 
 // CONSTANTS AND STATE
 
@@ -713,6 +716,75 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 #[rocket::launch]
 fn rocket() -> _ {
+    // Get settings path, default to well-known homedir location
+    let root_path = home_dir_string() + os_slash_str();
+    let mut settings_path = root_path.clone() + "pithekos_settings.json";
+    let args: Vec<String> = env::args().collect();
+    if args.len() == 2 {
+        // Do not auto-make at non-default location.
+        settings_path = args[1].clone();
+    } else {
+        // Well-known location. If file doesn't exist make one.
+        let settings_file_exists = Path::new(&settings_path).is_file();
+        if !settings_file_exists {
+            let default_settings = json!({
+                "repo_dir": root_path.clone() + "pithekos_repos",
+                "resources_dir": root_path.clone() + "pithekos_resources",
+                "client_dir": root_path.clone() + "pithekos_client",
+                "languages": ["en"]
+            });
+            let mut file_handle = match fs::File::create(&settings_path) {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("Could not open settings file '{}' to write default: {}", settings_path, e);
+                    exit(1);
+                }
+            };
+            match file_handle.write_all(&default_settings.to_string().as_bytes()) {
+                Ok(_) => {},
+                Err(e) => {
+                    println!("Could not write default settings file to '{}: {}' to write default", settings_path, e);
+                    exit(1);
+                }
+            }
+        }
+    }
+    // Try to load settings JSON
+    let settings_json_string = match fs::read_to_string(&settings_path) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("Could not read settings file '{}': {}", settings_path, e);
+            exit(1);
+        }
+    };
+    let settings_json: Value = match serde_json::from_str(settings_json_string.as_str()) {
+        Ok(j) => j,
+        Err(e) => {
+            println!("Could not parse settings file '{}': {}", settings_path, e);
+            exit(1);
+        }
+    };
+    // Find or make repo_dir
+    let repo_dir_path = settings_json["repo_dir"].to_string();
+    let repo_dir_path_exists = Path::new(&repo_dir_path).is_file();
+    if !repo_dir_path_exists {
+        fs::create_dir_all(repo_dir_path);
+    }
+    // Require resources_dir
+    let resources_dir_path = settings_json["resources_dir"].to_string();
+    let resources_dir_path_exists = Path::new(&resources_dir_path).is_file();
+    if !resources_dir_path_exists {
+        println!("Could not find  file '{}'", resources_dir_path);
+        exit(1);
+    }
+    // Require client_dir
+    let client_dir_path = settings_json["resources_dir"].to_string();
+    let client_dir_path_exists = Path::new(&client_dir_path).is_file();
+    if !client_dir_path_exists {
+        println!("Could not find  file '{}'", client_dir_path);
+        exit(1);
+    }
+    let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
     rocket::build()
         .register("/", catchers![default_catcher])
         .mount("/", routes![
@@ -721,8 +793,8 @@ fn rocket() -> _ {
             serve_client_dir,
             serve_root_favicon
         ])
-        .mount("/webfonts", FileServer::from(WEBFONTS_STATIC_PATH))
-        .mount("/client", FileServer::from(REACT_STATIC_PATH))
+        .mount("/webfonts", FileServer::from(webfonts_dir_path))
+        .mount("/client", FileServer::from(client_dir_path))
         .mount("/net", routes![
             net_status,
             net_enable,
