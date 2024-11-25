@@ -23,7 +23,6 @@ use serde_json::{json, Value};
 // CONSTANTS AND STATE
 
 const REACT_STATIC_PATH: &str = relative!("../client/build");
-const WEBFONTS_STATIC_PATH: &str = relative!("./webfonts/");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
 // UTILITY FUNCTIONS
@@ -766,25 +765,32 @@ fn rocket() -> _ {
     };
     // Find or make repo_dir
     let repo_dir_path = settings_json["repo_dir"].to_string();
-    let repo_dir_path_exists = Path::new(&repo_dir_path).is_file();
+    let repo_dir_path_exists = Path::new(&repo_dir_path).is_dir();
     if !repo_dir_path_exists {
-        fs::create_dir_all(repo_dir_path);
+        match fs::create_dir_all(&repo_dir_path) {
+            Ok(_) => {},
+            Err(e) => {
+                println!("Could not create repo dir '{}': {}", repo_dir_path, e);
+                exit(1);
+            }
+        };
     }
     // Require resources_dir
-    let resources_dir_path = settings_json["resources_dir"].to_string();
-    let resources_dir_path_exists = Path::new(&resources_dir_path).is_file();
+    let resources_dir_path = settings_json["resources_dir"].as_str().unwrap().to_string();
+    let resources_dir_path_exists = Path::new(&resources_dir_path).is_dir();
     if !resources_dir_path_exists {
-        println!("Could not find  file '{}'", resources_dir_path);
+        println!("Could not find resources directory '{}'", resources_dir_path);
         exit(1);
     }
     // Require client_dir
-    let client_dir_path = settings_json["resources_dir"].to_string();
-    let client_dir_path_exists = Path::new(&client_dir_path).is_file();
+    let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
+    let client_dir_path_exists = Path::new(&client_dir_path).is_dir();
     if !client_dir_path_exists {
-        println!("Could not find  file '{}'", client_dir_path);
+        println!("Could not find  client directory '{}'", client_dir_path);
         exit(1);
     }
     let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
+    println!("{}", webfonts_dir_path);
     rocket::build()
         .register("/", catchers![default_catcher])
         .mount("/", routes![
