@@ -179,7 +179,7 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
         [state]
     );
 
-    const renderWrapper = element => {
+    const renderElement = element => {
         if (typeof element === "string") {
             return element;
         }
@@ -189,7 +189,7 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
         if (element.type === "ms") {
             return " ";
         }
-        return <span className={`usfm-${element.marker}`}>{element.content.map(e => renderWrapper(e))}</span>
+        return <span className={`usfm-${element.marker}`}>{element.content.map(e => renderElement(e))}</span>
     }
 
     return state.rendered ?
@@ -219,15 +219,7 @@ function TextTranslationViewerMuncher({metadata, systemBcv}) {
                                 return <p className="usfm-c">{cj.number}</p>
                             } else return <p className={`usfm-${cj.marker}`}>{
                                 cj.content.map(
-                                    ii => {
-                                        if (typeof ii === "string") {
-                                            return ii;
-                                        }
-                                        if (ii.marker === "v") {
-                                            return <span className="usfm-v">{ii.number}</span>;
-                                        }
-                                        return renderWrapper(ii)
-                                    }
+                                    ii => renderElement(ii)
                                 )
                             }</p>
                         }
