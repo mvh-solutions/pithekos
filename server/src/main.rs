@@ -20,8 +20,11 @@ use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Value};
 
-struct MyConfig {
-    user_val: String
+struct AppSettings {
+    client_dir: String,
+    repo_dir: String,
+    resources_dir: String,
+    languages: Vec<String>
 }
 
 // CONSTANTS AND STATE
@@ -192,8 +195,7 @@ fn home_dir_string() -> String {
 
 // CHECK PATHS FOR DEBUGGING
 #[get("/check-path/<repo_path..>")]
-async fn check_path(state: &State<MyConfig>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    println!("The config value is: {}", state.user_val);
+async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     if !check_path_components(&mut repo_path.components()) {
         status::Custom(
             Status::BadRequest,
@@ -248,8 +250,8 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
 // REPO OPERATIONS
 
 #[get("/list-local-repos")]
-fn list_local_repos() -> status::Custom<(ContentType, String)> {
-    let root_path = home_dir_string() + os_slash_str() + "GITTEST";
+fn list_local_repos(state: &State<AppSettings>, ) -> status::Custom<(ContentType, String)> {
+    let root_path = state.repo_dir.clone();
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
@@ -279,8 +281,8 @@ fn list_local_repos() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/add-and-commit/<repo_path..>")]
-async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string().clone();
+async fn add_and_commit(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+    let repo_path_string: String = state.repo_dir.clone() + "/" + &repo_path.display().to_string().clone();
     let result = match Repository::open(repo_path_string) {
         Ok(repo) => {
             repo.index()
@@ -324,7 +326,7 @@ async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, Stri
     result
 }
 #[get("/fetch-repo/<repo_path..>")]
-async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     if !NET_IS_ENABLED.load(Ordering::Relaxed) {
         return status::Custom(
             Status::Unauthorized,
@@ -348,8 +350,8 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
         let url = "https://".to_string() + &repo_path.display().to_string().replace("\\", "/");
         match Repository::clone(
             &url,
-            home_dir_string() +
-                "/GITTEST/" +
+            state.repo_dir.clone() +
+                "/" +
                 source +
                 "/" +
                 org +
@@ -386,10 +388,10 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
 }
 
 #[get("/delete-repo/<repo_path..>")]
-async fn delete_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_delete = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string();
+        let path_to_delete = state.repo_dir.clone() + "/" + &repo_path.display().to_string();
         match fs::remove_dir_all(path_to_delete) {
             Ok(_) => status::Custom(
                 Status::Ok,
@@ -419,10 +421,10 @@ async fn delete_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)
 
 // METADATA OPERATIONS
 #[get("/metadata/raw/<repo_path..>")]
-async fn raw_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/metadata.json";
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -461,10 +463,10 @@ struct MetadataSummary {
 }
 
 #[get("/metadata/summary/<repo_path..>")]
-async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/metadata.json";
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
             Err(e) => return status::Custom(
@@ -530,10 +532,10 @@ async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, St
 // INGREDIENT OPERATIONS
 
 #[get("/ingredient/raw/<repo_path..>?<ipath>")]
-async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
@@ -574,10 +576,10 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
 }
 
 #[get("/ingredient/as-usj/<repo_path..>?<ipath>")]
-async fn get_ingredient_as_usj(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -610,9 +612,9 @@ struct Upload<'f> {
 }
 
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
-async fn post_ingredient_as_usj(repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
+async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
-    let destination = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
+    let destination = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
         let _ = form.file.persist_to(destination).await;
         status::Custom(
@@ -634,10 +636,10 @@ async fn post_ingredient_as_usj(repo_path: PathBuf, ipath: String, mut form: For
 }
 
 #[get("/ingredient/prettified/<repo_path..>?<ipath>")]
-async fn get_ingredient_prettified(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) =>
                 v,
@@ -807,14 +809,26 @@ fn rocket() -> _ {
         println!("Could not find  client directory '{}'", client_dir_path);
         exit(1);
     }
-    let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
+    let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
 
     rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
         ])
-        .manage(MyConfig { user_val: "Banaaaaana".to_string()})
+        .manage(
+            AppSettings {
+                client_dir: client_dir_path.clone(),
+                repo_dir: repo_dir_path.clone(),
+                resources_dir: resources_dir_path.clone(),
+                languages: settings_json["languages"]
+                    .as_array()
+                    .unwrap()
+                    .into_iter()
+                    .map(|i| {i.as_str().expect("Non-string in settings language array").to_string()})
+                    .collect()
+            }
+        )
         .mount("/", routes![
             redirect_root,
             serve_client_index,
