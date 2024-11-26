@@ -1,4 +1,4 @@
-import {useEffect, useRef, useContext} from "react";
+import {useContext} from "react";
 import {AppBar, Box, Icon, IconButton, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';

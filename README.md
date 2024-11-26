@@ -6,6 +6,12 @@ Tested on Ubuntu 24.04 with
 - node 18.19.1
 - rustc 1.75
 
+Tested on Windows 11 with
+- npm 10.7.0
+- node 18.20.4
+- rustc 1.82.0
+- CMake 3.31.0
+
 ### Getting Rust
 `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 
@@ -45,7 +51,7 @@ Change book with, eg, "MRK 1"
 
 Note that USJ rendering is currently slow - we plan to fix this shortly.
 
-### If dev bugs lead to zombie processes hogging port 8000:
+### If dev bugs lead to zombie processes hogging port 8000 in linux:
 ```
 # Get PID of process
 lsof -i:8000
