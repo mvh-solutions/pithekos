@@ -19,6 +19,7 @@ use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Value};
+use copy_dir::copy_dir;
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
@@ -289,7 +290,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
 
 #[get("/add-and-commit/<repo_path..>")]
 async fn add_and_commit(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = state.repo_dir.clone() + "/" + &repo_path.display().to_string().clone();
+    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
     let result = match Repository::open(repo_path_string) {
         Ok(repo) => {
             repo.index()
@@ -358,11 +359,11 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
         match Repository::clone(
             &url,
             state.repo_dir.clone() +
-                "/" +
+                os_slash_str() +
                 source +
-                "/" +
+                os_slash_str() +
                 org +
-                "/" +
+                os_slash_str() +
                 repo.as_str(),
         ) {
             Ok(_repo) => status::Custom(
@@ -398,7 +399,7 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
 async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_delete = state.repo_dir.clone() + "/" + &repo_path.display().to_string();
+        let path_to_delete = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string();
         match fs::remove_dir_all(path_to_delete) {
             Ok(_) => status::Custom(
                 Status::Ok,
@@ -431,7 +432,7 @@ async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::
 async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -473,7 +474,7 @@ struct MetadataSummary {
 async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
             Err(e) => return status::Custom(
@@ -542,7 +543,7 @@ async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> sta
 async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
@@ -586,7 +587,7 @@ async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: S
 async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -621,7 +622,7 @@ struct Upload<'f> {
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
 async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
-    let destination = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
+    let destination = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
         let _ = form.file.persist_to(destination).await;
         status::Custom(
@@ -646,7 +647,7 @@ async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, 
 async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + "/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) =>
                 v,
@@ -755,7 +756,7 @@ fn rocket() -> _ {
         if !settings_file_exists {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
-                "resources_dir": relative!("."),
+                "resources_dir": root_path.clone() + "pithekos_resources",
                 "client_dir": relative!("../client/build"),
                 "languages": ["en"]
             });
@@ -802,12 +803,53 @@ fn rocket() -> _ {
             }
         };
     }
-    // Require resources_dir
+    // Find or make resources_dir
     let resources_dir_path = settings_json["resources_dir"].as_str().unwrap().to_string();
     let resources_dir_path_exists = Path::new(&resources_dir_path).is_dir();
     if !resources_dir_path_exists {
-        println!("Could not find resources directory '{}'", resources_dir_path);
-        exit(1);
+        match fs::create_dir_all(&resources_dir_path) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Could not create resources dir '{}': {}", resources_dir_path, e);
+                exit(1);
+            }
+        };
+    }
+    // Copy web fonts
+    let template_webfonts_dir_path = relative!("./webfonts").to_string();
+    let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
+    if !Path::new(&webfonts_dir_path).is_dir() {
+        match copy_dir(template_webfonts_dir_path.clone(), webfonts_dir_path.clone()) {
+            Ok(_) => {},
+            Err(e) => {
+                println!(
+                    "Could not copy web fonts to resources directory: {}",
+                    e
+                );
+                exit(1);
+            }
+        }
+    };
+    // Copy templates to resources_dir if not present
+    let template_dir_path = relative!("./templates").to_string();
+    let template_dir_entries = std::fs::read_dir(template_dir_path.clone()).unwrap();
+    for entry in template_dir_entries {
+        let leaf_name = entry.unwrap().file_name().into_string().unwrap();
+        let resource_leaf_path = resources_dir_path.clone() + os_slash_str() + leaf_name.as_str();
+        if !Path::new(&resource_leaf_path).is_dir() && !Path::new(&resource_leaf_path).is_file() {
+            let template_leaf_path = template_dir_path.clone() + os_slash_str() + leaf_name.as_str();
+            match copy_dir(template_leaf_path, resource_leaf_path) {
+                Ok(_) => {},
+                Err(e) => {
+                    println!(
+                        "Could not copy {} to resources directory: {}",
+                        leaf_name.as_str(),
+                        e
+                    );
+                    exit(1);
+                }
+            };
+        }
     }
     // Require client_dir
     let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
@@ -816,13 +858,14 @@ fn rocket() -> _ {
         println!("Could not find  client directory '{}'", client_dir_path);
         exit(1);
     }
-    let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
 
     rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
         ])
+        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
+        .mount("/client", FileServer::from(client_dir_path.clone()))
         .manage(
             AppSettings {
                 client_dir: client_dir_path.clone(),
@@ -842,8 +885,6 @@ fn rocket() -> _ {
             serve_client_dir,
             serve_root_favicon
         ])
-        .mount("/webfonts", FileServer::from(webfonts_dir_path))
-        .mount("/client", FileServer::from(client_dir_path))
         .mount("/settings", routes![
             get_languages,
         ])

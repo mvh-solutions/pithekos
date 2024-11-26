@@ -1,0 +1,22 @@
+{
+  "server": {
+    "settings": {},
+    "net": {},
+    "git": {},
+    "burrito": {},
+    "i18n": {}
+  },
+  "components": {
+    "header": {}
+  },
+  "pages": {
+    "home": {},
+    "settings": {},
+    "NewProject": {},
+    "Workspace": {},
+    "DownloadProject": {}
+  },
+  "munchers": {},
+  "flavors": {},
+  "fonts": {}
+}
