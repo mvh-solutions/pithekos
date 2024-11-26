@@ -20,6 +20,7 @@ use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Value};
 
+#[derive(Serialize, Deserialize)]
 struct AppSettings {
     client_dir: String,
     repo_dir: String,
@@ -193,24 +194,30 @@ fn home_dir_string() -> String {
     home_dir().unwrap().as_os_str().to_str().unwrap().to_string()
 }
 
-// CHECK PATHS FOR DEBUGGING
-#[get("/check-path/<repo_path..>")]
-async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    if !check_path_components(&mut repo_path.components()) {
-        status::Custom(
-            Status::BadRequest,
-            (
-                ContentType::JSON,
-                make_bad_json_data_response("bad path".to_string())
+// SETTINGS
+#[get("/languages")]
+fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let languages = state.languages.clone();
+    match serde_json::to_string(&languages) {
+        Ok(v) =>
+            status::Custom(
+                Status::Ok, (
+                    ContentType::JSON,
+                    v
+                ),
             ),
-        )
-    } else {
-        status::Custom(
-            Status::Ok, (
+        Err(e) => status::Custom(
+            Status::InternalServerError, (
                 ContentType::JSON,
-                make_good_json_data_response("ok".to_string())
+                make_bad_json_data_response(
+                    format!(
+                        "Could not parse language settings as JSON array: {}"
+                        ,
+                        e
+                    )
+                )
             ),
-        )
+        ),
     }
 }
 
@@ -250,7 +257,7 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
 // REPO OPERATIONS
 
 #[get("/list-local-repos")]
-fn list_local_repos(state: &State<AppSettings>, ) -> status::Custom<(ContentType, String)> {
+fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
     let root_path = state.repo_dir.clone();
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
@@ -837,6 +844,9 @@ fn rocket() -> _ {
         ])
         .mount("/webfonts", FileServer::from(webfonts_dir_path))
         .mount("/client", FileServer::from(client_dir_path))
+        .mount("/settings", routes![
+            get_languages,
+        ])
         .mount("/net", routes![
             net_status,
             net_enable,
@@ -845,7 +855,6 @@ fn rocket() -> _ {
         .mount("/git", routes![
             fetch_repo,
             list_local_repos,
-            check_path,
             delete_repo,
             add_and_commit,
         ])
