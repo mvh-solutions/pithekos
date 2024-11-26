@@ -7,10 +7,19 @@
     "i18n": {}
   },
   "components": {
-    "header": {}
+    "header": {
+      "new_reference": {
+        "en": "New Reference"
+      }
+    }
   },
   "pages": {
-    "home": {},
+    "home": {
+      "workspace_title": {
+        "en": "Workspace",
+        "fr": "Espace de travail"
+      }
+    },
     "settings": {},
     "NewProject": {},
     "Workspace": {},
@@ -18,5 +27,6 @@
   },
   "munchers": {},
   "flavors": {},
-  "fonts": {}
+  "fonts": {},
+  "branding": {}
 }

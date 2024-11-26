@@ -18,7 +18,7 @@ use std::process::exit;
 use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 use copy_dir::copy_dir;
 
 #[derive(Serialize, Deserialize)]
@@ -26,7 +26,7 @@ struct AppSettings {
     client_dir: String,
     repo_dir: String,
     resources_dir: String,
-    languages: Vec<String>
+    languages: Vec<String>,
 }
 
 // CONSTANTS AND STATE
@@ -212,8 +212,7 @@ fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, Str
                 ContentType::JSON,
                 make_bad_json_data_response(
                     format!(
-                        "Could not parse language settings as JSON array: {}"
-                        ,
+                        "Could not parse language settings as JSON array: {}",
                         e
                     )
                 )
@@ -253,6 +252,94 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
             make_good_json_data_response("ok".to_string())
         ),
     )
+}
+
+// i18n
+
+#[get("/raw")]
+async fn raw_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            status::Custom(
+                Status::Ok,
+                (
+                    ContentType::JSON,
+                    v
+                ),
+            )
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read raw i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+#[get("/negotiated")]
+async fn negotiated_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            match serde_json::from_str::<Value>(v.as_str()) {
+                Ok(sj) => {
+                    let languages = state.languages.clone();
+                    let mut negotiated = Map::new();
+                    for (i18n_type, subtypes) in sj.as_object().unwrap() {
+                        // println!("{}", i18n_type);
+                        let mut negotiated_types = Map::new();
+                        for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
+                            // println!("   {}", i18n_subtype);
+                            let mut negotiated_terms = Map::new();
+                            for (i18n_term, term_languages) in terms.as_object().unwrap() {
+                                // println!("      {}", i18n_term);
+                                let mut negotiated_translations = Map::new();
+                                'user_lang: for user_language in languages.clone() {
+                                    for (i18n_language, translation) in term_languages.as_object().unwrap() {
+                                        // println!("{} {}", i18n_language, languages[0]);
+                                        if *i18n_language == user_language {
+                                            negotiated_translations.insert("language".to_string(), Value::String(i18n_language.clone()));
+                                            negotiated_translations.insert("translation".to_string(), translation.clone());
+                                            break 'user_lang;
+                                        }
+                                    }
+                                }
+                                negotiated_terms.insert(i18n_term.clone(), Value::Object(negotiated_translations));
+                            }
+                            negotiated_types.insert(i18n_subtype.clone(), Value::Object(negotiated_terms));
+                        }
+                        negotiated.insert(i18n_type.clone(), Value::Object(negotiated_types));
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&negotiated).unwrap()
+                        ),
+                    )
+
+                },
+                Err(e) => {
+                    status::Custom(
+                        Status::BadRequest,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not parse for negotiated i18n: {}", e).to_string())
+                        ),
+                    )                }
+            }
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read for negotiated i18n: {}", e).to_string())
+            ),
+        )
+    }
 }
 
 // REPO OPERATIONS
@@ -820,7 +907,7 @@ fn rocket() -> _ {
     let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
     if !Path::new(&webfonts_dir_path).is_dir() {
         match copy_dir(template_webfonts_dir_path.clone(), webfonts_dir_path.clone()) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 println!(
                     "Could not copy web fonts to resources directory: {}",
@@ -839,7 +926,7 @@ fn rocket() -> _ {
         if !Path::new(&resource_leaf_path).is_dir() && !Path::new(&resource_leaf_path).is_file() {
             let template_leaf_path = template_dir_path.clone() + os_slash_str() + leaf_name.as_str();
             match copy_dir(template_leaf_path, resource_leaf_path) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     println!(
                         "Could not copy {} to resources directory: {}",
@@ -875,8 +962,8 @@ fn rocket() -> _ {
                     .as_array()
                     .unwrap()
                     .into_iter()
-                    .map(|i| {i.as_str().expect("Non-string in settings language array").to_string()})
-                    .collect()
+                    .map(|i| { i.as_str().expect("Non-string in settings language array").to_string() })
+                    .collect(),
             }
         )
         .mount("/", routes![
@@ -892,6 +979,10 @@ fn rocket() -> _ {
             net_status,
             net_enable,
             net_disable
+        ])
+        .mount("/i18n", routes![
+            raw_i18n,
+            negotiated_i18n
         ])
         .mount("/git", routes![
             fetch_repo,
