@@ -651,10 +651,10 @@ async fn get_ingredient_prettified(repo_path: PathBuf, ipath: String) -> status:
                 <html>
                 <head>
                 <title>Prettified</title>
-                <link rel="stylesheet" href="/webfonts/awami.css">
+                <link rel="stylesheet" href="/webfonts/_webfonts.css">
                 </head>
                 <body>
-                <pre class="awami">
+                <pre>
                 {}
                 </pre>
                 </body>

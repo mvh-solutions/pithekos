@@ -20,20 +20,20 @@
 /* bold */
 @font-face {
   font-family: AwamiNastaliqW;
-  font-style: normal;
-  font-weight: bold; /* 700 */
-  src: url(./awami/AwamiNastaliq-Bold.woff2);
+  font-weight: normal; /* 400 Normal (Regular) */
+  font-weight: bold; /* This is really Medium - 500 */
+  src: url(./awami/AwamiNastaliq-Medium.woff2);
 }
 
-/* bold italic*/
+/* bold italic */
 @font-face {
   font-family: AwamiNastaliqW;
   font-style: italic; /* Doesn't exist */
   font-weight: bold; /* 700 */
-  src: url(./awami/AwamiNastaliq-Bold.woff2);
+  src: url(./awami/AwamiNastaliq-Medium.woff2);
 }
 
-.awami {
+.awamimedium {
   font-family: AwamiNastaliqW;
   font-size: 200%;
   padding: 2em;
