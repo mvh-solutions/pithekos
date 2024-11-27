@@ -429,7 +429,12 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                                     for (i18n_language, translation) in term_languages.as_object().unwrap() {
                                         // println!("{} {}", i18n_language, languages[0]);
                                         if *i18n_language == user_language {
-                                            let flat_key = format!("{}:{}:{}", i18n_type.clone(), i18n_subtype.clone(), i18n_term.clone());
+                                            let flat_key = format!(
+                                                "{}:{}:{}",
+                                                i18n_type.clone(),
+                                                i18n_subtype.clone(),
+                                                i18n_term.clone()
+                                            );
                                             flat.insert(flat_key, translation.clone());
                                             break 'user_lang;
                                         }
@@ -452,7 +457,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                         Status::BadRequest,
                         (
                             ContentType::JSON,
-                            make_bad_json_data_response(format!("could not parse for negotiated i18n: {}", e).to_string())
+                            make_bad_json_data_response(format!("could not parse for flat i18n: {}", e).to_string())
                         ),
                     )                }
             }
@@ -461,7 +466,62 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
             Status::BadRequest,
             (
                 ContentType::JSON,
-                make_bad_json_data_response(format!("could not read for negotiated i18n: {}", e).to_string())
+                make_bad_json_data_response(format!("could not read for flat i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+#[get("/untranslated/<lang>")]
+async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            match serde_json::from_str::<Value>(v.as_str()) {
+                Ok(sj) => {
+                    let mut untranslated: Vec<String> = Vec::new();
+                    for (i18n_type, subtypes) in sj.as_object().unwrap() {
+                        // println!("{}", i18n_type);
+                        for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
+                            // println!("   {}", i18n_subtype);
+                            for (i18n_term, term_languages) in terms.as_object().unwrap() {
+                                // println!("      {}", i18n_term);
+                                if !term_languages.as_object().unwrap().contains_key(lang.as_str()) {
+                                    let flat_key = format!(
+                                        "{}:{}:{}",
+                                        i18n_type.clone(),
+                                        i18n_subtype.clone(),
+                                        i18n_term.clone()
+                                    );
+                                    untranslated.push(flat_key);
+                                }
+                            }
+                        }
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&untranslated).unwrap()
+                        ),
+                    )
+
+                },
+                Err(e) => {
+                    status::Custom(
+                        Status::BadRequest,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not parse for untranslated i18n: {}", e).to_string())
+                        ),
+                    )                }
+            }
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read for untranslated i18n: {}", e).to_string())
             ),
         )
     }
@@ -1108,7 +1168,8 @@ fn rocket() -> _ {
         .mount("/i18n", routes![
             raw_i18n,
             negotiated_i18n,
-            flat_i18n
+            flat_i18n,
+            untranslated_i18n
         ])
         .mount("/git", routes![
             fetch_repo,
