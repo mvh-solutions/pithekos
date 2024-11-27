@@ -279,9 +279,27 @@ async fn raw_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, St
     }
 }
 
-#[get("/negotiated")]
-async fn negotiated_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+#[get("/negotiated/<filter..>")]
+async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let filter_items: Vec<String> = filter.display().to_string().split('/').map(String::from).collect();
+    if filter_items.len() > 2 {
+        return status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("expected 0 - 2 filter terms, not {}", filter_items.len()).to_string())
+            ),
+        )
+    }
+    let mut type_filter: Option<String> = None;
+    let mut subtype_filter: Option<String> = None;
+    if filter_items.len() > 0 && filter_items[0] != "" {
+        type_filter = Some(filter_items[0].clone());
+        if filter_items.len() > 1 && filter_items[1] != "" {
+            subtype_filter = Some(filter_items[1].clone());
+        }
+    }
     match fs::read_to_string(path_to_serve) {
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
@@ -290,9 +308,25 @@ async fn negotiated_i18n(state: &State<AppSettings>) -> status::Custom<(ContentT
                     let mut negotiated = Map::new();
                     for (i18n_type, subtypes) in sj.as_object().unwrap() {
                         // println!("{}", i18n_type);
+                        match type_filter.clone() {
+                            Some(v) => {
+                                if v != *i18n_type {
+                                    continue;
+                                }
+                            },
+                            None => {}
+                        }
                         let mut negotiated_types = Map::new();
                         for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
                             // println!("   {}", i18n_subtype);
+                            match subtype_filter.clone() {
+                                Some(v) => {
+                                    if v != *i18n_subtype {
+                                        continue;
+                                    }
+                                },
+                                None => {}
+                            }
                             let mut negotiated_terms = Map::new();
                             for (i18n_term, term_languages) in terms.as_object().unwrap() {
                                 // println!("      {}", i18n_term);
