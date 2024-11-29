@@ -20,6 +20,7 @@ use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
 use copy_dir::copy_dir;
+use ureq;
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
@@ -522,6 +523,45 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
             (
                 ContentType::JSON,
                 make_bad_json_data_response(format!("could not read for untranslated i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+// GITEA
+
+#[get("/remote-repos/<gitea_server>/<gitea_org>")]
+fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(ContentType, String)> {
+    let gitea_path = format!("https://{}/api/v1/orgs/{}/repos", gitea_server, gitea_org);
+    match ureq::get(gitea_path.as_str()).call() {
+        Ok(r) => {
+            match r.into_json::<Value>() {
+                Ok(j) => {
+                    let js = j.to_string();
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            js
+                        ),
+                    )
+                },
+                Err(e) => {
+                    return status::Custom(
+                        Status::InternalServerError,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not serve GITEA server response as JSON string: {}", e))
+                        ),
+                    )
+                }
+            }
+        },
+        Err(e) => status::Custom(
+            Status::BadGateway,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read from GITEA server: {}", e).to_string())
             ),
         )
     }
@@ -1170,6 +1210,9 @@ fn rocket() -> _ {
             negotiated_i18n,
             flat_i18n,
             untranslated_i18n
+        ])
+        .mount("/gitea", routes![
+            gitea_remote_repos
         ])
         .mount("/git", routes![
             fetch_repo,
