@@ -16,7 +16,6 @@ Install cmake from https://cmake.org/download/
 
 ### Installation 
 ```
-mkdir ~/GITTEST # Currently required
 cd client
 npm install
 npm run build
@@ -27,7 +26,7 @@ cargo run
 ### Usage
 Connect to localhost:8000, using Firefox if Graphite fonts are needed
 
-Enable Internet with the toggle top left
+Enable Internet by clicking on the crossed-out cloud, top right. (Red cloud == "enabled")
 
 Go to Download
 
@@ -44,11 +43,3 @@ Click on one of the "write" icons in the rightmost column
 Change book with, eg, "MRK 1"
 
 Note that USJ rendering is currently slow - we plan to fix this shortly.
-
-### If dev bugs lead to zombie processes hogging port 8000:
-```
-# Get PID of process
-lsof -i:8000
-# Kill process
-kill -s sigkill <pid>
-```
