@@ -20,6 +20,7 @@ use home::home_dir;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
 use copy_dir::copy_dir;
+use ureq;
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
@@ -522,6 +523,91 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
             (
                 ContentType::JSON,
                 make_bad_json_data_response(format!("could not read for untranslated i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+// GITEA
+
+#[derive(Serialize, Deserialize)]
+struct RemoteRepoRecord {
+    name: String,
+    abbreviation: String,
+    description: String,
+    avatar_url: String,
+    flavor: String,
+    flavor_type: String,
+    language_code: String,
+    script_direction: String,
+    branch_or_tag: String,
+    clone_url: String,
+}
+
+#[get("/remote-repos/<gitea_server>/<gitea_org>")]
+fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(ContentType, String)> {
+    if !NET_IS_ENABLED.load(Ordering::Relaxed) {
+        return status::Custom(
+            Status::Unauthorized,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response("offline mode".to_string())
+            ),
+        );
+    }
+    let gitea_path = format!("https://{}/api/v1/orgs/{}/repos", gitea_server, gitea_org);
+    match ureq::get(gitea_path.as_str()).call() {
+        Ok(r) => {
+            match r.into_json::<Value>() {
+                Ok(j) => {
+                    let mut records: Vec<RemoteRepoRecord> = Vec::new();
+                    for json_record in j.as_array().unwrap() {
+                        let latest = &json_record["catalog"]["latest"];
+                        records.push(
+                            RemoteRepoRecord{
+                                name: json_record["name"].as_str().unwrap().to_string(),
+                                abbreviation: json_record["abbreviation"].as_str().unwrap().to_string(),
+                                description: json_record["description"].as_str().unwrap().to_string(),
+                                avatar_url: json_record["avatar_url"].as_str().unwrap().to_string(),
+                                flavor: json_record["flavor"].as_str().unwrap().to_string(),
+                                flavor_type: json_record["flavor_type"].as_str().unwrap().to_string(),
+                                language_code: json_record["language"].as_str().unwrap().to_string(),
+                                script_direction: json_record["language_direction"].as_str().unwrap().to_string(),
+                                branch_or_tag: match latest["branch_or_tag_name"].as_str() {
+                                    Some(s) => s.to_string(),
+                                    _ => "".to_string()
+                                },
+                                clone_url: match latest["released"].as_str() {
+                                Some(s) => s.to_string(),
+                                _ => "".to_string()
+                            },
+                            }
+                        );
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&records).unwrap()
+                        ),
+                    )
+                },
+                Err(e) => {
+                    return status::Custom(
+                        Status::InternalServerError,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not serve GITEA server response as JSON string: {}", e))
+                        ),
+                    )
+                }
+            }
+        },
+        Err(e) => status::Custom(
+            Status::BadGateway,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read from GITEA server: {}", e).to_string())
             ),
         )
     }
@@ -1170,6 +1256,9 @@ fn rocket() -> _ {
             negotiated_i18n,
             flat_i18n,
             untranslated_i18n
+        ])
+        .mount("/gitea", routes![
+            gitea_remote_repos
         ])
         .mount("/git", routes![
             fetch_repo,
