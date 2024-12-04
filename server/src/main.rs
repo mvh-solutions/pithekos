@@ -1,10 +1,10 @@
 #[macro_use]
-
 #[cfg(test)]
 mod tests;
 
 use std::collections::BTreeMap;
 use git2::{Repository};
+use rocket::State;
 use rocket::fs::{FileServer, relative, NamedFile, TempFile};
 use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
 use rocket::response::{status, Redirect};
@@ -18,21 +18,29 @@ use std::process::exit;
 use hallomai::transform;
 use home::home_dir;
 use serde::{Serialize, Deserialize};
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
+use copy_dir::copy_dir;
+
+#[derive(Serialize, Deserialize)]
+struct AppSettings {
+    client_dir: String,
+    repo_dir: String,
+    resources_dir: String,
+    languages: Vec<String>,
+}
 
 // CONSTANTS AND STATE
 
 const REACT_STATIC_PATH: &str = relative!("../client/build");
-const WEBFONTS_STATIC_PATH: &str = relative!("./webfonts/");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
 // UTILITY FUNCTIONS
 
-fn os_slash_str() ->  &'static str {
-  match env::consts::OS {
-  "windows" => "\\",
-  _ => "/"
-  }
+fn os_slash_str() -> &'static str {
+    match env::consts::OS {
+        "windows" => "\\",
+        _ => "/"
+    }
 }
 
 fn forbidden_path_strings() -> Vec<String> {
@@ -122,7 +130,7 @@ struct JsonDataResponse {
 }
 #[derive(Serialize, Deserialize)]
 struct JsonNetStatusResponse {
-    is_enabled: bool
+    is_enabled: bool,
 }
 
 fn check_path_components(path_components: &mut Components<'_>) -> bool {
@@ -187,24 +195,29 @@ fn home_dir_string() -> String {
     home_dir().unwrap().as_os_str().to_str().unwrap().to_string()
 }
 
-// CHECK PATHS FOR DEBUGGING
-#[get("/check-path/<repo_path..>")]
-async fn check_path(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    if !check_path_components(&mut repo_path.components()) {
-        status::Custom(
-            Status::BadRequest,
-            (
-                ContentType::JSON,
-                make_bad_json_data_response("bad path".to_string())
+// SETTINGS
+#[get("/languages")]
+fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let languages = state.languages.clone();
+    match serde_json::to_string(&languages) {
+        Ok(v) =>
+            status::Custom(
+                Status::Ok, (
+                    ContentType::JSON,
+                    v
+                ),
             ),
-        )
-    } else {
-        status::Custom(
-            Status::Ok, (
+        Err(e) => status::Custom(
+            Status::InternalServerError, (
                 ContentType::JSON,
-                make_good_json_data_response("ok".to_string())
+                make_bad_json_data_response(
+                    format!(
+                        "Could not parse language settings as JSON array: {}",
+                        e
+                    )
+                )
             ),
-        )
+        ),
     }
 }
 
@@ -241,11 +254,284 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
     )
 }
 
+// i18n
+
+#[get("/raw")]
+async fn raw_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            status::Custom(
+                Status::Ok,
+                (
+                    ContentType::JSON,
+                    v
+                ),
+            )
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read raw i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+#[get("/negotiated/<filter..>")]
+async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let filter_items: Vec<String> = filter.display().to_string().split('/').map(String::from).collect();
+    if filter_items.len() > 2 {
+        return status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("expected 0 - 2 filter terms, not {}", filter_items.len()).to_string())
+            ),
+        )
+    }
+    let mut type_filter: Option<String> = None;
+    let mut subtype_filter: Option<String> = None;
+    if filter_items.len() > 0 && filter_items[0] != "" {
+        type_filter = Some(filter_items[0].clone());
+        if filter_items.len() > 1 && filter_items[1] != "" {
+            subtype_filter = Some(filter_items[1].clone());
+        }
+    }
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            match serde_json::from_str::<Value>(v.as_str()) {
+                Ok(sj) => {
+                    let languages = state.languages.clone();
+                    let mut negotiated = Map::new();
+                    for (i18n_type, subtypes) in sj.as_object().unwrap() {
+                        // println!("{}", i18n_type);
+                        match type_filter.clone() {
+                            Some(v) => {
+                                if v != *i18n_type {
+                                    continue;
+                                }
+                            },
+                            None => {}
+                        }
+                        let mut negotiated_types = Map::new();
+                        for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
+                            // println!("   {}", i18n_subtype);
+                            match subtype_filter.clone() {
+                                Some(v) => {
+                                    if v != *i18n_subtype {
+                                        continue;
+                                    }
+                                },
+                                None => {}
+                            }
+                            let mut negotiated_terms = Map::new();
+                            for (i18n_term, term_languages) in terms.as_object().unwrap() {
+                                // println!("      {}", i18n_term);
+                                let mut negotiated_translations = Map::new();
+                                'user_lang: for user_language in languages.clone() {
+                                    for (i18n_language, translation) in term_languages.as_object().unwrap() {
+                                        // println!("{} {}", i18n_language, languages[0]);
+                                        if *i18n_language == user_language {
+                                            negotiated_translations.insert("language".to_string(), Value::String(i18n_language.clone()));
+                                            negotiated_translations.insert("translation".to_string(), translation.clone());
+                                            break 'user_lang;
+                                        }
+                                    }
+                                }
+                                negotiated_terms.insert(i18n_term.clone(), Value::Object(negotiated_translations));
+                            }
+                            negotiated_types.insert(i18n_subtype.clone(), Value::Object(negotiated_terms));
+                        }
+                        negotiated.insert(i18n_type.clone(), Value::Object(negotiated_types));
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&negotiated).unwrap()
+                        ),
+                    )
+
+                },
+                Err(e) => {
+                    status::Custom(
+                        Status::BadRequest,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not parse for negotiated i18n: {}", e).to_string())
+                        ),
+                    )                }
+            }
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read for negotiated i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+#[get("/flat/<filter..>")]
+async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let filter_items: Vec<String> = filter.display().to_string().split('/').map(String::from).collect();
+    if filter_items.len() > 2 {
+        return status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("expected 0 - 2 filter terms, not {}", filter_items.len()).to_string())
+            ),
+        )
+    }
+    let mut type_filter: Option<String> = None;
+    let mut subtype_filter: Option<String> = None;
+    if filter_items.len() > 0 && filter_items[0] != "" {
+        type_filter = Some(filter_items[0].clone());
+        if filter_items.len() > 1 && filter_items[1] != "" {
+            subtype_filter = Some(filter_items[1].clone());
+        }
+    }
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            match serde_json::from_str::<Value>(v.as_str()) {
+                Ok(sj) => {
+                    let languages = state.languages.clone();
+                    let mut flat = Map::new();
+                    for (i18n_type, subtypes) in sj.as_object().unwrap() {
+                        // println!("{}", i18n_type);
+                        match type_filter.clone() {
+                            Some(v) => {
+                                if v != *i18n_type {
+                                    continue;
+                                }
+                            },
+                            None => {}
+                        }
+                        for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
+                            // println!("   {}", i18n_subtype);
+                            match subtype_filter.clone() {
+                                Some(v) => {
+                                    if v != *i18n_subtype {
+                                        continue;
+                                    }
+                                },
+                                None => {}
+                            }
+                            for (i18n_term, term_languages) in terms.as_object().unwrap() {
+                                // println!("      {}", i18n_term);
+                                'user_lang: for user_language in languages.clone() {
+                                    for (i18n_language, translation) in term_languages.as_object().unwrap() {
+                                        // println!("{} {}", i18n_language, languages[0]);
+                                        if *i18n_language == user_language {
+                                            let flat_key = format!(
+                                                "{}:{}:{}",
+                                                i18n_type.clone(),
+                                                i18n_subtype.clone(),
+                                                i18n_term.clone()
+                                            );
+                                            flat.insert(flat_key, translation.clone());
+                                            break 'user_lang;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&flat).unwrap()
+                        ),
+                    )
+
+                },
+                Err(e) => {
+                    status::Custom(
+                        Status::BadRequest,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not parse for flat i18n: {}", e).to_string())
+                        ),
+                    )                }
+            }
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read for flat i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
+#[get("/untranslated/<lang>")]
+async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::Custom<(ContentType, String)> {
+    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    match fs::read_to_string(path_to_serve) {
+        Ok(v) => {
+            match serde_json::from_str::<Value>(v.as_str()) {
+                Ok(sj) => {
+                    let mut untranslated: Vec<String> = Vec::new();
+                    for (i18n_type, subtypes) in sj.as_object().unwrap() {
+                        // println!("{}", i18n_type);
+                        for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
+                            // println!("   {}", i18n_subtype);
+                            for (i18n_term, term_languages) in terms.as_object().unwrap() {
+                                // println!("      {}", i18n_term);
+                                if !term_languages.as_object().unwrap().contains_key(lang.as_str()) {
+                                    let flat_key = format!(
+                                        "{}:{}:{}",
+                                        i18n_type.clone(),
+                                        i18n_subtype.clone(),
+                                        i18n_term.clone()
+                                    );
+                                    untranslated.push(flat_key);
+                                }
+                            }
+                        }
+                    }
+                    status::Custom(
+                        Status::Ok,
+                        (
+                            ContentType::JSON,
+                            serde_json::to_string(&untranslated).unwrap()
+                        ),
+                    )
+
+                },
+                Err(e) => {
+                    status::Custom(
+                        Status::BadRequest,
+                        (
+                            ContentType::JSON,
+                            make_bad_json_data_response(format!("could not parse for untranslated i18n: {}", e).to_string())
+                        ),
+                    )                }
+            }
+        }
+        Err(e) => status::Custom(
+            Status::BadRequest,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response(format!("could not read for untranslated i18n: {}", e).to_string())
+            ),
+        )
+    }
+}
+
 // REPO OPERATIONS
 
 #[get("/list-local-repos")]
-fn list_local_repos() -> status::Custom<(ContentType, String)> {
-    let root_path = home_dir_string() + os_slash_str() + "GITTEST";
+fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let root_path = state.repo_dir.clone();
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
@@ -275,8 +561,8 @@ fn list_local_repos() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/add-and-commit/<repo_path..>")]
-async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string().clone();
+async fn add_and_commit(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
     let result = match Repository::open(repo_path_string) {
         Ok(repo) => {
             repo.index()
@@ -320,15 +606,15 @@ async fn add_and_commit(repo_path: PathBuf) -> status::Custom<(ContentType, Stri
     result
 }
 #[get("/fetch-repo/<repo_path..>")]
-async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     if !NET_IS_ENABLED.load(Ordering::Relaxed) {
-      return status::Custom(
-        Status::Unauthorized,
-        (
-            ContentType::JSON,
-            make_bad_json_data_response("offline mode".to_string())
-        ),
-      )
+        return status::Custom(
+            Status::Unauthorized,
+            (
+                ContentType::JSON,
+                make_bad_json_data_response("offline mode".to_string())
+            ),
+        );
     }
     let mut path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
@@ -344,12 +630,12 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
         let url = "https://".to_string() + &repo_path.display().to_string().replace("\\", "/");
         match Repository::clone(
             &url,
-            home_dir_string() +
-                "/GITTEST/" +
+            state.repo_dir.clone() +
+                os_slash_str() +
                 source +
-                "/" +
+                os_slash_str() +
                 org +
-                "/" +
+                os_slash_str() +
                 repo.as_str(),
         ) {
             Ok(_repo) => status::Custom(
@@ -360,15 +646,15 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
                 ),
             ),
             Err(e) => {
-              println!("Error:{}", e);
-              return status::Custom(
-                Status::BadRequest,
-                (
-                    ContentType::JSON,
-                    make_bad_json_data_response(format!("could not clone repo: {}", e).to_string())
-                ),
-            )
-          },
+                println!("Error:{}", e);
+                return status::Custom(
+                    Status::BadRequest,
+                    (
+                        ContentType::JSON,
+                        make_bad_json_data_response(format!("could not clone repo: {}", e).to_string())
+                    ),
+                );
+            }
         }
     } else {
         status::Custom(
@@ -382,10 +668,10 @@ async fn fetch_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)>
 }
 
 #[get("/delete-repo/<repo_path..>")]
-async fn delete_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_delete = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string();
+        let path_to_delete = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string();
         match fs::remove_dir_all(path_to_delete) {
             Ok(_) => status::Custom(
                 Status::Ok,
@@ -415,10 +701,10 @@ async fn delete_repo(repo_path: PathBuf) -> status::Custom<(ContentType, String)
 
 // METADATA OPERATIONS
 #[get("/metadata/raw/<repo_path..>")]
-async fn raw_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -457,10 +743,10 @@ struct MetadataSummary {
 }
 
 #[get("/metadata/summary/<repo_path..>")]
-async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
+async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
             Err(e) => return status::Custom(
@@ -521,19 +807,19 @@ async fn summary_metadata(repo_path: PathBuf) -> status::Custom<(ContentType, St
             ),
         )
     }
-  }
+}
 
 // INGREDIENT OPERATIONS
 
 #[get("/ingredient/raw/<repo_path..>?<ipath>")]
-async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
-                let mut  suffix = "unknown";
+                let mut suffix = "unknown";
                 if let Some(_) = split_ipath.next() {
                     if let Some(second) = split_ipath.next() {
                         suffix = second;
@@ -549,7 +835,7 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
                         v
                     ),
                 )
-            },
+            }
             Err(e) => status::Custom(
                 Status::BadRequest,
                 (
@@ -570,10 +856,10 @@ async fn raw_ingredient(repo_path: PathBuf, ipath: String) -> status::Custom<(Co
 }
 
 #[get("/ingredient/as-usj/<repo_path..>?<ipath>")]
-async fn get_ingredient_as_usj(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -606,9 +892,9 @@ struct Upload<'f> {
 }
 
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
-async fn post_ingredient_as_usj(repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
+async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
-    let destination = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
+    let destination = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
         let _ = form.file.persist_to(destination).await;
         status::Custom(
@@ -630,10 +916,10 @@ async fn post_ingredient_as_usj(repo_path: PathBuf, ipath: String, mut form: For
 }
 
 #[get("/ingredient/prettified/<repo_path..>?<ipath>")]
-async fn get_ingredient_prettified(repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
+async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = home_dir_string() + "/GITTEST/" + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) =>
                 v,
@@ -702,14 +988,27 @@ fn redirect_root() -> Redirect {
 }
 
 // ERROR HANDLING
+
+#[catch(404)]
+fn not_found_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
+    status::Custom(
+        Status::NotFound,
+        (
+            ContentType::JSON,
+            make_bad_json_data_response(format!("Resource {} was not found", req.uri())).to_string()
+        ),
+    )
+}
+
 #[catch(default)]
 fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
     status::Custom(
         Status::InternalServerError,
         (
             ContentType::JSON,
-            make_bad_json_data_response(format!("unknown error while serving {:?}", req.route())).to_string())
-        )
+            make_bad_json_data_response(format!("unknown error while serving {}", req.uri())).to_string()
+        ),
+    )
 }
 
 // BUILD SERVER
@@ -730,7 +1029,7 @@ fn rocket() -> _ {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
                 "resources_dir": root_path.clone() + "pithekos_resources",
-                "client_dir": root_path.clone() + "pithekos_client",
+                "client_dir": relative!("../client/build"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -741,7 +1040,7 @@ fn rocket() -> _ {
                 }
             };
             match file_handle.write_all(&default_settings.to_string().as_bytes()) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     println!("Could not write default settings file to '{}: {}' to write default", settings_path, e);
                     exit(1);
@@ -765,45 +1064,116 @@ fn rocket() -> _ {
         }
     };
     // Find or make repo_dir
-    let repo_dir_path = settings_json["repo_dir"].to_string();
-    let repo_dir_path_exists = Path::new(&repo_dir_path).is_file();
+    let repo_dir_path = settings_json["repo_dir"].as_str().unwrap().to_string();
+    let repo_dir_path_exists = Path::new(&repo_dir_path).is_dir();
     if !repo_dir_path_exists {
-        fs::create_dir_all(repo_dir_path);
+        match fs::create_dir_all(&repo_dir_path) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Could not create repo dir '{}': {}", repo_dir_path, e);
+                exit(1);
+            }
+        };
     }
-    // Require resources_dir
-    let resources_dir_path = settings_json["resources_dir"].to_string();
-    let resources_dir_path_exists = Path::new(&resources_dir_path).is_file();
+    // Find or make resources_dir
+    let resources_dir_path = settings_json["resources_dir"].as_str().unwrap().to_string();
+    let resources_dir_path_exists = Path::new(&resources_dir_path).is_dir();
     if !resources_dir_path_exists {
-        println!("Could not find  file '{}'", resources_dir_path);
-        exit(1);
+        match fs::create_dir_all(&resources_dir_path) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Could not create resources dir '{}': {}", resources_dir_path, e);
+                exit(1);
+            }
+        };
+    }
+    // Copy web fonts
+    let template_webfonts_dir_path = relative!("./webfonts").to_string();
+    let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
+    if !Path::new(&webfonts_dir_path).is_dir() {
+        match copy_dir(template_webfonts_dir_path.clone(), webfonts_dir_path.clone()) {
+            Ok(_) => {}
+            Err(e) => {
+                println!(
+                    "Could not copy web fonts to resources directory: {}",
+                    e
+                );
+                exit(1);
+            }
+        }
+    };
+    // Copy templates to resources_dir if not present
+    let template_dir_path = relative!("./templates").to_string();
+    let template_dir_entries = std::fs::read_dir(template_dir_path.clone()).unwrap();
+    for entry in template_dir_entries {
+        let leaf_name = entry.unwrap().file_name().into_string().unwrap();
+        let resource_leaf_path = resources_dir_path.clone() + os_slash_str() + leaf_name.as_str();
+        if !Path::new(&resource_leaf_path).is_dir() && !Path::new(&resource_leaf_path).is_file() {
+            let template_leaf_path = template_dir_path.clone() + os_slash_str() + leaf_name.as_str();
+            match copy_dir(template_leaf_path, resource_leaf_path) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!(
+                        "Could not copy {} to resources directory: {}",
+                        leaf_name.as_str(),
+                        e
+                    );
+                    exit(1);
+                }
+            };
+        }
     }
     // Require client_dir
-    let client_dir_path = settings_json["resources_dir"].to_string();
-    let client_dir_path_exists = Path::new(&client_dir_path).is_file();
+    let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
+    let client_dir_path_exists = Path::new(&client_dir_path).is_dir();
     if !client_dir_path_exists {
-        println!("Could not find  file '{}'", client_dir_path);
+        println!("Could not find  client directory '{}'", client_dir_path);
         exit(1);
     }
-    let webfonts_dir_path = resources_dir_path + os_slash_str() + "webfonts";
+
     rocket::build()
-        .register("/", catchers![default_catcher])
+        .register("/", catchers![
+            not_found_catcher,
+            default_catcher
+        ])
+        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
+        .mount("/client", FileServer::from(client_dir_path.clone()))
+        .manage(
+            AppSettings {
+                client_dir: client_dir_path.clone(),
+                repo_dir: repo_dir_path.clone(),
+                resources_dir: resources_dir_path.clone(),
+                languages: settings_json["languages"]
+                    .as_array()
+                    .unwrap()
+                    .into_iter()
+                    .map(|i| { i.as_str().expect("Non-string in settings language array").to_string() })
+                    .collect(),
+            }
+        )
         .mount("/", routes![
             redirect_root,
             serve_client_index,
             serve_client_dir,
             serve_root_favicon
         ])
-        .mount("/webfonts", FileServer::from(webfonts_dir_path))
-        .mount("/client", FileServer::from(client_dir_path))
+        .mount("/settings", routes![
+            get_languages,
+        ])
         .mount("/net", routes![
             net_status,
             net_enable,
             net_disable
         ])
+        .mount("/i18n", routes![
+            raw_i18n,
+            negotiated_i18n,
+            flat_i18n,
+            untranslated_i18n
+        ])
         .mount("/git", routes![
             fetch_repo,
             list_local_repos,
-            check_path,
             delete_repo,
             add_and_commit,
         ])
