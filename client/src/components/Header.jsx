@@ -1,11 +1,11 @@
-import {useEffect, useRef, useContext} from "react";
+import {useContext} from "react";
 import {AppBar, Box, Icon, IconButton, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
 import {useNavigate} from "react-router-dom";
 import '@fontsource/cardo/400.css';
 import '@fontsource/cardo/700.css';
-import {Cloud, CloudOff} from "@mui/icons-material";
+import {Public, PublicOff} from "@mui/icons-material";
 import { NetContext } from "../contexts/NetContext";
 import React from "react";
 
@@ -40,7 +40,7 @@ function Header({isHome, subtitle, widget}) {
                 <Box sx={{mr: "1em"}}>
                     {
                       enableNet ? 
-                        <Cloud
+                        <Public
                           onClick = {
                             () => {
                               fetch(`/net/disable`);
@@ -49,9 +49,9 @@ function Header({isHome, subtitle, widget}) {
                           }
                           edge="start"
                           fontSize="large"
-                          sx={{color: "#FF0000"}}
+                          sx={{color: "#26a269"}}
                         /> :
-                        <CloudOff
+                        <PublicOff
                           onClick = {
                             () => {
                               fetch(`/net/enable`);

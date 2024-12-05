@@ -15,7 +15,7 @@ const contentForPath = (content, path) => {
     }
 }
 
-function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPath, setUsjNode}) {
+function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPath, setUsjNode, selectedFontsetName}) {
     if (typeof element === "string") {
         return <StringRenderer
             selectedPath={selectedPath}
@@ -31,6 +31,7 @@ function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPat
             contentPath={contentPath}
             usj={usj}
             setUsjNode={setUsjNode}
+            selectedFontsetName={selectedFontsetName}
         />
     } else if (element.type === "ms") {
         return <MilestoneRenderer
@@ -65,7 +66,7 @@ function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPat
     </span>;
 }
 
-function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode}) {
+function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontsetName}) {
     const [editedValue, setEditedValue] = useState(contentForPath(usj, contentPath)["number"]);
     return <span
         className="usfm-v"
@@ -75,7 +76,7 @@ function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjN
             deepEqual(selectedPath, contentPath) ?
                 <>
                     <input
-                        className={`awami usfm-v`}
+                        className={`${selectedFontsetName} usfm-v`}
                         style={{
                             padding: 0,
                             width: "100%"
@@ -127,12 +128,12 @@ function CharRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNo
     </span>;
 }
 
-function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode}) {
+function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontsetName}) {
     const initialValue = contentForPath(usj, contentPath)
     const [editedValue, setEditedValue] = useState(initialValue);
     const paraUsfmName = `usfm-${usj.content[contentPath[0]].marker}`;
     return <span
-        className={`bare-text awami ${paraUsfmName}`}
+        className={`bare-text ${selectedFontsetName} ${paraUsfmName}`}
         style={{
             display: "inline-block",
             size: 1
@@ -143,7 +144,7 @@ function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsj
             deepEqual(selectedPath, contentPath) ?
                 <>
                     <input
-                        className={`awami ${paraUsfmName}`}
+                        className={`${selectedFontsetName} ${paraUsfmName}`}
                         style={{
                             padding: 0,
                             width: "100%"

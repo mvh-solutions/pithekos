@@ -1026,10 +1026,10 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
                 <html>
                 <head>
                 <title>Prettified</title>
-                <link rel="stylesheet" href="/webfonts/awami.css">
+                <link rel="stylesheet" href="/webfonts/_webfonts.css">
                 </head>
                 <body>
-                <pre class="awami">
+                <pre>
                 {}
                 </pre>
                 </body>

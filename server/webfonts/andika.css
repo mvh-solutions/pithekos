@@ -1,0 +1,40 @@
+/* Copyright (c) 2000-2024, SIL International (https://www.sil.org/) with Reserved Font Names "Andika" and "SIL".*/
+/* This Font Software is licensed under the SIL Open Font License, Version 1.1. See https://openfontlicense.org/ .*/
+
+/* normal */
+@font-face {
+  font-family: AndikaW;
+  font-style: normal;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./andika/Andika-Regular.woff2);
+}
+
+/* italic */
+@font-face {
+  font-family: AndikaW;
+  font-style: italic;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./andika/Andika-Italic.woff2);
+}
+
+/* bold */
+@font-face {
+  font-family: AndikaW;
+  font-style: normal;
+  font-weight: bold; /* 700 */
+  src: url(./andika/Andika-Bold.woff2);
+}
+
+/* bold italic */
+@font-face {
+  font-family: AndikaW;
+  font-style: italic;
+  font-weight: bold; /* 700 */
+  src: url(./andika/Andika-BoldItalic.woff2);
+}
+
+.andika {
+  font-family: AndikaW;
+  font-size: 200%;
+  padding: 2em;
+}
