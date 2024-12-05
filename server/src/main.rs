@@ -22,12 +22,19 @@ use serde_json::{json, Map, Value};
 use copy_dir::copy_dir;
 use ureq;
 
+#[derive(Serialize, Deserialize, Clone)]
+struct AuthEndpoint {
+    service: String,
+    uri: String,
+}
+
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
     client_dir: String,
     repo_dir: String,
     resources_dir: String,
     languages: Vec<String>,
+    auth_endpoints: Vec<AuthEndpoint>,
 }
 
 // CONSTANTS AND STATE
@@ -221,6 +228,48 @@ fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, Str
         ),
     }
 }
+#[get("/auth-endpoint/<endpoint_key>")]
+fn get_auth_endpoint(state: &State<AppSettings>, endpoint_key: String) -> status::Custom<(ContentType, String)> {
+    let matching_endpoint_array = state.auth_endpoints
+        .clone()
+        .into_iter()
+        .filter(|a| a.service == endpoint_key)
+        .collect::<Vec<_>>();
+    if matching_endpoint_array.len() == 1 {
+        match serde_json::to_string(&matching_endpoint_array[0]) {
+            Ok(v) =>
+                status::Custom(
+                    Status::Ok, (
+                        ContentType::JSON,
+                        v
+                    ),
+                ),
+            Err(e) => status::Custom(
+                Status::InternalServerError, (
+                    ContentType::JSON,
+                    make_bad_json_data_response(
+                        format!(
+                            "Could not parse auth endpoint as JSON array: {}",
+                            e
+                        )
+                    )
+                ),
+            ),
+        }
+    } else {
+        status::Custom(
+            Status::BadRequest, (
+                ContentType::JSON,
+                make_bad_json_data_response(
+                    format!(
+                        "Could not find record for endpoint key '{}'",
+                        endpoint_key
+                    )
+                )
+            ),
+        )
+    }
+}
 
 // NETWORK OPERATIONS
 #[get("/status")]
@@ -291,7 +340,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
                 ContentType::JSON,
                 make_bad_json_data_response(format!("expected 0 - 2 filter terms, not {}", filter_items.len()).to_string())
             ),
-        )
+        );
     }
     let mut type_filter: Option<String> = None;
     let mut subtype_filter: Option<String> = None;
@@ -314,7 +363,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
                                 if v != *i18n_type {
                                     continue;
                                 }
-                            },
+                            }
                             None => {}
                         }
                         let mut negotiated_types = Map::new();
@@ -325,7 +374,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
                                     if v != *i18n_subtype {
                                         continue;
                                     }
-                                },
+                                }
                                 None => {}
                             }
                             let mut negotiated_terms = Map::new();
@@ -355,8 +404,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
                             serde_json::to_string(&negotiated).unwrap()
                         ),
                     )
-
-                },
+                }
                 Err(e) => {
                     status::Custom(
                         Status::BadRequest,
@@ -364,7 +412,8 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
                             ContentType::JSON,
                             make_bad_json_data_response(format!("could not parse for negotiated i18n: {}", e).to_string())
                         ),
-                    )                }
+                    )
+                }
             }
         }
         Err(e) => status::Custom(
@@ -388,7 +437,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                 ContentType::JSON,
                 make_bad_json_data_response(format!("expected 0 - 2 filter terms, not {}", filter_items.len()).to_string())
             ),
-        )
+        );
     }
     let mut type_filter: Option<String> = None;
     let mut subtype_filter: Option<String> = None;
@@ -411,7 +460,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                                 if v != *i18n_type {
                                     continue;
                                 }
-                            },
+                            }
                             None => {}
                         }
                         for (i18n_subtype, terms) in subtypes.as_object().unwrap() {
@@ -421,7 +470,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                                     if v != *i18n_subtype {
                                         continue;
                                     }
-                                },
+                                }
                                 None => {}
                             }
                             for (i18n_term, term_languages) in terms.as_object().unwrap() {
@@ -451,8 +500,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                             serde_json::to_string(&flat).unwrap()
                         ),
                     )
-
-                },
+                }
                 Err(e) => {
                     status::Custom(
                         Status::BadRequest,
@@ -460,7 +508,8 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
                             ContentType::JSON,
                             make_bad_json_data_response(format!("could not parse for flat i18n: {}", e).to_string())
                         ),
-                    )                }
+                    )
+                }
             }
         }
         Err(e) => status::Custom(
@@ -506,8 +555,7 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
                             serde_json::to_string(&untranslated).unwrap()
                         ),
                     )
-
-                },
+                }
                 Err(e) => {
                     status::Custom(
                         Status::BadRequest,
@@ -515,7 +563,8 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
                             ContentType::JSON,
                             make_bad_json_data_response(format!("could not parse for untranslated i18n: {}", e).to_string())
                         ),
-                    )                }
+                    )
+                }
             }
         }
         Err(e) => status::Custom(
@@ -564,7 +613,7 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
                     for json_record in j.as_array().unwrap() {
                         let latest = &json_record["catalog"]["latest"];
                         records.push(
-                            RemoteRepoRecord{
+                            RemoteRepoRecord {
                                 name: json_record["name"].as_str().unwrap().to_string(),
                                 abbreviation: json_record["abbreviation"].as_str().unwrap().to_string(),
                                 description: json_record["description"].as_str().unwrap().to_string(),
@@ -578,9 +627,9 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
                                     _ => "".to_string()
                                 },
                                 clone_url: match latest["released"].as_str() {
-                                Some(s) => s.to_string(),
-                                _ => "".to_string()
-                            },
+                                    Some(s) => s.to_string(),
+                                    _ => "".to_string()
+                                },
                             }
                         );
                     }
@@ -591,7 +640,7 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
                             serde_json::to_string(&records).unwrap()
                         ),
                     )
-                },
+                }
                 Err(e) => {
                     return status::Custom(
                         Status::InternalServerError,
@@ -602,7 +651,7 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
                     )
                 }
             }
-        },
+        }
         Err(e) => status::Custom(
             Status::BadGateway,
             (
@@ -1235,6 +1284,10 @@ fn rocket() -> _ {
                     .into_iter()
                     .map(|i| { i.as_str().expect("Non-string in settings language array").to_string() })
                     .collect(),
+                auth_endpoints: match settings_json["auth_endpoints"].clone() {
+                    serde_json::Value::Array(v) => serde_json::from_value(serde_json::Value::Array(v)).unwrap(),
+                    _ => Vec::new(),
+                },
             }
         )
         .mount("/", routes![
@@ -1245,6 +1298,7 @@ fn rocket() -> _ {
         ])
         .mount("/settings", routes![
             get_languages,
+            get_auth_endpoint
         ])
         .mount("/net", routes![
             net_status,
