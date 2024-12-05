@@ -1,0 +1,32 @@
+{
+  "server": {
+    "settings": {},
+    "net": {},
+    "git": {},
+    "burrito": {},
+    "i18n": {}
+  },
+  "components": {
+    "header": {
+      "new_reference": {
+        "en": "New Reference"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "workspace_title": {
+        "en": "Workspace",
+        "fr": "Espace de travail"
+      }
+    },
+    "settings": {},
+    "NewProject": {},
+    "Workspace": {},
+    "DownloadProject": {}
+  },
+  "munchers": {},
+  "flavors": {},
+  "fonts": {},
+  "branding": {}
+}
