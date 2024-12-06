@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState, useContext} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import dcopy from "deep-copy";
 import {
@@ -15,14 +15,12 @@ import {
     IconButton,
     Switch,
 } from "@mui/material";
-import { NetContext } from "../../contexts/NetContext";
 import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote, ReadMore} from "@mui/icons-material";
 import DownloadProjectButton from "./DownloadProjectButton";
 import NewProjectButton from "./NewProjectButton";
 
-function WorkspacePicker() {
-    const {enableNet} = useContext(NetContext);
+function WorkspacePicker({enableNet}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
     const [showDetails, setShowDetails] = useState(false);

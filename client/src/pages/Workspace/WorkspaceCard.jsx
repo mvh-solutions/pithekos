@@ -7,7 +7,7 @@ import './tiles_styles.css'
 import VideoLinksViewerMuncher from "../../munchers/VideoLinks/VideoLinksViewerMuncher";
 import PithekosToolbar from "../../components/PithekosToolbar";
 
-function WorkspaceCard({metadata, style, systemBcv, setSystemBcv}) {
+function WorkspaceCard({metadata, style, systemBcv, setSystemBcv, enableNet}) {
     const scriptDirectionString =  metadata.script_direction === 'rtl' ? 'rtl' : 'ltr';
     const [selectedFontsetName, setSelectedFontsetName] = useState('gentiumplus');
     const pithekosToolbarProps = {
@@ -56,6 +56,7 @@ function WorkspaceCard({metadata, style, systemBcv, setSystemBcv}) {
               <VideoLinksViewerMuncher
                   metadata={metadata}
                   systemBcv={systemBcv}
+                  enableNet={enableNet}
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import {useContext} from "react";
+import {useEffect} from "react";
 import {AppBar, Box, Icon, IconButton, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
@@ -6,12 +6,31 @@ import {useNavigate} from "react-router-dom";
 import '@fontsource/cardo/400.css';
 import '@fontsource/cardo/700.css';
 import {Public, PublicOff} from "@mui/icons-material";
-import { NetContext } from "../contexts/NetContext";
-import React from "react";
 
-function Header({isHome, subtitle, widget}) {
+function Header({isHome, subtitle, widget, enableNet, setEnableNet, enabledRef}) {
     const navigate = useNavigate();
-    const {enableNet, setEnableNet} = useContext(NetContext);
+
+    const netHandler = ev => {
+        if (ev.data === "enabled" && !enabledRef.current) {
+            setEnableNet(true);
+        } else if (ev.data === "disabled" && enabledRef.current) {
+            setEnableNet(false);
+        }
+    }
+
+    useEffect(() => {
+            const es = new EventSource("/notifications/net");
+            // es.onopen = () => console.log(">>> Connection opened!");
+            es.onerror = err => console.log("Notifications/net SSE error!", err);
+            es.addEventListener(
+                "net_status",
+                netHandler
+            );
+            return () => {
+                es.close();
+            };
+        }
+    );
 
     return <Box sx={{flexGrow: 1}}>
         <AppBar position="static">
@@ -39,28 +58,27 @@ function Header({isHome, subtitle, widget}) {
                 }
                 <Box sx={{mr: "1em"}}>
                     {
-                      enableNet ? 
-                        <Public
-                          onClick = {
-                            () => {
-                              fetch(`/net/disable`);
-                              setEnableNet(false);
-                            }
-                          }
-                          edge="start"
-                          fontSize="large"
-                          sx={{color: "#26a269"}}
-                        /> :
-                        <PublicOff
-                          onClick = {
-                            () => {
-                              fetch(`/net/enable`);
-                              setEnableNet(true);
-                            }
-                          }
-                          edge="start"
-                          fontSize="large"
-                        />}
+                        enableNet ?
+                            <Public
+                                onClick={
+                                    () => {
+                                        fetch(`/net/disable`);
+                                    }
+                                }
+                                edge="start"
+                                fontSize="large"
+                                sx={{color: "#33FF33"}}
+                            /> :
+                            <PublicOff
+                                onClick={
+                                    () => {
+                                        fetch(`/net/enable`);
+                                    }
+                                }
+                                edge="start"
+                                fontSize="large"
+                                sx={{color: "#AAAAAA"}}
+                            />}
                 </Box>
                 {isHome && <IconButton
                     edge="start"
