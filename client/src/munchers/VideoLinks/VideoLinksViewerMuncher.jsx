@@ -1,9 +1,7 @@
-import {useEffect, useState, useContext} from "react";
+import {useEffect, useState} from "react";
 import {Box, Grid2, Typography} from "@mui/material";
-import { NetContext } from "../../contexts/NetContext";
 
-function VideoLinksViewerMuncher({metadata, systemBcv}) {
-    const {enableNet} = useContext(NetContext);
+function VideoLinksViewerMuncher({metadata, systemBcv, enableNet}) {
     const [ingredient, setIngredient] = useState([]);
     const [verseNotes, setVerseNotes] = useState([]);
 

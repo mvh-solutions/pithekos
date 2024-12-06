@@ -10,24 +10,20 @@ import Workspace from './pages/Workspace/Workspace';
 import DownloadProject from './pages/DownloadProject/DownloadProject';
 import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
-import { NetContext } from "./contexts/NetContext";
 import './index.css';
+import {useRef} from "react";
 
 function RootElement() {
-  const [enableNet, setEnableNet] = React.useState(false)
-  const value = React.useMemo(
-    () => ({ enableNet, setEnableNet }), 
-    [enableNet]
-  )
-
-return <NetContext.Provider value={value}>
-        {React.useMemo(() => (
-          <RouterElement/>
-      ), [])}
-</NetContext.Provider>
+    const [enableNet, _setEnableNet] = React.useState(false);
+    const enabledRef = useRef(enableNet);
+    const setEnableNet = nv => {
+        enabledRef.current = nv;
+        _setEnableNet(nv);
+    };
+    return <RouterElement enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
 }
 
-function RouterElement() {
+function RouterElement({enableNet, setEnableNet, enabledRef}) {
     const [systemBcv, setSystemBcv] = React.useState({
         bookCode: "TIT",
         chapterNum: 1,
@@ -38,6 +34,9 @@ function RouterElement() {
             path: "/",
             element: (
                 <Home
+                    setEnableNet={setEnableNet}
+                    enableNet={enableNet}
+                    enabledRef={enabledRef}
                 />
             ),
         },
@@ -47,6 +46,9 @@ function RouterElement() {
                 <Workspace
                     systemBcv={systemBcv}
                     setSystemBcv={setSystemBcv}
+                    setEnableNet={setEnableNet}
+                    enableNet={enableNet}
+                    enabledRef={enabledRef}
                 />
             ),
         },
@@ -54,6 +56,9 @@ function RouterElement() {
             path: "/download-project",
             element: (
                 <DownloadProject
+                    setEnableNet={setEnableNet}
+                    enableNet={enableNet}
+                    enabledRef={enabledRef}
                 />
             ),
         },
@@ -61,6 +66,9 @@ function RouterElement() {
             path: "/new-project",
             element: (
                 <NewProject
+                    setEnableNet={setEnableNet}
+                    enableNet={enableNet}
+                    enabledRef={enabledRef}
                 />
             ),
         },
@@ -68,6 +76,9 @@ function RouterElement() {
             path: "/settings",
             element: (
                 <Settings
+                    setEnableNet={setEnableNet}
+                    enableNet={enableNet}
+                    enabledRef={enabledRef}
                 />
             ),
         }
