@@ -11,7 +11,9 @@ import DownloadProject from './pages/DownloadProject/DownloadProject';
 import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
 import './index.css';
-import {useRef} from "react";
+import {useEffect, useRef} from "react";
+import {fetchEventSource} from "@microsoft/fetch-event-source";
+import {SnackbarProvider, useSnackbar} from "notistack";
 
 function RootElement() {
     const [enableNet, _setEnableNet] = React.useState(false);
@@ -20,7 +22,9 @@ function RootElement() {
         enabledRef.current = nv;
         _setEnableNet(nv);
     };
-    return <RouterElement enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+    return <SnackbarProvider maxSnack={3}>
+        <RouterElement enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+    </SnackbarProvider>
 }
 
 function RouterElement({enableNet, setEnableNet, enabledRef}) {
@@ -83,10 +87,56 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
             ),
         }
     ]);
-    return <Box sx={{height: '95vh', overflow: 'hidden'}}>
-        <RouterProvider router={router}/>
-    </Box>
 
+    const {enqueueSnackbar} = useSnackbar();
+    const miscHandler = ev => {
+        const dataBits = ev.data.split('--');
+        if (dataBits.length === 4) {
+            enqueueSnackbar(
+                `${dataBits[2]} => ${dataBits[3]}`,
+                {
+                    variant: dataBits[0],
+                    anchorOrigin: {vertical: "top", horizontal: "center" }
+                }
+            );
+        }
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await fetchEventSource("/notifications/misc", {
+                method: "GET",
+                headers: {
+                    Accept: "text/event-stream",
+                },
+                onopen(res) {
+                    if (res.ok && res.status === 200) {
+                        //console.log("Connected to misc SSE");
+                    } else if (
+                        res.status >= 400 &&
+                        res.status < 500 &&
+                        res.status !== 429
+                    ) {
+                        console.log("Error from misc SSE", res.status);
+                    }
+                },
+                onmessage(event) {
+                    miscHandler(event)
+                },
+                onclose() {
+                    console.log("Misc SSE connection closed by the server");
+                },
+                onerror(err) {
+                    console.log("There was an error from the Misc SSE server", err);
+                },
+            });
+        };
+        fetchData();
+    }, []);
+
+    return <Box sx={{height: '95vh', overflow: 'hidden'}}>
+            <RouterProvider router={router}/>
+        </Box>
 }
 
 createRoot(document.getElementById("root")).render(<RootElement/>);
