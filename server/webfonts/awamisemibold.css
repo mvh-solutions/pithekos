@@ -21,19 +21,19 @@
 @font-face {
   font-family: AwamiNastaliqW;
   font-style: normal;
-  font-weight: bold; /* 700 */
-  src: url(./awami/AwamiNastaliq-Bold.woff2);
+  font-weight: bold; /* This is really Semi Bold (Demi Bold) - 600 */
+  src: url(./awami/AwamiNastaliq-SemiBold.woff2);
 }
 
-/* bold italic*/
+/* bold italic */
 @font-face {
   font-family: AwamiNastaliqW;
   font-style: italic; /* Doesn't exist */
   font-weight: bold; /* 700 */
-  src: url(./awami/AwamiNastaliq-Bold.woff2);
+  src: url(./awami/AwamiNastaliq-SemiBold.woff2);
 }
 
-.awami {
+.awamisemibold {
   font-family: AwamiNastaliqW;
   font-size: 200%;
   padding: 2em;

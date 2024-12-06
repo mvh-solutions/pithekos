@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {InlineRenderer} from "./inlineRenderers";
 
-function ParaRenderer({usj, marker, nPara, selectedPath, setSelectedPath, setUsjNode}) {
+function ParaRenderer({usj, marker, nPara, selectedPath, setSelectedPath, setUsjNode, selectedFontsetName}) {
     return <p
         style={{
             display: "flex",
@@ -28,15 +28,16 @@ function ParaRenderer({usj, marker, nPara, selectedPath, setSelectedPath, setUsj
                             contentPath={[nPara, n]}
                             usj={usj}
                             setUsjNode={setUsjNode}
+                            selectedFontsetName={selectedFontsetName}
                         />
                 )
             )
         }
-    < /p>;
+    </p>;
 }
 
 
-function ChapterRenderer({usj, nPara, selectedPath, setSelectedPath, setUsjNode}) {
+function ChapterRenderer({usj, nPara, selectedPath, setSelectedPath, setUsjNode, selectedFontsetName}) {
     const chapterNumber = `${usj.content[nPara]["number"]}`;
     const [editedValue, setEditedValue] = useState(chapterNumber);
     return <p
@@ -60,7 +61,7 @@ function ChapterRenderer({usj, nPara, selectedPath, setSelectedPath, setUsjNode}
                     }}
                 >
                     <input
-                        className="awami usfm-c"
+                        className={`${selectedFontsetName} usfm-c`}
                         style={{
                             padding: 0,
                             width: "100%"

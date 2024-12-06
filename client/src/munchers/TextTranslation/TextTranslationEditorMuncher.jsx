@@ -20,7 +20,7 @@ async function getData(url) {
     }
 }
 
-function TextTranslationEditorMuncher({metadata, systemBcv}) {
+function TextTranslationEditorMuncher({metadata, systemBcv, selectedFontsetName}) {
     const [state, setState] = useState({
         usj: {
             working: null,
@@ -180,7 +180,7 @@ function TextTranslationEditorMuncher({metadata, systemBcv}) {
     );
 
     return state.rendered ?
-        <div className="awami">
+        <div className={selectedFontsetName}>
             <Grid2 container spacing={2}>
                 {
                     Object.entries(state.rendered.headers).map(

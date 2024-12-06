@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Box, Typography} from "@mui/material";
+import {Box} from "@mui/material";
 import Markdown from 'react-markdown'
 
 function BcvNotesViewerMuncher({metadata, systemBcv}) {
@@ -40,14 +40,14 @@ function BcvNotesViewerMuncher({metadata, systemBcv}) {
             .map(l => l[6]);
     return (
         <Box>
-                    <Typography variant="h5">{`${metadata.name} (${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum})`}</Typography>
-                    <Typography variant="h6">BCV Notes Handler</Typography>
-                    <Typography variant="body1">
+                    <h5>{`${metadata.name} (${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum})`}</h5>
+                    <h6>BCV Notes Handler</h6>
+                    <div>
                         {ingredient &&
                             <Markdown>{
                                 verseNotes.length > 0 ? verseNotes.join("\n\n") : "No notes found for this verse"
                             }</Markdown>}
-                    </Typography>
+                    </div>
         </Box>
     );
 }
