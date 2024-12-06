@@ -2,24 +2,26 @@
 #[cfg(test)]
 mod tests;
 
-use std::collections::BTreeMap;
+use copy_dir::copy_dir;
 use git2::{Repository};
+use hallomai::transform;
+use home::home_dir;
 use rocket::State;
 use rocket::fs::{FileServer, relative, NamedFile, TempFile};
 use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
-use rocket::response::{status, Redirect};
+use rocket::response::{status, Redirect, stream};
 use rocket::http::{Status, ContentType};
 use rocket::form::Form;
+use serde::{Serialize, Deserialize};
+use serde_json::{json, Map, Value};
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{PathBuf, Components, Path};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{fs, env};
 use std::process::exit;
-use hallomai::transform;
-use home::home_dir;
-use serde::{Serialize, Deserialize};
-use serde_json::{json, Map, Value};
-use copy_dir::copy_dir;
+use std::time::Duration;
+use rocket::tokio::{time};
 use ureq;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -302,6 +304,24 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
             make_good_json_data_response("ok".to_string())
         ),
     )
+}
+
+// SSE
+#[get("/net")]
+pub fn net_notifications_stream() -> stream::EventStream![] {
+    stream::EventStream! {
+        let mut interval = time::interval(Duration::from_secs(1));
+        loop {
+            yield stream::Event::data(
+                match NET_IS_ENABLED.load(Ordering::Relaxed) {
+                    true => "enabled",
+                    false => "disabled"
+                }
+            )
+            .event("net_status");
+            interval.tick().await;
+        }
+    }
 }
 
 // i18n
@@ -1295,6 +1315,9 @@ fn rocket() -> _ {
             serve_client_index,
             serve_client_dir,
             serve_root_favicon
+        ])
+        .mount("/notifications", routes![
+            net_notifications_stream,
         ])
         .mount("/settings", routes![
             get_languages,
