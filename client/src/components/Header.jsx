@@ -1,11 +1,9 @@
 import {useEffect} from "react";
-import {AppBar, Box, Icon, IconButton, Toolbar, Typography} from "@mui/material";
+import {AppBar, Box, Grid2, Icon, IconButton, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
-import HomeIcon from '@mui/icons-material/Home';
+import BackIcon from '@mui/icons-material/ArrowBack';
 import {useNavigate} from "react-router-dom";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import '@fontsource/cardo/400.css';
-import '@fontsource/cardo/700.css';
+import {fetchEventSource} from "@microsoft/fetch-event-source";
 import {Public, PublicOff} from "@mui/icons-material";
 
 function Header({isHome, subtitle, widget, enableNet, setEnableNet, enabledRef}) {
@@ -51,32 +49,43 @@ function Header({isHome, subtitle, widget, enableNet, setEnableNet, enabledRef})
         fetchData();
     }, []);
 
-    return <Box sx={{flexGrow: 1}}>
-            <AppBar position="static">
-                <Toolbar sx={{backgroundColor: "#441650"}}>
-                    <Icon size="large" sx={{mt: 1, mb: 1, width: "50pt", height: "50pt"}}>
-                        <img alt="Pithekos logo" style={{width: 'inherit', height: 'inherit'}}
-                             src="/client/favicon.svg"/>
-                    </Icon>
-                    <Typography
-                        variant="h3"
-                        component="div"
-                        sx={{
-                            flexGrow: 1,
-                            fontFamily: "cardo, serif",
-                            fontWeight: "bold",
-                            color: "#FFD5F6"
-                        }}>
-                        ίθηκος
-                        {subtitle && subtitle.length > 0 &&
-                            <Typography display="inline" variant="h5">{` — ${subtitle}`}</Typography>}
-                    </Typography>
-                    {widget &&
-                        <Box sx={{flexGrow: 1}}>
-                            {widget}
-                        </Box>
-                    }
-                    <Box sx={{mr: "1em"}}>
+    return <div sx={{flexGrow: 1}}>
+        <AppBar position="static">
+            <Toolbar sx={{backgroundColor: "#441650"}}>
+                <Grid2 container direction="row"
+                       justifyContent="flex-end"
+                       alignItems="center"
+                       sx={{flexGrow: 1}}>
+                    <Grid2 item size={{xs: 2, md: 1}}>
+                        <Icon size="large" sx={{mt: 1, mb: 1, width: "50pt", height: "50pt"}}>
+                            <img alt="Pithekos logo" style={{width: 'inherit', height: 'inherit'}}
+                                 src="/client/favicon.svg"/>
+                        </Icon>
+                    </Grid2>
+                    <Grid2 display="flex" size={{xs: 5, md: 4, lg: 2}} justifyContent="flex-start">
+                        {!isHome &&
+                        <BackIcon
+                            fontSize="large"
+                            color="inherit"
+                            aria-label="settings"
+                            sx={{mr: 2}}
+                            onClick={() => navigate("/")}
+                        />}
+                        {subtitle && subtitle.length > 0 && <Typography variant="h5">{subtitle}</Typography>}
+                    </Grid2>
+                    <Grid2 item size={{xs: 3, md: 5, lg: 7}}>
+                        {widget}
+                    </Grid2>
+                    <Grid2 size={{xs: 1}} justifyContent="flex-end">
+                        <SettingsIcon
+                            fontSize="large"
+                            color="inherit"
+                            aria-label="settings"
+                            sx={{mr: 2}}
+                            onClick={() => navigate("/settings")}
+                        />
+                    </Grid2>
+                    <Grid2 container size={{xs: 1}} justifyContent="flex-end">
                         {
                             enableNet ?
                                 <Public
@@ -99,31 +108,11 @@ function Header({isHome, subtitle, widget, enableNet, setEnableNet, enabledRef})
                                     fontSize="large"
                                     sx={{color: "#AAAAAA"}}
                                 />}
-                    </Box>
-                    {isHome && <IconButton
-                        edge="start"
-                        color="inherit"
-                        aria-label="settings"
-                        sx={{mr: 2}}
-                        onClick={() => navigate("/settings")}
-                    >
-                        <SettingsIcon fontSize="large"/>
-                    </IconButton>
-                    }
-                    {!isHome && <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="home"
-                        sx={{mr: 2}}
-                        onClick={() => navigate("/")}
-                    >
-                        <HomeIcon/>
-                    </IconButton>
-                    }
-                </Toolbar>
-            </AppBar>
-        </Box>
+                    </Grid2>
+                </Grid2>
+            </Toolbar>
+        </AppBar>
+    </div>
 }
 
 export default Header;

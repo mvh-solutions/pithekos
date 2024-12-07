@@ -7,7 +7,12 @@ function DownloadProject({enableNet, setEnableNet, enabledRef}) {
     return (
         <Paper>
             <Box>
-                <Header isHome={false} subtitle="Download Project" enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+                <Header
+                    isHome={false}
+                    subtitle="Download Project"
+                    enableNet={enableNet}
+                    setEnableNet={setEnableNet}
+                    enabledRef={enabledRef}/>
                 <Grid2 container spacing={2}>
                     <DownloadProjectForm enableNet={enableNet}/>
                 </Grid2>

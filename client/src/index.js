@@ -96,7 +96,7 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
                 `${dataBits[2]} => ${dataBits[3]}`,
                 {
                     variant: dataBits[0],
-                    anchorOrigin: {vertical: "top", horizontal: "center" }
+                    anchorOrigin: {vertical: "top", horizontal: "left" }
                 }
             );
         }
