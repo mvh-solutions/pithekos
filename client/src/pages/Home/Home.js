@@ -1,9 +1,9 @@
 import Header from '../../components/Header';
 import WorkspacePicker from "./WorkspacePicker";
-import {Box, Grid2, Paper} from "@mui/material";
+import {Box, Button, Grid2, Paper} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
 import Cached from '@mui/icons-material/Cached';
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
 
 function Home({enableNet, setEnableNet, enabledRef}) {
     const [repos, setRepos] = useState([]);

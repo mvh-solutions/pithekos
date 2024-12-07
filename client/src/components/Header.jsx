@@ -1,14 +1,14 @@
-import {useEffect} from "react";
-import {AppBar, Box, Grid2, Icon, IconButton, Toolbar, Typography} from "@mui/material";
+import {useContext} from 'react';
+import {AppBar, Grid2, Icon, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import BackIcon from '@mui/icons-material/ArrowBack';
 import {useNavigate} from "react-router-dom";
-import {fetchEventSource} from "@microsoft/fetch-event-source";
 import {Public, PublicOff} from "@mui/icons-material";
-
+import getJson from "../lib/fetch";
+import MessagesContext from "../contexts/messages";
 function Header({isHome, subtitle, widget, enableNet}) {
     const navigate = useNavigate();
-
+    const {messages, setMessages} = useContext(MessagesContext);
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -50,8 +50,11 @@ function Header({isHome, subtitle, widget, enableNet}) {
                             enableNet ?
                                 <Public
                                     onClick={
-                                        () => {
-                                            fetch(`/net/disable`);
+                                        async () => {
+                                            const response = await getJson(`/net/disable`);
+                                            if (!response.ok) {
+                                                setMessages([...messages, `warning--5--${response.url}--${response.status}`])
+                                            }
                                         }
                                     }
                                     edge="start"
@@ -60,8 +63,11 @@ function Header({isHome, subtitle, widget, enableNet}) {
                                 /> :
                                 <PublicOff
                                     onClick={
-                                        () => {
-                                            fetch(`/net/enable`);
+                                        async () => {
+                                            const response = await getJson(`/net/enable`);
+                                            if (!response.ok) {
+                                                setMessages([...messages, `warning--5--${response.url}--${response.status}`])
+                                            }
                                         }
                                     }
                                     edge="start"

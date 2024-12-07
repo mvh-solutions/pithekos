@@ -11,9 +11,10 @@ import DownloadProject from './pages/DownloadProject/DownloadProject';
 import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
 import './index.css';
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, createContext} from "react";
 import {fetchEventSource} from "@microsoft/fetch-event-source";
 import {SnackbarProvider, useSnackbar} from "notistack";
+import MessagesContext from "./contexts/messages";
 
 function RootElement() {
     const [enableNet, _setEnableNet] = React.useState(false);
@@ -22,8 +23,13 @@ function RootElement() {
         enabledRef.current = nv;
         _setEnableNet(nv);
     };
+
     return <SnackbarProvider maxSnack={3}>
-        <RouterElement enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+            <RouterElement
+                enableNet={enableNet}
+                setEnableNet={setEnableNet}
+                enabledRef={enabledRef}
+            />
     </SnackbarProvider>
 }
 
@@ -33,6 +39,31 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
         chapterNum: 1,
         verseNum: 1
     });
+    const [messages, setMessages] = React.useState([]);
+    const messageValue = {messages, setMessages};
+    const {enqueueSnackbar} = useSnackbar();
+    const localHandler = s => {
+        const dataBits = s.split('--');
+        if (dataBits.length === 4) {
+            enqueueSnackbar(
+                `${dataBits[2]} => ${dataBits[3]}`,
+                {
+                    variant: dataBits[0],
+                    anchorOrigin: {vertical: "top", horizontal: "left"}
+                }
+            );
+        }
+    }
+
+    useEffect(() => {
+            if (messages.length > 0) {
+                messages.forEach(m=>localHandler(m));
+                setMessages([]);
+            }
+        },
+        [messages]
+    )
+
     const router = createHashRouter([
         {
             path: "/",
@@ -88,7 +119,6 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
         }
     ]);
 
-    const {enqueueSnackbar} = useSnackbar();
     const netHandler = ev => {
         if (ev.data === "enabled" && !enabledRef.current) {
             setEnableNet(true);
@@ -104,7 +134,7 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
                 `${dataBits[2]} => ${dataBits[3]}`,
                 {
                     variant: dataBits[0],
-                    anchorOrigin: {vertical: "top", horizontal: "left" }
+                    anchorOrigin: {vertical: "top", horizontal: "left"}
                 }
             );
         }
@@ -148,9 +178,11 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
         return () => controller.abort();
     }, []);
 
-    return <Box sx={{height: '100vh', overflow: 'hidden'}}>
-            <RouterProvider router={router}/>
-        </Box>
+    return         <MessagesContext.Provider value={messageValue}>
+        <Box sx={{height: '100vh', overflow: 'hidden'}}>
+        <RouterProvider router={router}/>
+    </Box>
+    </MessagesContext.Provider>
 }
 
 createRoot(document.getElementById("root")).render(<RootElement/>);
