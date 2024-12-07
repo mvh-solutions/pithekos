@@ -2,25 +2,19 @@ import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import dcopy from "deep-copy";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
-    Paper,
     Checkbox,
     Grid2,
     Box,
     Typography,
-    IconButton,
+    IconButton, Accordion, AccordionSummary, AccordionDetails,
 } from "@mui/material";
 import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote} from "@mui/icons-material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 function WorkspacePicker({repos, setRepos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
-    const [showDetails, setShowDetails] = useState(false);
     const navigate = useNavigate();
 
     async function getData(url) {
@@ -41,7 +35,7 @@ function WorkspacePicker({repos, setRepos}) {
         for (const repo of repos) {
             const metadataLink = `/burrito/metadata/summary/${repo}`;
             newRepoData[repo] = await getData(metadataLink);
-            newRepoData[repo]["selected"] = repoData && repoData[repo] ? repoData[repo].selected : false;
+            newRepoData[repo]["editSelected"] = repoData && repoData[repo] ? repoData[repo].editSelected : false;
         }
         setRepoData(newRepoData);
     }
@@ -56,19 +50,20 @@ function WorkspacePicker({repos, setRepos}) {
                     flavor: `${v.flavor_type}/${v.flavor}`,
                     local_path: k,
                     selected: <Checkbox
-                        checked={v.selected}
-                        onChange={() => {
+                        checked={v.editSelected}
+                        onClick={e => e.stopPropagation()}
+                        onChange={(e) => {
                             const newRepoData = dcopy(repoData);
-                            newRepoData[k].selected = !newRepoData[k].selected;
+                            newRepoData[k].editSelected = !newRepoData[k].editSelected;
                             setRepoData(newRepoData);
                         }
                         }
                         inputProps={{'aria-label': 'controlled'}}
                     />,
                     go: <IconButton
-                        disabled={!v.selected}
+                        disabled={!v.editSelected}
                         onClick={
-                            () => {
+                            (e) => {
                                 const newRepoData = dcopy(repoData);
                                 for (const k2 of Object.keys(newRepoData)) {
                                     newRepoData[k2].primary = (k === k2);
@@ -79,10 +74,11 @@ function WorkspacePicker({repos, setRepos}) {
                                         state:
                                             Object.fromEntries(
                                                 Object.entries(newRepoData)
-                                                    .filter(kv => kv[1].selected)
+                                                    .filter(kv => kv[1].editSelected)
                                             )
                                     }
-                                )
+                                );
+                                e.stopPropagation();
                             }
                         }
                     >
@@ -107,19 +103,20 @@ function WorkspacePicker({repos, setRepos}) {
         [repoData]
     );
 
-    return (
-        <Grid2 container spacing={0}>
-            <Grid2 size={12}>
-                <TableContainer component={Paper}>
-                    <Table aria-label="projects table">
-                        <TableBody>
-                            {rows.map((row, n) => (
-                                <TableRow
-                                    key={row.local_path}
-                                    sx={{'&:last-child td, &:last-child th': {border: 0}}}
-                                    style={n % 2 ? {background: "#EEEEEE"} : {background: "white"}}
-                                >
-                                    <TableCell align="left">
+    return <Grid2 container spacing={0}>
+        <Grid2 size={12}>
+            {
+                rows.map(
+                    (row, n) =>
+                        <Accordion>
+                            <AccordionSummary
+                                sx={{width: "100vw"}}
+                                expandIcon={<ExpandMoreIcon/>}
+                                aria-controls={`panel${n}-content`}
+                                id={`panel${n}-header`}
+                            >
+                                <Grid2 container size="grow">
+                                    <Grid2 item size="grow">
                                         <Box>
                                             <Typography variant="h6">
                                                 {row.name}
@@ -128,32 +125,39 @@ function WorkspacePicker({repos, setRepos}) {
                                                 {row.description}
                                             </Typography>
                                         </Box>
-                                    </TableCell>
-                                    {showDetails &&
-                                        <TableCell align="left">
-                                            <Box>
-                                                <Typography variant="body2">
-                                                    {row.flavor}
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    {row.local_path}
-                                                </Typography>
-                                                <Box>
-                                                    <DeleteProjectButton project={row.local_path}/>
-                                                </Box>
-                                            </Box>
-                                        </TableCell>
-                                    }
-                                    <TableCell align="right">{row.selected}</TableCell>
-                                    <TableCell align="right">{row.go}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Grid2>
+                                    </Grid2>
+                                    <Grid2 item size={1}>
+                                        {row.selected}
+                                    </Grid2>
+                                    <Grid2 item size={1}>
+                                        {row.go}
+                                    </Grid2>
+                                </Grid2>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Grid2 container>
+                                    <Grid2 item size={1}>
+                                        <Box>
+                                            <DeleteProjectButton project={row.local_path}/>
+                                        </Box>
+                                    </Grid2>
+                                    <Grid2 item size={11}>
+                                        <Box>
+                                            <Typography variant="body2">
+                                                {row.flavor}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {row.local_path}
+                                            </Typography>
+                                        </Box>
+                                    </Grid2>
+                                </Grid2>
+                            </AccordionDetails>
+                        </Accordion>
+                )
+            }
         </Grid2>
-    );
+    </Grid2>
 }
 
 export default WorkspacePicker;
