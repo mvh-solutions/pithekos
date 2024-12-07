@@ -148,7 +148,7 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
         return () => controller.abort();
     }, []);
 
-    return <Box sx={{height: '95vh', overflow: 'hidden'}}>
+    return <Box sx={{height: '100vh', overflow: 'hidden'}}>
             <RouterProvider router={router}/>
         </Box>
 }

@@ -21,30 +21,28 @@ function Home({enableNet, setEnableNet, enabledRef}) {
 
     return (
         <Paper>
-            <Box>
-                <Header
-                    isHome={true}
-                    subtitle="Local Projects"
-                    enableNet={enableNet}
-                    setEnableNet={setEnableNet}
-                    enabledRef={enabledRef}
-                    widget={
-                        <Grid2 container>
-                            <Grid2 item size={6}>
-                                <Cached
-                                    id="reload-projects-button"
-                                    fontSize="large"
-                                    onClick={() => pollingFunc()}
-                                />
-                            </Grid2>
-                            <Grid2 item size={6}>
-                                <AddProjectButton enableNet={enableNet}/>
-                            </Grid2>
+            <Header
+                isHome={true}
+                subtitle="Local Projects"
+                enableNet={enableNet}
+                setEnableNet={setEnableNet}
+                enabledRef={enabledRef}
+                widget={
+                    <Grid2 container>
+                        <Grid2 item size={6}>
+                            <Cached
+                                id="reload-projects-button"
+                                fontSize="large"
+                                onClick={() => pollingFunc()}
+                            />
                         </Grid2>
-                    }
-                />
-                <WorkspacePicker enableNet={enableNet} repos={repos} setRepos={setRepos}/>
-            </Box>
+                        <Grid2 item size={6}>
+                            <AddProjectButton enableNet={enableNet}/>
+                        </Grid2>
+                    </Grid2>
+                }
+            />
+            <WorkspacePicker enableNet={enableNet} repos={repos} setRepos={setRepos}/>
         </Paper>
     );
 }

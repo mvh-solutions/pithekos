@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import dcopy from "deep-copy";
 import {
@@ -12,7 +12,7 @@ import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote} from "@mui/icons-material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-function WorkspacePicker({repos, setRepos}) {
+function WorkspacePicker({repos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
     const navigate = useNavigate();
@@ -50,6 +50,7 @@ function WorkspacePicker({repos, setRepos}) {
                     flavor: `${v.flavor_type}/${v.flavor}`,
                     local_path: k,
                     selected: <Checkbox
+                        size="small"
                         checked={v.editSelected}
                         onClick={e => e.stopPropagation()}
                         onChange={(e) => {
@@ -82,7 +83,7 @@ function WorkspacePicker({repos, setRepos}) {
                             }
                         }
                     >
-                        <EditNote fontSize="large"/>
+                        <EditNote/>
                     </IconButton>
                 }
             );
@@ -103,61 +104,64 @@ function WorkspacePicker({repos, setRepos}) {
         [repoData]
     );
 
-    return <Grid2 container spacing={0}>
-        <Grid2 size={12}>
-            {
-                rows.map(
-                    (row, n) =>
-                        <Accordion>
-                            <AccordionSummary
-                                sx={{width: "100vw"}}
-                                expandIcon={<ExpandMoreIcon/>}
-                                aria-controls={`panel${n}-content`}
-                                id={`panel${n}-header`}
-                            >
-                                <Grid2 container size="grow">
-                                    <Grid2 item size="grow">
-                                        <Box>
-                                            <Typography variant="h6">
+    return <Box sx={{
+        mb: 2,
+        height: "100vh",
+        overflowX: "hidden",
+        overflowY: "scroll",
+    }}>
+        {
+            rows.map(
+                (row, n) =>
+                    <Accordion>
+                        <AccordionSummary
+                            sx={{width: "100vw"}}
+                            expandIcon={<ExpandMoreIcon/>}
+                            aria-controls={`panel${n}-content`}
+                            id={`panel${n}-header`}
+                        >
+                            <Grid2 container sx={{width: "100%"}} spacing={0}>
+                                <Grid2 item size={10}>
+                                    <Box>
+                                        <Typography variant="body">
+                                            <strong>
                                                 {row.name}
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {row.description}
-                                            </Typography>
-                                        </Box>
-                                    </Grid2>
-                                    <Grid2 item size={1}>
-                                        {row.selected}
-                                    </Grid2>
-                                    <Grid2 item size={1}>
-                                        {row.go}
-                                    </Grid2>
+                                            </strong>
+                                            {row.description.length > 0 && row.name !== row.description ? `: ${row.description}` : ""}
+                                        </Typography>
+                                    </Box>
                                 </Grid2>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Grid2 container>
-                                    <Grid2 item size={1}>
-                                        <Box>
-                                            <DeleteProjectButton project={row.local_path}/>
-                                        </Box>
-                                    </Grid2>
-                                    <Grid2 item size={11}>
-                                        <Box>
-                                            <Typography variant="body2">
-                                                {row.flavor}
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {row.local_path}
-                                            </Typography>
-                                        </Box>
-                                    </Grid2>
+                                <Grid2 item size={1}>
+                                    {row.selected}
                                 </Grid2>
-                            </AccordionDetails>
-                        </Accordion>
-                )
-            }
-        </Grid2>
-    </Grid2>
+                                <Grid2 item size={1}>
+                                    {row.go}
+                                </Grid2>
+                            </Grid2>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Grid2 container spacing={0}>
+                                <Grid2 item size={1}>
+                                    <Box>
+                                        <DeleteProjectButton project={row.local_path}/>
+                                    </Box>
+                                </Grid2>
+                                <Grid2 item size={11}>
+                                    <Box>
+                                        <Typography variant="body2">
+                                            {row.flavor}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            {row.local_path}
+                                        </Typography>
+                                    </Box>
+                                </Grid2>
+                            </Grid2>
+                        </AccordionDetails>
+                    </Accordion>
+            )
+        }
+    < /Box>
 }
 
 export default WorkspacePicker;
