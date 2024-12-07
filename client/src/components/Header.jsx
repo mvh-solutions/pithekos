@@ -6,48 +6,8 @@ import {useNavigate} from "react-router-dom";
 import {fetchEventSource} from "@microsoft/fetch-event-source";
 import {Public, PublicOff} from "@mui/icons-material";
 
-function Header({isHome, subtitle, widget, enableNet, setEnableNet, enabledRef}) {
+function Header({isHome, subtitle, widget, enableNet}) {
     const navigate = useNavigate();
-
-    const netHandler = ev => {
-        if (ev.data === "enabled" && !enabledRef.current) {
-            setEnableNet(true);
-        } else if (ev.data === "disabled" && enabledRef.current) {
-            setEnableNet(false);
-        }
-    }
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await fetchEventSource("/notifications/net", {
-                method: "GET",
-                headers: {
-                    Accept: "text/event-stream",
-                },
-                onopen(res) {
-                    if (res.ok && res.status === 200) {
-                        //console.log("Connected to net SSE");
-                    } else if (
-                        res.status >= 400 &&
-                        res.status < 500 &&
-                        res.status !== 429
-                    ) {
-                        console.log("Error from net SSE", res.status);
-                    }
-                },
-                onmessage(event) {
-                    netHandler(event)
-                },
-                onclose() {
-                    console.log("Net SSE connection closed by the server");
-                },
-                onerror(err) {
-                    console.log("There was an error from the net SSE server", err);
-                },
-            });
-        };
-        fetchData();
-    }, []);
 
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">

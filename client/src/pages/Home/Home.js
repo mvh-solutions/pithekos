@@ -1,9 +1,24 @@
 import Header from '../../components/Header';
 import WorkspacePicker from "./WorkspacePicker";
-import {Box, Paper} from "@mui/material";
+import {Box, Grid2, Paper} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
+import Cached from '@mui/icons-material/Cached';
+import {useState, useEffect} from "react";
 
 function Home({enableNet, setEnableNet, enabledRef}) {
+    const [repos, setRepos] = useState([]);
+    const pollingFunc = async () => {
+        const response = await fetch("/git/list-local-repos");
+        setRepos(await response.json());
+    }
+
+    useEffect(
+        () => {
+            pollingFunc();
+        },
+        []
+    );
+
     return (
         <Paper>
             <Box>
@@ -13,9 +28,22 @@ function Home({enableNet, setEnableNet, enabledRef}) {
                     enableNet={enableNet}
                     setEnableNet={setEnableNet}
                     enabledRef={enabledRef}
-                    widget={<AddProjectButton enableNet={enableNet}/>}
+                    widget={
+                        <Grid2 container>
+                            <Grid2 item size={6}>
+                                <Cached
+                                    id="reload-projects-button"
+                                    fontSize="large"
+                                    onClick={() => pollingFunc()}
+                                />
+                            </Grid2>
+                            <Grid2 item size={6}>
+                                <AddProjectButton enableNet={enableNet}/>
+                            </Grid2>
+                        </Grid2>
+                    }
                 />
-                <WorkspacePicker enableNet={enableNet}/>
+                <WorkspacePicker enableNet={enableNet} repos={repos} setRepos={setRepos}/>
             </Box>
         </Paper>
     );

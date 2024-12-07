@@ -13,37 +13,15 @@ import {
     Box,
     Typography,
     IconButton,
-    Switch,
 } from "@mui/material";
 import DeleteProjectButton from "./DeleteProjectButton";
-import {EditNote, ReadMore} from "@mui/icons-material";
-import DownloadProjectButton from "./DownloadProjectButton";
-import NewProjectButton from "./NewProjectButton";
+import {EditNote} from "@mui/icons-material";
 
-function WorkspacePicker({enableNet}) {
+function WorkspacePicker({repos, setRepos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
     const [showDetails, setShowDetails] = useState(false);
     const navigate = useNavigate();
-
-    const [repos, setRepos] = useState([]);
-    const pollingFunc = async () => {
-        const response = await fetch("/git/list-local-repos");
-        setRepos(await response.json());
-    }
-    const pollingRef = useRef(null);
-    useEffect(() => {
-        const startPolling = () => {
-            pollingRef.current = setInterval(() => {
-                pollingFunc();
-            }, 2000); // Poll every 2 seconds
-        };
-        startPolling();
-
-        return () => {
-            clearInterval(pollingRef.current);
-        };
-    }, []);
 
     async function getData(url) {
         try {
@@ -131,17 +109,6 @@ function WorkspacePicker({enableNet}) {
 
     return (
         <Grid2 container spacing={0}>
-            <Grid2 size={12} container spacing={0} sx={{background: "#DDCCEE"}}>
-                <Box alignItems="center" justifyContent="center" display="flex" flexDirection="column">
-                    <ReadMore
-                        fontSize="large"
-                        color={showDetails ? "" : "disabled"}
-                    />
-                    <Switch
-                        onClick={() => setShowDetails(!showDetails)}
-                    />
-                </Box>
-            </Grid2>
             <Grid2 size={12}>
                 <TableContainer component={Paper}>
                     <Table aria-label="projects table">

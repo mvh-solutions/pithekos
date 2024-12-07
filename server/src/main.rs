@@ -310,29 +310,8 @@ fn net_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(Co
 }
 
 // SSE
-#[get("/net")]
-pub async fn net_notifications_stream() -> stream::EventStream![] {
-    stream::EventStream! {
-        let mut count = 0;
-        let mut interval = time::interval(Duration::from_millis(250));
-        yield stream::Event::retry(Duration::from_secs(1));
-        loop {
-            yield stream::Event::data(
-                match NET_IS_ENABLED.load(Ordering::Relaxed) {
-                    true => "enabled",
-                    false => "disabled"
-                }
-            )
-            .event("net_status")
-            .id(format!("{}", count));
-            count+=1;
-            interval.tick().await;
-        }
-    }
-}
-
-#[get("/misc")]
-pub async fn misc_notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> stream::EventStream![stream::Event + '_] {
+#[get("/")]
+pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> stream::EventStream![stream::Event + '_] {
     stream::EventStream! {
         let mut count = 0;
         let mut interval = time::interval(Duration::from_millis(250));
@@ -343,6 +322,14 @@ pub async fn misc_notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>
                 yield stream::Event::data(msg)
                     .event("misc")
                     .id(format!("{}", count));
+                yield stream::Event::data(
+                    match NET_IS_ENABLED.load(Ordering::Relaxed) {
+                        true => "enabled",
+                        false => "disabled"
+                }
+            )
+            .event("net_status")
+            .id(format!("{}", count));
                 count+=1;
                 interval.tick().await;
             }
@@ -1348,8 +1335,7 @@ fn rocket() -> _ {
             serve_root_favicon
         ])
         .mount("/notifications", routes![
-            net_notifications_stream,
-            misc_notifications_stream,
+            notifications_stream,
         ])
         .mount("/settings", routes![
             get_languages,
