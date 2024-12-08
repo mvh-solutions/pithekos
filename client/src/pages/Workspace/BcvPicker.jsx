@@ -1,8 +1,10 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {Box, TextField, Typography} from "@mui/material";
+import BcvContext from "../../contexts/bcv";
 
-function BcvPicker({systemBcv, setSystemBcv}) {
+function BcvPicker() {
     const [newRef, setNewRef] = useState("");
+    const {systemBcv, setSystemBcv} = useContext(BcvContext);
     return <Box>
         <Typography variant="h6">{`${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum}`}</Typography>
         <TextField

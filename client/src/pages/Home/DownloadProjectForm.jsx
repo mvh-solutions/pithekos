@@ -1,11 +1,13 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {useNavigate} from "react-router-dom";
 import {Grid2, IconButton, TextField} from "@mui/material";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import NetContext from "../../contexts/net";
 
-function DownloadProjectForm({enableNet}) {
+function DownloadProjectForm() {
     const [inputText, setInputText] = useState("");
     const navigate = useNavigate();
+    const {enableNet} = useContext(NetContext);
     return <>
         <Grid2 size={10}>
             <TextField

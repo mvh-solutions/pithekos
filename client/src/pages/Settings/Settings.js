@@ -2,11 +2,11 @@ import Header from "../../components/Header";
 import './Settings.css';
 import {Box, Paper, Typography} from "@mui/material";
 
-function Settings({enableNet, setEnableNet, enabledRef}) {
+function Settings() {
     return (
         <Paper>
             <Box>
-            <Header isHome={false} enableNet={enableNet} setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+            <Header isHome={false}/>
                 <Typography variant="h6">Settings</Typography>
             </Box>
         </Paper>

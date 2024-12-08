@@ -1,9 +1,11 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import {Box} from "@mui/material";
-import Markdown from 'react-markdown'
+import Markdown from 'react-markdown';
+import BcvContext from "../../contexts/bcv";
 
-function BcvNotesViewerMuncher({metadata, systemBcv}) {
+function BcvNotesViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);
+    const {systemBcv} = useContext(BcvContext);
 
     async function getData(url) {
         try {

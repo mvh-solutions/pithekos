@@ -1,125 +1,20 @@
-import * as React from "react";
+import {useEffect, useRef, useState} from "react";
 import {createRoot} from "react-dom/client";
-import {
-    createHashRouter,
-    RouterProvider,
-} from "react-router-dom";
-import Home from './pages/Home/Home';
-import Settings from './pages/Settings/Settings';
-import Workspace from './pages/Workspace/Workspace';
-import DownloadProject from './pages/DownloadProject/DownloadProject';
-import NewProject from './pages/NewProject/NewProject';
-import {Box} from '@mui/material';
+import {SnackbarProvider, enqueueSnackbar} from "notistack";
+import RouterElement from "./RouterElement";
 import './index.css';
-import {useEffect, useRef, createContext} from "react";
 import {fetchEventSource} from "@microsoft/fetch-event-source";
-import {SnackbarProvider, useSnackbar} from "notistack";
-import MessagesContext from "./contexts/messages";
 
 function RootElement() {
-    const [enableNet, _setEnableNet] = React.useState(false);
-    const enabledRef = useRef(enableNet);
+    const [enableNet, _setEnableNet] = useState(false);
     const setEnableNet = nv => {
         enabledRef.current = nv;
         _setEnableNet(nv);
     };
-
-    return <SnackbarProvider maxSnack={3}>
-            <RouterElement
-                enableNet={enableNet}
-                setEnableNet={setEnableNet}
-                enabledRef={enabledRef}
-            />
-    </SnackbarProvider>
-}
-
-function RouterElement({enableNet, setEnableNet, enabledRef}) {
-    const [systemBcv, setSystemBcv] = React.useState({
-        bookCode: "TIT",
-        chapterNum: 1,
-        verseNum: 1
-    });
-    const [messages, setMessages] = React.useState([]);
-    const messageValue = {messages, setMessages};
-    const {enqueueSnackbar} = useSnackbar();
-    const localHandler = s => {
-        const dataBits = s.split('--');
-        if (dataBits.length === 4) {
-            enqueueSnackbar(
-                `${dataBits[2]} => ${dataBits[3]}`,
-                {
-                    variant: dataBits[0],
-                    anchorOrigin: {vertical: "top", horizontal: "left"}
-                }
-            );
-        }
-    }
-
-    useEffect(() => {
-            if (messages.length > 0) {
-                messages.forEach(m=>localHandler(m));
-                setMessages([]);
-            }
-        },
-        [messages]
-    )
-
-    const router = createHashRouter([
-        {
-            path: "/",
-            element: (
-                <Home
-                    setEnableNet={setEnableNet}
-                    enableNet={enableNet}
-                    enabledRef={enabledRef}
-                />
-            ),
-        },
-        {
-            path: "/workspace/*",
-            element: (
-                <Workspace
-                    systemBcv={systemBcv}
-                    setSystemBcv={setSystemBcv}
-                    setEnableNet={setEnableNet}
-                    enableNet={enableNet}
-                    enabledRef={enabledRef}
-                />
-            ),
-        },
-        {
-            path: "/download-project",
-            element: (
-                <DownloadProject
-                    setEnableNet={setEnableNet}
-                    enableNet={enableNet}
-                    enabledRef={enabledRef}
-                />
-            ),
-        },
-        {
-            path: "/new-project",
-            element: (
-                <NewProject
-                    setEnableNet={setEnableNet}
-                    enableNet={enableNet}
-                    enabledRef={enabledRef}
-                />
-            ),
-        },
-        {
-            path: "/settings",
-            element: (
-                <Settings
-                    setEnableNet={setEnableNet}
-                    enableNet={enableNet}
-                    enabledRef={enabledRef}
-                />
-            ),
-        }
-    ]);
+    const enabledRef = useRef(enableNet);
 
     const netHandler = ev => {
+        console.log(ev.data, enabledRef.current)
         if (ev.data === "enabled" && !enabledRef.current) {
             setEnableNet(true);
         } else if (ev.data === "disabled" && enabledRef.current) {
@@ -142,7 +37,7 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
 
     useEffect(() => {
         const controller = new AbortController();
-        const fetchData = async () => {
+        const fetchSSE = async () => {
             await fetchEventSource("/notifications", {
                 method: "GET",
                 headers: {
@@ -174,15 +69,15 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
                 },
             });
         };
-        fetchData();
+        fetchSSE();
         return () => controller.abort();
     }, []);
 
-    return         <MessagesContext.Provider value={messageValue}>
-        <Box sx={{height: '100vh', overflow: 'hidden'}}>
-        <RouterProvider router={router}/>
-    </Box>
-    </MessagesContext.Provider>
+
+    return <SnackbarProvider maxSnack={3}>
+        <RouterElement enableNet={enableNet} _setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+    </SnackbarProvider>
 }
 
-createRoot(document.getElementById("root")).render(<RootElement/>);
+createRoot(document.getElementById("root"))
+    .render(<RootElement/>);

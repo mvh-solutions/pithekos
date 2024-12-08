@@ -1,11 +1,7 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import "./TextTranslationViewerMuncher.css";
-import {
-    ParaRenderer,
-    ChapterRenderer
-} from "./blockRenderers";
 import {Grid2} from "@mui/material";
-import dcopy from "deep-copy";
+import BcvContext from "../../contexts/bcv";
 
 async function getData(url) {
     try {
@@ -20,7 +16,8 @@ async function getData(url) {
     }
 }
 
-function TextTranslationViewerMuncher({metadata, systemBcv, selectedFontsetName}) {
+function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
+    const {systemBcv} = useContext(BcvContext);
     const [state, setState] = useState({
         usj: {
             working: null,
@@ -36,47 +33,6 @@ function TextTranslationViewerMuncher({metadata, systemBcv, selectedFontsetName}
         selectedPath: null,
         firstBodyPara: null
     });
-
-    const setSelectedPath = newPath => setState({
-        ...state,
-        selectedPath: newPath,
-        rerenderNeeded: true
-    });
-
-    const setUsjNode1 = (usj, path, newValue) => {
-        // console.log(path, newValue);
-        if (path.length === 0) {
-            console.log(`Path empty in setUsjNode() for newValue of '${newValue}'`);
-            return;
-        }
-        if (path.length > 1) {
-            setUsjNode1(
-                usj["content"][path[0]],
-                path.slice(1),
-                newValue
-            );
-        } else { // attribute of object
-            if (typeof path[0] === "number") {
-                usj.content[path[0]] = newValue;
-            } else { // attribute of object
-                usj[path[0]] = newValue;
-            }
-        }
-    }
-
-    const setUsjNode = (path, newValue) => {
-        const newUsj = dcopy(state.usj.working);
-        setUsjNode1(newUsj, path, newValue);
-        // console.log(newUsj);
-        setState({
-            ...state,
-            usj: {
-                ...state.usj,
-                working: newUsj
-            },
-        });
-    }
-
     // Fetch new USFM as USJ, put in incoming
     useEffect(
         () => {
@@ -107,7 +63,7 @@ function TextTranslationViewerMuncher({metadata, systemBcv, selectedFontsetName}
                         }).catch(err => console.log("TextTranslation fetch error", err));
             }
         },
-        [systemBcv, state]
+        [systemBcv, state, metadata]
     );
 
     // Move incoming USJ to working and increment updates

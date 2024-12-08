@@ -1,9 +1,13 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import {Box, Grid2, Typography} from "@mui/material";
+import NetContext from "../../contexts/net";
+import BcvContext from "../../contexts/bcv";
 
-function VideoLinksViewerMuncher({metadata, systemBcv, enableNet}) {
+function VideoLinksViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);
     const [verseNotes, setVerseNotes] = useState([]);
+    const {enableNet} = useContext(NetContext);
+    const {systemBcv} = useContext(BcvContext);
 
     async function getData(url) {
         try {
@@ -43,7 +47,7 @@ function VideoLinksViewerMuncher({metadata, systemBcv, enableNet}) {
                     .map(l => l[5])
             );
         },
-        [ingredient]
+        [ingredient, systemBcv]
     );
 
     return (

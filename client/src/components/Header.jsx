@@ -1,4 +1,4 @@
-import {useContext} from 'react';
+import {useContext, useRef} from 'react';
 import {AppBar, Grid2, Icon, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import BackIcon from '@mui/icons-material/ArrowBack';
@@ -6,9 +6,11 @@ import {useNavigate} from "react-router-dom";
 import {Public, PublicOff} from "@mui/icons-material";
 import getJson from "../lib/fetch";
 import MessagesContext from "../contexts/messages";
-function Header({isHome, subtitle, widget, enableNet}) {
+import NetContext from "../contexts/net";
+function Header({isHome, subtitle, widget}) {
     const navigate = useNavigate();
     const {messages, setMessages} = useContext(MessagesContext);
+    const {enabledRef} = useContext(NetContext);
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -47,7 +49,7 @@ function Header({isHome, subtitle, widget, enableNet}) {
                     </Grid2>
                     <Grid2 container size={{xs: 1}} justifyContent="flex-end">
                         {
-                            enableNet ?
+                            enabledRef.current ?
                                 <Public
                                     onClick={
                                         async () => {

@@ -18,7 +18,7 @@ const paneStyle = {
     overflow: 'scroll',
     padding: "5px"
 }
-const Workspace = ({enableNet, systemBcv, setSystemBcv, setEnableNet, enabledRef}) => {
+const Workspace = () => {
     const locationState = Object.entries(useLocation().state);
     const resources = locationState
         .map(kv => {
@@ -40,10 +40,7 @@ const Workspace = ({enableNet, systemBcv, setSystemBcv, setEnableNet, enabledRef
         tileElements[title] = <WorkspaceCard
             metadata={resource}
             style={paneStyle}
-            systemBcv={systemBcv}
-            setSystemBcv={setSystemBcv}
-            enableNet={enableNet}
-        />;
+x        />;
         if (resource.primary) {
             rootPane.children[0] = {children: title};
         } else {
@@ -53,15 +50,12 @@ const Workspace = ({enableNet, systemBcv, setSystemBcv, setEnableNet, enabledRef
     if (rootPane.children[1].children.length === 0) {
         rootPane.children.pop();
     }
-    const [paneList, _] = createTilePanes(tileElements);
+    const paneList = createTilePanes(tileElements)[0];
     return <Paper>
         <Box>
             <Header
                 subtitle="Workspace"
-                widget={<BcvPicker systemBcv={systemBcv} setSystemBcv={setSystemBcv}/>}
-                enableNet={enableNet}
-                setEnableNet={setEnableNet}
-                enabledRef={enabledRef}
+                widget={<BcvPicker/>}
             />
             <TileProvider
                 tilePanes={paneList}
