@@ -44,6 +44,7 @@ struct AppSettings {
 
 const REACT_STATIC_PATH: &str = relative!("../client/build");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
+static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
 // UTILITY FUNCTIONS
 
@@ -287,7 +288,7 @@ fn net_status() -> status::Custom<(ContentType, String)> {
 
 #[get("/enable")]
 fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
-    msgs.lock().unwrap().push_back("success--5--net--enable".to_string());
+    msgs.lock().unwrap().push_back("info--5--net--enable".to_string());
     NET_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
         Status::Ok, (
@@ -299,8 +300,43 @@ fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(Con
 
 #[get("/disable")]
 fn net_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
-    msgs.lock().unwrap().push_back("success--5--net--disable".to_string());
+    msgs.lock().unwrap().push_back("info--5--net--disable".to_string());
     NET_IS_ENABLED.store(false, Ordering::Relaxed);
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
+}
+
+// DEBUG OPERATIONS
+#[get("/status")]
+fn debug_status() -> status::Custom<(ContentType, String)> {
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_net_status_response(DEBUG_IS_ENABLED.load(Ordering::Relaxed))
+        ),
+    )
+}
+
+#[get("/enable")]
+fn debug_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+    msgs.lock().unwrap().push_back("info--5--debug--enable".to_string());
+    DEBUG_IS_ENABLED.store(true, Ordering::Relaxed);
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
+}
+
+#[get("/disable")]
+fn debug_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+    msgs.lock().unwrap().push_back("info--5--debug--disable".to_string());
+    DEBUG_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
         Status::Ok, (
             ContentType::JSON,
@@ -333,7 +369,16 @@ pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) ->
             )
             .event("net_status")
             .id(format!("{}", count));
-                count+=1;
+            count+=1;
+            yield stream::Event::data(
+                    match DEBUG_IS_ENABLED.load(Ordering::Relaxed) {
+                        true => "enabled",
+                        false => "disabled"
+                    }
+            )
+            .event("debug")
+            .id(format!("{}", count));
+            count+=1;
             interval.tick().await;
         }
     }
@@ -1346,6 +1391,11 @@ fn rocket() -> _ {
             net_status,
             net_enable,
             net_disable
+        ])
+        .mount("/debug", routes![
+            debug_status,
+            debug_enable,
+            debug_disable
         ])
         .mount("/i18n", routes![
             raw_i18n,

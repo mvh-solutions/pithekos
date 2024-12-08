@@ -1,29 +1,20 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import {Box, Button, Grid2, Typography} from "@mui/material";
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-
+import DebugContext from "../../contexts/debug";
+import {getJson} from "../../lib/get";
 function TastelessMuncher({metadata}) {
     const [sbMetadata, setSbMetadata] = useState();
     const [showMetadata, setShowMetadata] = useState(false);
-
-    async function getData(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.error(`Response status: ${response.status}\n${response}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
+    const {debugRef} = useContext(DebugContext);
 
     const getAllData = async () => {
         const sbMetadataLink = `/burrito/metadata/raw/${metadata.local_path}`;
-        let sbM = await getData(sbMetadataLink);
-        setSbMetadata(sbM);
+        let response = await getJson(sbMetadataLink, debugRef.current);
+        if (response.ok) {
+            setSbMetadata(response.json);
+        }
     }
 
     useEffect(

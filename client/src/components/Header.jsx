@@ -1,16 +1,18 @@
-import {useContext, useRef} from 'react';
+import {useContext} from 'react';
 import {AppBar, Grid2, Icon, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import BackIcon from '@mui/icons-material/ArrowBack';
 import {useNavigate} from "react-router-dom";
 import {Public, PublicOff} from "@mui/icons-material";
-import getJson from "../lib/fetch";
+import {getJson} from "../lib/get";
 import MessagesContext from "../contexts/messages";
 import NetContext from "../contexts/net";
+import DebugContext from "../contexts/debug";
 function Header({isHome, subtitle, widget}) {
     const navigate = useNavigate();
     const {messages, setMessages} = useContext(MessagesContext);
     const {enabledRef} = useContext(NetContext);
+    const {debugRef} = useContext(DebugContext);
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -53,7 +55,7 @@ function Header({isHome, subtitle, widget}) {
                                 <Public
                                     onClick={
                                         async () => {
-                                            const response = await getJson(`/net/disable`);
+                                            const response = await getJson(`/net/disable`, debugRef.current);
                                             if (!response.ok) {
                                                 setMessages([...messages, `warning--5--${response.url}--${response.status}`])
                                             }
@@ -66,7 +68,7 @@ function Header({isHome, subtitle, widget}) {
                                 <PublicOff
                                     onClick={
                                         async () => {
-                                            const response = await getJson(`/net/enable`);
+                                            const response = await getJson(`/net/enable`, debugRef.current);
                                             if (!response.ok) {
                                                 setMessages([...messages, `warning--5--${response.url}--${response.status}`])
                                             }

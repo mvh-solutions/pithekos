@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect} from "react";
 import {createHashRouter, RouterProvider} from "react-router-dom";
 import Home from './pages/Home/Home';
 import Settings from './pages/Settings/Settings';
@@ -11,10 +11,12 @@ import {useSnackbar} from "notistack";
 import MessagesContext from "./contexts/messages";
 import NetContext from "./contexts/net";
 import BcvContext from "./contexts/bcv";
+import DebugContext from "./contexts/debug";
 
-function RouterElement({enableNet, setEnableNet, enabledRef}) {
+function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, debugRef}) {
 
     const netValue = {enableNet, setEnableNet, enabledRef};
+    const debugValue = {debug, setDebug, debugRef};
     const [systemBcv, setSystemBcv] = useState({
         bookCode: "TIT",
         chapterNum: 1,
@@ -79,15 +81,17 @@ function RouterElement({enableNet, setEnableNet, enabledRef}) {
         }
     ]);
 
-    return <NetContext.Provider value={netValue}>
-        <BcvContext.Provider value={bcvValue}>
-            <MessagesContext.Provider value={messageValue}>
-                <Box sx={{height: '100vh', overflow: 'hidden'}}>
-                    <RouterProvider router={router}/>
-                </Box>
-            </MessagesContext.Provider>
-        </BcvContext.Provider>
-    </NetContext.Provider>
+    return <DebugContext.Provider value={debugValue}>
+        <NetContext.Provider value={netValue}>
+            <BcvContext.Provider value={bcvValue}>
+                <MessagesContext.Provider value={messageValue}>
+                    <Box sx={{height: '100vh', overflow: 'hidden'}}>
+                        <RouterProvider router={router}/>
+                    </Box>
+                </MessagesContext.Provider>
+            </BcvContext.Provider>
+        </NetContext.Provider>
+    </DebugContext.Provider>
 }
 
 export default RouterElement;

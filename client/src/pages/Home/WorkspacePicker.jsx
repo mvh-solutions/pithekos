@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useContext} from "react";
 import {useNavigate} from "react-router-dom";
 import dcopy from "deep-copy";
 import {
@@ -11,30 +11,24 @@ import {
 import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote} from "@mui/icons-material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DebugContext from "../../contexts/debug";
+import {getJson} from "../../lib/get";
 
 function WorkspacePicker({repos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
+    const {debugRef} = useContext(DebugContext);
     const navigate = useNavigate();
-
-    async function getData(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.error(`Response status: ${response.status}\n${response}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
 
     const getAllData = async () => {
         const newRepoData = {};
         for (const repo of repos) {
             const metadataLink = `/burrito/metadata/summary/${repo}`;
-            newRepoData[repo] = await getData(metadataLink);
+            const repoMetadata = await getJson(metadataLink, debugRef.current);
+            if (!repoMetadata.ok) {
+                continue;
+            }
+            newRepoData[repo] = repoMetadata.json;
             newRepoData[repo]["editSelected"] = repoData && repoData[repo] ? repoData[repo].editSelected : false;
         }
         setRepoData(newRepoData);

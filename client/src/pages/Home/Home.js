@@ -3,18 +3,23 @@ import WorkspacePicker from "./WorkspacePicker";
 import {Grid2, Paper} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
 import Cached from '@mui/icons-material/Cached';
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
+import {getJson} from "../../lib/get";
+import DebugContext from "../../contexts/debug";
 
 function Home() {
     const [repos, setRepos] = useState([]);
-    const pollingFunc = async () => {
-        const response = await fetch("/git/list-local-repos");
-        setRepos(await response.json());
+    const {debugRef} = useContext(DebugContext);
+    const getRepoList = async () => {
+        const response = await getJson("/git/list-local-repos", debugRef.current);
+        if (response.ok) {
+            setRepos(response.json);
+        }
     }
 
     useEffect(
         () => {
-            pollingFunc();
+            getRepoList();
         },
         []
     );
@@ -30,7 +35,7 @@ function Home() {
                             <Cached
                                 id="reload-projects-button"
                                 fontSize="large"
-                                onClick={() => pollingFunc()}
+                                onClick={() => getRepoList()}
                             />
                         </Grid2>
                         <Grid2 item size={6}>

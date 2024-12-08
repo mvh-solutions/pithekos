@@ -7,17 +7,31 @@ import {fetchEventSource} from "@microsoft/fetch-event-source";
 
 function RootElement() {
     const [enableNet, _setEnableNet] = useState(false);
+    const enabledRef = useRef(enableNet);
     const setEnableNet = nv => {
         enabledRef.current = nv;
         _setEnableNet(nv);
     };
-    const enabledRef = useRef(enableNet);
+    const [debug, _setDebug] = useState(false);
+    const debugRef = useRef(debug);
+    const setDebug = nv => {
+        debugRef.current = nv;
+        _setDebug(nv);
+    };
 
     const netHandler = ev => {
         if (ev.data === "enabled" && !enabledRef.current) {
             setEnableNet(true);
         } else if (ev.data === "disabled" && enabledRef.current) {
             setEnableNet(false);
+        }
+    }
+
+    const debugHandler = ev => {
+        if (ev.data === "enabled" && !debugRef.current) {
+            setDebug(true);
+        } else if (ev.data === "disabled" && debugRef.current) {
+            setDebug(false);
         }
     }
 
@@ -58,8 +72,11 @@ function RootElement() {
                         miscHandler(event)
                     } else if (event.event === "net_status") {
                         netHandler(event)
-                    }
-                },
+                    } else if (event.event === "debug") {
+                debugHandler(event)
+            }
+
+        },
                 onclose() {
                     console.log("SSE connection closed by the server");
                 },
@@ -74,7 +91,14 @@ function RootElement() {
 
 
     return <SnackbarProvider maxSnack={3}>
-        <RouterElement enableNet={enableNet} _setEnableNet={setEnableNet} enabledRef={enabledRef}/>
+        <RouterElement
+            enableNet={enableNet}
+            setEnableNet={setEnableNet}
+            enabledRef={enabledRef}
+            debug={debug}
+            setDebug={setDebug}
+            debugRef={debugRef}
+        />
     </SnackbarProvider>
 }
 
