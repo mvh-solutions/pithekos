@@ -322,17 +322,18 @@ pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) ->
                 yield stream::Event::data(msg)
                     .event("misc")
                     .id(format!("{}", count));
-                yield stream::Event::data(
+                count+=1;
+                interval.tick().await;
+            };
+            yield stream::Event::data(
                     match NET_IS_ENABLED.load(Ordering::Relaxed) {
                         true => "enabled",
                         false => "disabled"
-                }
+                    }
             )
             .event("net_status")
             .id(format!("{}", count));
                 count+=1;
-                interval.tick().await;
-            }
             interval.tick().await;
         }
     }

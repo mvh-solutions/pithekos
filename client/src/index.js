@@ -14,7 +14,6 @@ function RootElement() {
     const enabledRef = useRef(enableNet);
 
     const netHandler = ev => {
-        console.log(ev.data, enabledRef.current)
         if (ev.data === "enabled" && !enabledRef.current) {
             setEnableNet(true);
         } else if (ev.data === "disabled" && enabledRef.current) {
