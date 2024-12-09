@@ -42,7 +42,7 @@ struct AppSettings {
 
 // CONSTANTS AND STATE
 
-const REACT_STATIC_PATH: &str = relative!("../client/build");
+const REACT_STATIC_PATH: &str = relative!("../main/build");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -1179,13 +1179,13 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
     }
 }
 
-#[get("/client/index.html")]
+#[get("/main/index.html")]
 async fn serve_client_index() -> Option<NamedFile> {
     let index_path = Path::new(REACT_STATIC_PATH).join("index.html");
     NamedFile::open(index_path).await.ok()
 }
 
-#[get("/client")]
+#[get("/main")]
 async fn serve_client_dir() -> Redirect {
     Redirect::to(uri!(serve_client_index))
 }
@@ -1245,7 +1245,7 @@ fn rocket() -> _ {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
                 "resources_dir": root_path.clone() + "pithekos_resources",
-                "client_dir": relative!("../client/build"),
+                "client_dir": relative!("../main/build"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -1353,7 +1353,7 @@ fn rocket() -> _ {
             default_catcher
         ])
         .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
-        .mount("/client", FileServer::from(client_dir_path.clone()))
+        .mount("/clients/main", FileServer::from(client_dir_path.clone()))
         .manage(
             AppSettings {
                 client_dir: client_dir_path.clone(),

@@ -23,7 +23,7 @@ function Header({isHome, subtitle, widget}) {
                     <Grid2 container size={{xs: 1}} justifyContent="flex-start">
                         <Icon size="large" sx={{mt: 1, mb: 1, width: "50pt", height: "50pt"}}>
                             <img alt="Pithekos logo" style={{width: 'inherit', height: 'inherit'}}
-                                 src="/client/favicon.svg"/>
+                                 src="/clients/main/favicon.svg"/>
                         </Icon>
                     </Grid2>
                     <Grid2 container size={{xs: 5, md: 4, lg: 2}} justifyContent="flex-start">
