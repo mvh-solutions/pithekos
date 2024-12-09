@@ -42,7 +42,7 @@ struct AppSettings {
 
 // CONSTANTS AND STATE
 
-const REACT_STATIC_PATH: &str = relative!("../main/build");
+const REACT_STATIC_PATH: &str = relative!("../clients/main/build");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -1179,13 +1179,14 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
     }
 }
 
-#[get("/main/index.html")]
+// REDIRECTS ETC
+#[get("/clients/main/index.html")]
 async fn serve_client_index() -> Option<NamedFile> {
     let index_path = Path::new(REACT_STATIC_PATH).join("index.html");
     NamedFile::open(index_path).await.ok()
 }
 
-#[get("/main")]
+#[get("/clients/main")]
 async fn serve_client_dir() -> Redirect {
     Redirect::to(uri!(serve_client_index))
 }

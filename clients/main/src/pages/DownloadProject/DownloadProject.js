@@ -5,7 +5,6 @@ import './DownloadProject.css';
 import {Box, Grid2, Paper} from "@mui/material";
 import I18nContext from "../../contexts/i18n";
 import {doI18n} from "../../lib/i18n";
-import i18n from "../../contexts/i18n";
 
 function DownloadProject() {
     const i18n = useContext(I18nContext);

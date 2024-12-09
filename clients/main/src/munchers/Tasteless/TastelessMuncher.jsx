@@ -1,5 +1,5 @@
 import {useEffect, useState, useContext} from "react";
-import {Box, Button, Grid2, Typography} from "@mui/material";
+import {Box, Button, Grid2} from "@mui/material";
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import DebugContext from "../../contexts/debug";

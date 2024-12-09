@@ -13,7 +13,6 @@ function Home() {
     const [repos, setRepos] = useState([]);
     const {debugRef} = useContext(DebugContext);
     const i18n = useContext(I18nContext);
-    console.log(i18n);
     const getRepoList = async () => {
         const response = await getJson("/git/list-local-repos", debugRef.current);
         if (response.ok) {
