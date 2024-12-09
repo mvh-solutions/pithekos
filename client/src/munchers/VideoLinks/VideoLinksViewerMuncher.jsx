@@ -1,31 +1,27 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import {Box, Grid2, Typography} from "@mui/material";
+import NetContext from "../../contexts/net";
+import BcvContext from "../../contexts/bcv";
+import DebugContext from "../../contexts/debug";
+import {getText} from "../../lib/get";
 
-function VideoLinksViewerMuncher({metadata, systemBcv, enableNet}) {
+function VideoLinksViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);
     const [verseNotes, setVerseNotes] = useState([]);
-
-    async function getData(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.error(`Response status: ${response.status}\n${response}`);
-            }
-
-            return await response.text();
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
+    const {enableNet} = useContext(NetContext);
+    const {systemBcv} = useContext(BcvContext);
+    const {debugRef} = useContext(DebugContext);
 
     const getAllData = async () => {
         const ingredientLink = `/burrito/ingredient/raw/${metadata.local_path}?ipath=${systemBcv.bookCode}.tsv`;
-        let iL = await getData(ingredientLink);
-        setIngredient(
-            iL
-                .split("\n")
-                .map(l => l.split("\t").map(f => f.replace(/\\n/g, "\n\n")))
-        );
+        let response = await getText(ingredientLink, debugRef.current);
+        if (response.ok) {
+            setIngredient(
+                response.text
+                    .split("\n")
+                    .map(l => l.split("\t").map(f => f.replace(/\\n/g, "\n\n")))
+            );
+        }
     }
 
     useEffect(
@@ -43,7 +39,7 @@ function VideoLinksViewerMuncher({metadata, systemBcv, enableNet}) {
                     .map(l => l[5])
             );
         },
-        [ingredient]
+        [ingredient, systemBcv]
     );
 
     return (

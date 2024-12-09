@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useContext} from "react";
 import "./TextTranslationEditorMuncher.css";
 import {
     ParaRenderer,
@@ -6,21 +6,13 @@ import {
 } from "./blockRenderers";
 import {Grid2} from "@mui/material";
 import dcopy from "deep-copy";
+import DebugContext from "../../contexts/debug";
+import BcvContext from "../../contexts/bcv";
+import {getJson} from "../../lib/get";
 
-async function getData(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            console.error(`Response status: ${response.status}\n${response}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error(error.message);
-    }
-}
-
-function TextTranslationEditorMuncher({metadata, systemBcv, selectedFontsetName}) {
+function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
+    const {systemBcv} = useContext(BcvContext);
+    const {debugRef} = useContext(DebugContext);
     const [state, setState] = useState({
         usj: {
             working: null,
@@ -85,29 +77,33 @@ function TextTranslationEditorMuncher({metadata, systemBcv, selectedFontsetName}
                 state.navigation.bookCode !== systemBcv.bookCode ||
                 state.navigation.chapterNum !== systemBcv.chapterNum
             ) {
-                console.log("useEffect", "Fetch new USFM", state.usj.working, systemBcv.bookCode);
+                console.log("useEffect", "Fetch new USFM", state.usj.working, systemBcv);
                 const usfmLink = `/burrito/ingredient/as-usj/${metadata.local_path}?ipath=${systemBcv.bookCode}.usfm`;
-                getData(usfmLink)
+                getJson(usfmLink, debugRef.current)
                     .then(
                         res => {
-                            setState(
-                                {
-                                    ...state,
-                                    usj: {
-                                        ...state.usj,
-                                        incoming: res
-                                    },
-                                    navigation: {
-                                        bookCode: systemBcv.bookCode,
-                                        chapterNum: systemBcv.chapterNum,
-                                        verseNum: systemBcv.verseNum
+                            if (res.ok) {
+                                setState(
+                                    {
+                                        ...state,
+                                        usj: {
+                                            ...state.usj,
+                                            incoming: res.json
+                                        },
+                                        navigation: {
+                                            bookCode: systemBcv.bookCode,
+                                            chapterNum: systemBcv.chapterNum,
+                                            verseNum: systemBcv.verseNum
+                                        }
                                     }
-                                }
-                            );
+                                );
+                            } else {
+                                console.log(`TextTranslation returned status ${res.status}`);
+                            }
                         }).catch(err => console.log("TextTranslation fetch error", err));
             }
         },
-        [systemBcv, state]
+        [systemBcv, state, metadata, debugRef]
     );
 
     // Move incoming USJ to working and increment updates

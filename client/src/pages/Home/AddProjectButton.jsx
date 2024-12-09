@@ -1,10 +1,12 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {Menu, MenuItem} from "@mui/material";
 import AddCircleIcon from '@mui/icons-material/AddCircleOutline';
 import {useNavigate} from "react-router-dom";
+import NetContext from "../../contexts/net";
 
-function AddProjectButton({enableNet}) {
+function AddProjectButton() {
     const navigate = useNavigate();
+    const {enableNet} = useContext(NetContext);
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const handleClick = (event) => {

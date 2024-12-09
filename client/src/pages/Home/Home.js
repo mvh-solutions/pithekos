@@ -1,50 +1,51 @@
 import Header from '../../components/Header';
 import WorkspacePicker from "./WorkspacePicker";
-import {Box, Grid2, Paper} from "@mui/material";
+import {Grid2, Paper} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
 import Cached from '@mui/icons-material/Cached';
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
+import {getJson} from "../../lib/get";
+import DebugContext from "../../contexts/debug";
 
-function Home({enableNet, setEnableNet, enabledRef}) {
+function Home() {
     const [repos, setRepos] = useState([]);
-    const pollingFunc = async () => {
-        const response = await fetch("/git/list-local-repos");
-        setRepos(await response.json());
+    const {debugRef} = useContext(DebugContext);
+    const getRepoList = async () => {
+        const response = await getJson("/git/list-local-repos", debugRef.current);
+        if (response.ok) {
+            setRepos(response.json);
+        }
     }
 
     useEffect(
         () => {
-            pollingFunc();
+            getRepoList();
         },
         []
     );
 
     return (
         <Paper>
-            <Box>
-                <Header
-                    isHome={true}
-                    subtitle="Local Projects"
-                    enableNet={enableNet}
-                    setEnableNet={setEnableNet}
-                    enabledRef={enabledRef}
-                    widget={
-                        <Grid2 container>
-                            <Grid2 item size={6}>
-                                <Cached
-                                    id="reload-projects-button"
-                                    fontSize="large"
-                                    onClick={() => pollingFunc()}
-                                />
-                            </Grid2>
-                            <Grid2 item size={6}>
-                                <AddProjectButton enableNet={enableNet}/>
-                            </Grid2>
+            <Header
+                isHome={true}
+                subtitle="Local Projects"
+                widget={
+                    <Grid2 container>
+                        <Grid2 item size={6}>
+                            <Cached
+                                id="reload-projects-button"
+                                fontSize="large"
+                                onClick={() => getRepoList()}
+                                sx={{mr: 2}}
+                            />
                         </Grid2>
-                    }
-                />
-                <WorkspacePicker enableNet={enableNet} repos={repos} setRepos={setRepos}/>
-            </Box>
+                        <Grid2 item size={6}>
+                            <AddProjectButton/>
+                        </Grid2>
+                    </Grid2>
+                }
+            />
+            <WorkspacePicker repos={repos}/>
         </Paper>
     );
 }
