@@ -3,8 +3,11 @@ import {Menu, MenuItem} from "@mui/material";
 import AddCircleIcon from '@mui/icons-material/AddCircleOutline';
 import {useNavigate} from "react-router-dom";
 import NetContext from "../../contexts/net";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 function AddProjectButton() {
+    const i18n = useContext(I18nContext);
     const navigate = useNavigate();
     const {enableNet} = useContext(NetContext);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -50,8 +53,8 @@ function AddProjectButton() {
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleNewProject}>Create New Local Project</MenuItem>
-                <MenuItem onClick={handleDownloadProject} disabled={!enableNet}>Download Remote Project</MenuItem>
+                <MenuItem onClick={handleNewProject}>{doI18n("pages:home:new_project_menu_item", i18n)}</MenuItem>
+                <MenuItem onClick={handleDownloadProject} disabled={!enableNet}>{doI18n("pages:home:download_project_menu_item", i18n)}</MenuItem>
             </Menu>
         </div>
     );

@@ -8,11 +8,14 @@ import {Grid2} from "@mui/material";
 import dcopy from "deep-copy";
 import DebugContext from "../../contexts/debug";
 import BcvContext from "../../contexts/bcv";
+// import I18nContext from "../../contexts/i18n";
 import {getJson} from "../../lib/get";
+// import {doI18n} from "../../lib/i18n";
 
 function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
     const {systemBcv} = useContext(BcvContext);
     const {debugRef} = useContext(DebugContext);
+    // const i18n = useContext(I18nContext);
     const [state, setState] = useState({
         usj: {
             working: null,

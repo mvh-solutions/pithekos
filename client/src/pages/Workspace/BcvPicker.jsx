@@ -1,16 +1,19 @@
 import React, {useState, useContext} from "react";
 import {Box, TextField, Typography} from "@mui/material";
 import BcvContext from "../../contexts/bcv";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 function BcvPicker() {
     const [newRef, setNewRef] = useState("");
     const {systemBcv, setSystemBcv} = useContext(BcvContext);
+    const i18n = useContext(I18nContext);
     return <Box>
         <Typography variant="h6">{`${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum}`}</Typography>
         <TextField
             sx={{backgroundColor: "#DDCCEE"}}
             id="outlined-basic"
-            label="New Reference"
+            label={doI18n("components:header:new_reference", i18n)}
             size="small"
             variant="outlined"
             value={newRef}
