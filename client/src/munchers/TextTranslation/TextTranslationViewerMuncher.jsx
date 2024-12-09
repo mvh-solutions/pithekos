@@ -27,9 +27,9 @@ function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
     useEffect(
         () => {
             if (
-                (!state.usj.working && !state.usj.incoming) ||
-                state.navigation.bookCode !== systemBcv.bookCode ||
-                state.navigation.chapterNum !== systemBcv.chapterNum
+                    (!state.usj.working && !state.usj.incoming) ||
+                    state.navigation.bookCode !== systemBcv.bookCode ||
+                    state.navigation.chapterNum !== systemBcv.chapterNum
             ) {
                 console.log("useEffect", "Fetch new USFM", state.usj.working, systemBcv.bookCode);
                 const usfmLink = `/burrito/ingredient/as-usj/${metadata.local_path}?ipath=${systemBcv.bookCode}.usfm`;
@@ -151,10 +151,10 @@ function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
                             <Grid2 key={`${n}a`} size={1}>
                                 {h[0]}
                             </Grid2>
-                            <Grid2  key={`${n}b`} size={11}>
+                            <Grid2 key={`${n}b`} size={11}>
                                 {h[1]}
                             </Grid2>
-                            </>
+                        </>
                     )
                 }
             </Grid2>

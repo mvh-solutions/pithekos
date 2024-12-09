@@ -20,13 +20,13 @@ function Header({isHome, subtitle, widget}) {
                        justifyContent="flex-end"
                        alignItems="center"
                        sx={{flexGrow: 1}}>
-                    <Grid2 item size={{xs: 2, md: 1}}>
+                    <Grid2 container size={{xs: 1}} justifyContent="flex-start">
                         <Icon size="large" sx={{mt: 1, mb: 1, width: "50pt", height: "50pt"}}>
                             <img alt="Pithekos logo" style={{width: 'inherit', height: 'inherit'}}
                                  src="/client/favicon.svg"/>
                         </Icon>
                     </Grid2>
-                    <Grid2 display="flex" size={{xs: 5, md: 4, lg: 2}} justifyContent="flex-start">
+                    <Grid2 container size={{xs: 5, md: 4, lg: 2}} justifyContent="flex-start">
                         {!isHome &&
                         <BackIcon
                             fontSize="large"
@@ -37,19 +37,10 @@ function Header({isHome, subtitle, widget}) {
                         />}
                         {subtitle && subtitle.length > 0 && <Typography variant="h5">{subtitle}</Typography>}
                     </Grid2>
-                    <Grid2 item size={{xs: 3, md: 5, lg: 7}}>
+                    <Grid2 container size={{xs: 4, md: 6, lg: 8}} justifyContent="flex-start">
                         {widget}
                     </Grid2>
-                    <Grid2 size={{xs: 1}} justifyContent="flex-end">
-                        <SettingsIcon
-                            fontSize="large"
-                            color="inherit"
-                            aria-label="settings"
-                            sx={{mr: 2}}
-                            onClick={() => navigate("/settings")}
-                        />
-                    </Grid2>
-                    <Grid2 container size={{xs: 1}} justifyContent="flex-end">
+                    <Grid2 container size={{xs: 2, md: 1}} justifyContent="flex-end">
                         {
                             enabledRef.current ?
                                 <Public
@@ -61,7 +52,6 @@ function Header({isHome, subtitle, widget}) {
                                             }
                                         }
                                     }
-                                    edge="start"
                                     fontSize="large"
                                     sx={{color: "#33FF33"}}
                                 /> :
@@ -74,10 +64,16 @@ function Header({isHome, subtitle, widget}) {
                                             }
                                         }
                                     }
-                                    edge="start"
                                     fontSize="large"
                                     sx={{color: "#AAAAAA"}}
                                 />}
+                        <SettingsIcon
+                            fontSize="large"
+                            color="inherit"
+                            aria-label="settings"
+                            sx={{ml: 2}}
+                            onClick={() => navigate("/settings")}
+                        />
                     </Grid2>
                 </Grid2>
             </Toolbar>

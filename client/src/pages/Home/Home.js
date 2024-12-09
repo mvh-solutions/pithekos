@@ -36,6 +36,7 @@ function Home() {
                                 id="reload-projects-button"
                                 fontSize="large"
                                 onClick={() => getRepoList()}
+                                sx={{mr: 2}}
                             />
                         </Grid2>
                         <Grid2 item size={6}>

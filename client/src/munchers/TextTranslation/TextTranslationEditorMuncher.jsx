@@ -7,9 +7,11 @@ import {
 import {Grid2} from "@mui/material";
 import dcopy from "deep-copy";
 import DebugContext from "../../contexts/debug";
+import BcvContext from "../../contexts/bcv";
 import {getJson} from "../../lib/get";
 
-function TextTranslationEditorMuncher({metadata, systemBcv, selectedFontsetName}) {
+function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
+    const {systemBcv} = useContext(BcvContext);
     const {debugRef} = useContext(DebugContext);
     const [state, setState] = useState({
         usj: {
@@ -75,7 +77,7 @@ function TextTranslationEditorMuncher({metadata, systemBcv, selectedFontsetName}
                 state.navigation.bookCode !== systemBcv.bookCode ||
                 state.navigation.chapterNum !== systemBcv.chapterNum
             ) {
-                console.log("useEffect", "Fetch new USFM", state.usj.working, systemBcv.bookCode);
+                console.log("useEffect", "Fetch new USFM", state.usj.working, systemBcv);
                 const usfmLink = `/burrito/ingredient/as-usj/${metadata.local_path}?ipath=${systemBcv.bookCode}.usfm`;
                 getJson(usfmLink, debugRef.current)
                     .then(
