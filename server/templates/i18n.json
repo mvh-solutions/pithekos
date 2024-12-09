@@ -15,9 +15,9 @@
   },
   "pages": {
     "home": {
-      "workspace_title": {
-        "en": "Workspace",
-        "fr": "Espace de travail"
+      "subtitle": {
+        "en": "Projects on this machine",
+        "fr": "Projets sur cette machine"
       }
     },
     "settings": {},
@@ -26,7 +26,30 @@
     "DownloadProject": {}
   },
   "munchers": {},
-  "flavors": {},
+  "flavors": {
+    "names": {
+      "parascriptural/x-videolinks": {
+        "en": "Video Links",
+        "fr": "Liens vidéo"
+      },
+      "parascriptural/x-bcvArticles": {
+        "en": "Articles by Verse",
+        "fr": "Articles par verset"
+      },
+      "parascriptural/x-bcvNotes": {
+        "en": "Notes by Verse",
+        "fr": "Notes par verset"
+      },
+      "scripture/textTranslation": {
+        "en": "Scripture (Text)",
+        "fr": "Ecriture (texte)"
+      },
+      "parascriptural/x-bcvImages": {
+        "en": "Images by Verse",
+        "fr": "Images par verset"
+      }
+    }
+  },
   "fonts": {},
   "branding": {}
 }
