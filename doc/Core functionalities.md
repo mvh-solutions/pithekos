@@ -1,14 +1,14 @@
-# Wanted functionalities for Pithekos
-## Results of an initial thinking (12/2024)
-- Resources management
-    - Search
+# Required functionalities for Pithekos
+## Results of initial thinking (12/2024)
+- Resource management
+    - Search (what? merged or distinct search for remote vs. local?)
     - Download
     - Delete
 
 - Project management
     - Create
     - Download
-    - Import (offline)
+    - Import (sideload from local media)
     - Project parameters (workflow, etc.; edit rights are managed from Gitea)
 
 - Project page
@@ -22,7 +22,7 @@
 
 - Dashboard?
     - Latest modifications summary
-    - Projects' progress
+    - Project progress
     - Etc.
 
 - PDF print
@@ -33,4 +33,8 @@
 - Alignment
     - Juxtaligner [(more on that)](https://xenizo.fr/en/how-we-made-a-juxtaligner/)
 
-- Audio OBS (in the long run)
+- OBS (view / edit)
+    - Text
+    - Audio (in the long run)
+
+- Juxtalinear (view / edit)
