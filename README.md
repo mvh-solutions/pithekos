@@ -32,7 +32,7 @@ cargo run
 ### Usage
 Connect to localhost:8000, using Firefox if Graphite fonts are needed
 
-Enable Internet by clicking on the crossed-out cloud, top right. (Red cloud == "enabled")
+Enable Internet by clicking on the crossed-out globe, top right. (Green globe == "enabled")
 
 Go to Download
 
