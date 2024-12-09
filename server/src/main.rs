@@ -6,22 +6,23 @@ use copy_dir::copy_dir;
 use git2::{Repository};
 use hallomai::transform;
 use home::home_dir;
-use rocket::State;
+use rocket::form::Form;
 use rocket::fs::{FileServer, relative, NamedFile, TempFile};
+use rocket::http::{Status, ContentType};
 use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
 use rocket::response::{status, Redirect, stream};
-use rocket::http::{Status, ContentType};
-use rocket::form::Form;
+use rocket::State;
+use rocket::tokio::{time};
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
+use std::{fs, env};
 use std::io::Write;
 use std::path::{PathBuf, Components, Path};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::{fs, env};
 use std::process::exit;
+use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use rocket::tokio::{time};
 use ureq;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -285,7 +286,8 @@ fn net_status() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/enable")]
-fn net_enable() -> status::Custom<(ContentType, String)> {
+fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+    msgs.lock().unwrap().push_back("success--5--net--enable".to_string());
     NET_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
         Status::Ok, (
@@ -296,7 +298,8 @@ fn net_enable() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/disable")]
-fn net_disable() -> status::Custom<(ContentType, String)> {
+fn net_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+    msgs.lock().unwrap().push_back("success--5--net--disable".to_string());
     NET_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
         Status::Ok, (
@@ -307,18 +310,29 @@ fn net_disable() -> status::Custom<(ContentType, String)> {
 }
 
 // SSE
-#[get("/net")]
-pub fn net_notifications_stream() -> stream::EventStream![] {
+#[get("/")]
+pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> stream::EventStream![stream::Event + '_] {
     stream::EventStream! {
-        let mut interval = time::interval(Duration::from_secs(1));
+        let mut count = 0;
+        let mut interval = time::interval(Duration::from_millis(250));
+        yield stream::Event::retry(Duration::from_secs(1));
         loop {
-            yield stream::Event::data(
-                match NET_IS_ENABLED.load(Ordering::Relaxed) {
-                    true => "enabled",
-                    false => "disabled"
+            while !msgs.lock().unwrap().is_empty() {
+                let msg = msgs.lock().unwrap().pop_front().unwrap();
+                yield stream::Event::data(msg)
+                    .event("misc")
+                    .id(format!("{}", count));
+                yield stream::Event::data(
+                    match NET_IS_ENABLED.load(Ordering::Relaxed) {
+                        true => "enabled",
+                        false => "disabled"
                 }
             )
-            .event("net_status");
+            .event("net_status")
+            .id(format!("{}", count));
+                count+=1;
+                interval.tick().await;
+            }
             interval.tick().await;
         }
     }
@@ -1170,6 +1184,7 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 #[rocket::launch]
 fn rocket() -> _ {
+    let msg_queue = Arc::new(Mutex::new(VecDeque::<String>::new()));
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut settings_path = root_path.clone() + "pithekos_settings.json";
@@ -1310,6 +1325,9 @@ fn rocket() -> _ {
                 },
             }
         )
+        .manage(
+            msg_queue
+        )
         .mount("/", routes![
             redirect_root,
             serve_client_index,
@@ -1317,7 +1335,7 @@ fn rocket() -> _ {
             serve_root_favicon
         ])
         .mount("/notifications", routes![
-            net_notifications_stream,
+            notifications_stream,
         ])
         .mount("/settings", routes![
             get_languages,
