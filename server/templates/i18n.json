@@ -9,24 +9,135 @@
   "components": {
     "header": {
       "new_reference": {
-        "en": "New Reference"
+        "en": "New Reference",
+        "fr": "Nouvelle référence"
       }
     }
   },
   "pages": {
     "home": {
-      "workspace_title": {
-        "en": "Workspace",
-        "fr": "Espace de travail"
+      "subtitle": {
+        "en": "Projects on this machine",
+        "fr": "Projets sur cette machine"
+      },
+      "new_project_menu_item": {
+        "en": "Create New Project",
+        "fr": "Créer un nouveau projet"
+      },
+      "download_project_menu_item": {
+        "en": "Download Project",
+        "fr": "Télécharger un projet"
       }
     },
-    "settings": {},
-    "NewProject": {},
-    "Workspace": {},
-    "DownloadProject": {}
+    "settings": {
+      "subtitle": {
+        "en": "Settings",
+        "fr": "Configuration"
+      }
+    },
+    "new_project": {
+      "subtitle": {
+        "en": "New Project",
+        "fr": "Nouveau projet"
+      }
+    },
+    "workspace": {
+      "subtitle": {
+        "en": "Workspace",
+        "fr": "Espace de travail"
+      },
+      "select_fontset": {
+        "en": "Select Fonts",
+        "fr": "Choisir des polices"
+      },
+      "webfonts": {
+        "en": "Fonts in Pithekos",
+        "fr": "Polices via Pithekos"
+      }
+    },
+    "download_project": {
+      "subtitle": {
+        "en": "Download Project",
+        "fr": "Télécharger un projet"
+      },
+      "url_prompt": {
+        "en": "Download Link (Github, Door43...)",
+        "fr": "Lien de téléchargement (Github, Door43...)"
+      }
+    }
   },
-  "munchers": {},
-  "flavors": {},
+  "munchers": {
+    "bcv_notes_viewer": {
+      "title": {
+        "en": "Notes by Verse",
+        "fr": "Notes par verset"
+      }
+    },
+    "tasteless": {
+      "title": {
+        "en": "Default Viewer",
+        "fr": "Vue par défaut"
+      },
+      "show_metadata": {
+        "en": "Show Metadata",
+        "fr": "Afficher les metadonnées"
+      }
+    },
+    "text_translation_viewer": {
+      "title": {
+        "en": "Scripture (Text) Viewer",
+        "fr": "Ecriture (texte), lecture seulement"
+      }
+    },
+    "text_translation_editor": {
+      "title": {
+        "en": "Scripture (Text) Editor",
+        "fr": "Editeur d'Ecriture (texte)"
+      }
+    },
+    "video_links_viewer": {
+      "title": {
+        "en": "Video Links",
+        "fr": "Liens vidéo"
+      },
+      "no_content": {
+        "en": "No Content for this Verse",
+        "fr": "Aucun contenu pour ce verset"
+      },
+      "no_video_support": {
+        "en": "No Video Support in this Browser",
+        "fr": "Ce navigateur ne permet pas de regarder des vidéos"
+      },
+      "offline_mode": {
+        "en": "Video links cannot be displayed in offline. Enable Internet access if it is safe to do so.",
+        "fr": "Impossible de suivre des liens vidéo on mode hors ligne. Activez la connection Internet si ça ne vous met pas en danger."
+      }
+    }
+  },
+  "flavors": {
+    "names": {
+      "parascriptural/x-videolinks": {
+        "en": "Video Links",
+        "fr": "Liens vidéo"
+      },
+      "parascriptural/x-bcvArticles": {
+        "en": "Articles by Verse",
+        "fr": "Articles par verset"
+      },
+      "parascriptural/x-bcvNotes": {
+        "en": "Notes by Verse",
+        "fr": "Notes par verset"
+      },
+      "scripture/textTranslation": {
+        "en": "Scripture (Text)",
+        "fr": "Ecriture (texte)"
+      },
+      "parascriptural/x-bcvImages": {
+        "en": "Images by Verse",
+        "fr": "Images par verset"
+      }
+    }
+  },
   "fonts": {},
   "branding": {}
 }

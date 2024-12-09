@@ -3,11 +3,14 @@ import "./TextTranslationViewerMuncher.css";
 import {Grid2} from "@mui/material";
 import BcvContext from "../../contexts/bcv";
 import DebugContext from "../../contexts/debug";
+// import I18nContext from "../../contexts/i18n";
 import {getJson} from "../../lib/get";
+// import {doI18n} from "../../lib/i18n";
 
 function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
     const {systemBcv} = useContext(BcvContext);
     const {debugRef} = useContext(DebugContext);
+    // const i18n = useContext(I18nContext);
     const [state, setState] = useState({
         usj: {
             working: null,

@@ -3,11 +3,15 @@ import {Box, Button, Grid2, Typography} from "@mui/material";
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import DebugContext from "../../contexts/debug";
+import I18nContext from "../../contexts/i18n";
 import {getJson} from "../../lib/get";
+import {doI18n} from "../../lib/i18n";
+
 function TastelessMuncher({metadata}) {
     const [sbMetadata, setSbMetadata] = useState();
     const [showMetadata, setShowMetadata] = useState(false);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
 
     const getAllData = async () => {
         const sbMetadataLink = `/burrito/metadata/raw/${metadata.local_path}`;
@@ -28,12 +32,12 @@ function TastelessMuncher({metadata}) {
         <Box>
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
-                    <Typography variant="h5">{metadata.name}</Typography>
-                    <Typography variant="body1">no muncher found</Typography>
+                    <h5>{metadata.name}</h5>
+                    <p><b>{doI18n("munchers:tasteless:title", i18n)}</b></p>
                     {metadata.description.length > 0 &&
-                        <Typography variant="body2">Description: {metadata.description}</Typography>}
-                    <Typography variant="body2">Flavor: {metadata.flavor_type}/{metadata.flavor}</Typography>
-                    <Typography variant="body2">Source: {metadata.local_path}</Typography>
+                        <p>Description: {metadata.description}</p>}
+                    <p>Flavor: {doI18n(`flavors:names:${metadata.flavor_type}/${metadata.flavor}`, i18n)}</p>
+                    <p>Source: {metadata.local_path}</p>
                 </Grid2>
                 {sbMetadata &&
                     <>
@@ -44,14 +48,14 @@ function TastelessMuncher({metadata}) {
                                 endIcon={showMetadata ? <UnfoldLessIcon/> : <UnfoldMoreIcon/>}
                                 onClick={() => setShowMetadata(!showMetadata)}
                             >
-                                Metadata
+                                {doI18n("munchers:tasteless:show_metadata", i18n)}
                             </Button>
                         </Grid2>
                         {showMetadata &&
                             <Grid2 size={12}>
-                                <pre>{JSON.stringify(sbMetadata, null, 2)}</pre>
+                                {JSON.stringify(sbMetadata, null, 2)}
                             </Grid2>
-                }
+                        }
                     </>
                 }
             </Grid2>

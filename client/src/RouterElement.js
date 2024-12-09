@@ -12,8 +12,9 @@ import MessagesContext from "./contexts/messages";
 import NetContext from "./contexts/net";
 import BcvContext from "./contexts/bcv";
 import DebugContext from "./contexts/debug";
+import I18nContext from "./contexts/i18n";
 
-function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, debugRef}) {
+function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, debugRef, i18n}) {
 
     const netValue = {enableNet, setEnableNet, enabledRef};
     const debugValue = {debug, setDebug, debugRef};
@@ -85,9 +86,11 @@ function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, de
         <NetContext.Provider value={netValue}>
             <BcvContext.Provider value={bcvValue}>
                 <MessagesContext.Provider value={messageValue}>
-                    <Box sx={{height: '100vh', overflow: 'hidden'}}>
-                        <RouterProvider router={router}/>
-                    </Box>
+                    <I18nContext.Provider value={i18n}>
+                        <Box sx={{height: '100vh', overflow: 'hidden'}}>
+                            <RouterProvider router={router}/>
+                        </Box>
+                    </I18nContext.Provider>
                 </MessagesContext.Provider>
             </BcvContext.Provider>
         </NetContext.Provider>

@@ -4,6 +4,7 @@ import {SnackbarProvider, enqueueSnackbar} from "notistack";
 import RouterElement from "./RouterElement";
 import './index.css';
 import {fetchEventSource} from "@microsoft/fetch-event-source";
+import {getJson} from "./lib/get";
 
 function RootElement() {
     const [enableNet, _setEnableNet] = useState(false);
@@ -18,6 +19,25 @@ function RootElement() {
         debugRef.current = nv;
         _setDebug(nv);
     };
+    const [i18n, setI18n] = useState({});
+
+    useEffect(
+        () => {
+            const doFetchI18n = async () => {
+                const i18nResponse = await getJson("/i18n/flat", debugRef.current);
+                if (i18nResponse.ok) {
+                    setI18n(i18nResponse.json);
+                } else {
+                    enqueueSnackbar(
+                        `Could not load i18n: ${i18nResponse.error}`,
+                        {variant: "error"}
+                    )
+                }
+            }
+            doFetchI18n();
+        },
+        []
+    );
 
     const netHandler = ev => {
         if (ev.data === "enabled" && !enabledRef.current) {
@@ -73,10 +93,10 @@ function RootElement() {
                     } else if (event.event === "net_status") {
                         netHandler(event)
                     } else if (event.event === "debug") {
-                debugHandler(event)
-            }
+                        debugHandler(event)
+                    }
 
-        },
+                },
                 onclose() {
                     console.log("SSE connection closed by the server");
                 },
@@ -98,6 +118,7 @@ function RootElement() {
             debug={debug}
             setDebug={setDebug}
             debugRef={debugRef}
+            i18n={i18n}
         />
     </SnackbarProvider>
 }

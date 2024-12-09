@@ -3,12 +3,15 @@ import {Box} from "@mui/material";
 import Markdown from 'react-markdown';
 import BcvContext from "../../contexts/bcv";
 import DebugContext from "../../contexts/debug";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 import {getText} from "../../lib/get";
 
 function BcvNotesViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);
     const {systemBcv} = useContext(BcvContext);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
 
     const getAllData = async () => {
             const ingredientLink = `/burrito/ingredient/raw/${metadata.local_path}?ipath=${systemBcv.bookCode}.tsv`;
@@ -35,7 +38,7 @@ function BcvNotesViewerMuncher({metadata}) {
     return (
         <Box>
             <h5>{`${metadata.name} (${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum})`}</h5>
-            <h6>BCV Notes Handler</h6>
+            <h6>{doI18n("munchers:bcv_notes_viewer:title", i18n)}</h6>
             <div>
                 {ingredient &&
                     <Markdown>{

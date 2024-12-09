@@ -1,8 +1,11 @@
+import {useContext} from "react";
 import {useLocation} from "react-router-dom";
 import {Box, Paper} from "@mui/material";
 import Header from "../../components/Header";
 import WorkspaceCard from "./WorkspaceCard";
 import BcvPicker from "./BcvPicker";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 import React from 'react'
 import {
@@ -20,6 +23,7 @@ const paneStyle = {
 }
 const Workspace = () => {
     const locationState = Object.entries(useLocation().state);
+    const i18n = useContext(I18nContext);
     const resources = locationState
         .map(kv => {
             return {...kv[1], local_path: kv[0]}
@@ -54,7 +58,7 @@ const Workspace = () => {
     return <Paper>
         <Box>
             <Header
-                subtitle="Workspace"
+                subtitle={doI18n("pages:workspace:subtitle", i18n)}
                 widget={<BcvPicker/>}
             />
             <TileProvider

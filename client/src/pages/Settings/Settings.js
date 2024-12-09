@@ -4,13 +4,16 @@ import {Box, Grid2, Paper, Switch} from "@mui/material";
 import './Settings.css';
 import {getJson} from "../../lib/get";
 import DebugContext from "../../contexts/debug";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 function Settings() {
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
     return (
         <Paper>
             <Box>
-                <Header isHome={false} subtitle="Workspace"/>
+                <Header isHome={false} subtitle={doI18n("pages:settings:subtitle", i18n)}/>
                 <Box sx={{
                     p: 2,
                     height: "100vh",

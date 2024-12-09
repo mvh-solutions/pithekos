@@ -6,10 +6,14 @@ import Cached from '@mui/icons-material/Cached';
 import {useState, useEffect, useContext} from "react";
 import {getJson} from "../../lib/get";
 import DebugContext from "../../contexts/debug";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 function Home() {
     const [repos, setRepos] = useState([]);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
+    console.log(i18n);
     const getRepoList = async () => {
         const response = await getJson("/git/list-local-repos", debugRef.current);
         if (response.ok) {
@@ -28,7 +32,7 @@ function Home() {
         <Paper>
             <Header
                 isHome={true}
-                subtitle="Local Projects"
+                subtitle={doI18n("pages:home:subtitle", i18n)}
                 widget={
                     <Grid2 container>
                         <Grid2 item size={6}>
@@ -45,7 +49,11 @@ function Home() {
                     </Grid2>
                 }
             />
-            <WorkspacePicker repos={repos}/>
+            {
+                Object.keys(i18n).length === 0 ?
+                    <p>...</p> :
+                    <WorkspacePicker repos={repos}/>
+            }
         </Paper>
     );
 }

@@ -5,16 +5,19 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import NetContext from "../../contexts/net";
 import DebugContext from "../../contexts/debug";
 import {getJson} from "../../lib/get";
+import I18nContext from "../../contexts/i18n";
+import {doI18n} from "../../lib/i18n";
 
 function DownloadProjectForm() {
     const [inputText, setInputText] = useState("");
     const navigate = useNavigate();
     const {enableNet} = useContext(NetContext);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
     return <>
         <Grid2 size={10}>
             <TextField
-                label="Github or Door3 URL"
+                label={doI18n("pages:download_project:url_prompt", i18n)}
                 fullWidth
                 variant="filled"
                 value={inputText}

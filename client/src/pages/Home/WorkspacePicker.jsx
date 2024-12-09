@@ -12,12 +12,15 @@ import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote} from "@mui/icons-material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DebugContext from "../../contexts/debug";
+import I18nContext from "../../contexts/i18n";
 import {getJson} from "../../lib/get";
+import {doI18n} from "../../lib/i18n";
 
 function WorkspacePicker({repos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
     const navigate = useNavigate();
 
     const getAllData = async () => {
@@ -41,7 +44,7 @@ function WorkspacePicker({repos}) {
                 {
                     name: v.name,
                     description: v.description,
-                    flavor: `${v.flavor_type}/${v.flavor}`,
+                    flavor: doI18n(`flavors:names:${v.flavor_type}/${v.flavor}`, i18n),
                     local_path: k,
                     selected: <Checkbox
                         size="small"
