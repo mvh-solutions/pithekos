@@ -4,6 +4,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import DebugContext from "../../contexts/debug";
 import {getJson} from "../../lib/get";
+
 function TastelessMuncher({metadata}) {
     const [sbMetadata, setSbMetadata] = useState();
     const [showMetadata, setShowMetadata] = useState(false);
@@ -28,12 +29,12 @@ function TastelessMuncher({metadata}) {
         <Box>
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
-                    <Typography variant="h5">{metadata.name}</Typography>
-                    <Typography variant="body1">no muncher found</Typography>
+                    <h5>{metadata.name}</h5>
+                    <p><b>no muncher found</b></p>
                     {metadata.description.length > 0 &&
-                        <Typography variant="body2">Description: {metadata.description}</Typography>}
-                    <Typography variant="body2">Flavor: {metadata.flavor_type}/{metadata.flavor}</Typography>
-                    <Typography variant="body2">Source: {metadata.local_path}</Typography>
+                        <p>Description: {metadata.description}</p>}
+                    <p>Flavor: {metadata.flavor_type}/{metadata.flavor}</p>
+                    <p>Source: {metadata.local_path}</p>
                 </Grid2>
                 {sbMetadata &&
                     <>
@@ -49,9 +50,9 @@ function TastelessMuncher({metadata}) {
                         </Grid2>
                         {showMetadata &&
                             <Grid2 size={12}>
-                                <pre>{JSON.stringify(sbMetadata, null, 2)}</pre>
+                                {JSON.stringify(sbMetadata, null, 2)}
                             </Grid2>
-                }
+                        }
                     </>
                 }
             </Grid2>
