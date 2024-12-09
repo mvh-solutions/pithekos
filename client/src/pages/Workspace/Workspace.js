@@ -40,7 +40,7 @@ const Workspace = () => {
         tileElements[title] = <WorkspaceCard
             metadata={resource}
             style={paneStyle}
-x        />;
+        />;
         if (resource.primary) {
             rootPane.children[0] = {children: title};
         } else {
