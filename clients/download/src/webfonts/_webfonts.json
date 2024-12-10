@@ -1,0 +1,202 @@
+[
+  {
+    "name": "andika",
+    "fullname": "Andika 6.200",
+    "id": "Andika-6-200",
+    "version": "6.200",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "awami",
+    "fullname": "Awami Nastaliq 3.300",
+    "id": "Awami-Nastaliq-3-300",
+    "version": "3.300",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "awamiextrabold",
+    "fullname": "Awami Nastaliq Extra Bold 3.300",
+    "id": "Awami-Nastaliq-Extra-Bold-3-300",
+    "version": "3.300",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "awamimedium",
+    "fullname": "Awami Nastaliq Medium 3.300",
+    "id": "Awami-Nastaliq-Medium-3-300",
+    "version": "3.300",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "awamisemibold",
+    "fullname": "Awami Nastaliq Semi Bold 3.300",
+    "id": "Awami-Nastaliq-Semi-Bold-3-300",
+    "version": "3.300",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "charis",
+    "fullname": "Charis SIL 6.200",
+    "id": "Charis-SIL-6-200",
+    "version": "6.200",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "cardo",
+    "fullname": "Cardo 2011",
+    "id": "Cardo-2011",
+    "version": "2011",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "ezra",
+    "fullname": "Ezra SIL 2.51",
+    "id": "Ezra-SIL-2-51",
+    "version": "2.51",
+    "graphite-only": false,
+    "bold": false,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "ezrasr",
+    "fullname": "Ezra SIL SR 2.51",
+    "id": "Ezra-SIL-SR-2-51",
+    "version": "2.51",
+    "graphite-only": false,
+    "bold": false,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "gentiumplus",
+    "fullname": "Gentium Plus 6.200",
+    "id": "Gentium-Plus-6-200",
+    "version": "6.200",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "gentiumbookplus",
+    "fullname": "Gentium Book Plus 6.200",
+    "id": "Gentium-Book-Plus-6-200",
+    "version": "6.200",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "notonaskharabic",
+    "fullname": "Noto Naskh Arabic 2022",
+    "id": "Noto-Naskh-Arabic-2022",
+    "version": "2022",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "opensans",
+    "fullname": "Open Sans 2020",
+    "id": "Open-Sans-2020",
+    "version": "2020",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "padauk",
+    "fullname": "Padauk 5.001",
+    "id": "Padauk-5-001",
+    "version": "5.001",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "padaukbook",
+    "fullname": "Padauk Book 5.001",
+    "id": "Padauk-Book-5-001",
+    "version": "5.001",
+    "graphite-only": true,
+    "bold": true,
+    "italic": false,
+    "bold-italic": false
+  },
+  {
+    "name": "roboto",
+    "fullname": "Roboto 2004",
+    "id": "Roboto-2004",
+    "version": "2004",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "robotoblack",
+    "fullname": "Roboto Black 2004",
+    "id": "Roboto-2004",
+    "version": "2004",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "robotolight",
+    "fullname": "Roboto Light 2004",
+    "id": "Roboto-2004",
+    "version": "2004",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "robotomedium",
+    "fullname": "Roboto Medium 2004",
+    "id": "Roboto-2004",
+    "version": "2004",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  },
+  {
+    "name": "robotothin",
+    "fullname": "Roboto Thin 2004",
+    "id": "Roboto-2004",
+    "version": "2004",
+    "graphite-only": false,
+    "bold": true,
+    "italic": true,
+    "bold-italic": true
+  }
+]
