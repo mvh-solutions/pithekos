@@ -287,7 +287,7 @@ fn net_status() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/enable")]
-fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn net_enable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--net--enable".to_string());
     NET_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
@@ -299,7 +299,7 @@ fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(Con
 }
 
 #[get("/disable")]
-fn net_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn net_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--net--disable".to_string());
     NET_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
@@ -322,7 +322,7 @@ fn debug_status() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/enable")]
-fn debug_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn debug_enable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--debug--enable".to_string());
     DEBUG_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
@@ -334,7 +334,7 @@ fn debug_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(C
 }
 
 #[get("/disable")]
-fn debug_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn debug_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--debug--disable".to_string());
     DEBUG_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
@@ -347,7 +347,7 @@ fn debug_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(
 
 // SSE
 #[get("/")]
-pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> stream::EventStream![stream::Event + '_] {
+pub async fn notifications_stream(msgs: &State<MsgQueue>) -> stream::EventStream![stream::Event + '_] {
     stream::EventStream! {
         let mut count = 0;
         let mut interval = time::interval(Duration::from_millis(250));
@@ -1229,9 +1229,11 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 // BUILD SERVER
 
+type MsgQueue = Arc<Mutex<VecDeque<String>>>;
+
 #[rocket::launch]
 fn rocket() -> _ {
-    let msg_queue = Arc::new(Mutex::new(VecDeque::<String>::new()));
+    let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut settings_path = root_path.clone() + "pithekos_settings.json";
