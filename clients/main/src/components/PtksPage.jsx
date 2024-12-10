@@ -1,7 +1,7 @@
 import Header from "./Header";
 import {Box, Paper} from "@mui/material";
 
-function PtksPage({isHome, subtitleKey, widget, children}) {
+function PtksPage({isHome, subtitleKey, widget, margin, children}) {
     return (
         <Paper>
             <Box>
@@ -9,13 +9,14 @@ function PtksPage({isHome, subtitleKey, widget, children}) {
                     isHome={isHome || false}
                     subtitle={subtitleKey || null}
                     widget={widget || null}
+                    margin={margin || 2}
                 />
             </Box>
             <Box sx={{
-                p: 2,
-                height: "100vh",
+                m: margin,
+                height: "100%",
                 overflowX: "hidden",
-                overflowY: "scroll",
+                overflowY: "auto",
             }}>
                 {children}
             </Box>

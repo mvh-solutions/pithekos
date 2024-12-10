@@ -102,10 +102,9 @@ function WorkspacePicker({repos}) {
     );
 
     return <Box sx={{
-        mb: 2,
         height: "100vh",
         overflowX: "hidden",
-        overflowY: "scroll",
+        overflowY: "auto",
     }}>
         {
             rows.map(
@@ -158,7 +157,7 @@ function WorkspacePicker({repos}) {
                     </Accordion>
             )
         }
-    < /Box>
+    </Box>
 }
 
 export default WorkspacePicker;

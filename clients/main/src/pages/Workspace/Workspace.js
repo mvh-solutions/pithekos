@@ -1,11 +1,10 @@
-import {useContext} from "react";
+// import {useContext} from "react";
 import {useLocation} from "react-router-dom";
-import {Box, Paper} from "@mui/material";
-import Header from "../../components/Header";
+import PtksPage from "../../components/PtksPage";
 import WorkspaceCard from "./WorkspaceCard";
 import BcvPicker from "./BcvPicker";
-import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
+// import I18nContext from "../../contexts/i18n";
+// import {doI18n} from "../../lib/i18n";
 
 import React from 'react'
 import {
@@ -18,12 +17,11 @@ import {
 const paneStyle = {
     width: '100%',
     height: '100%',
-    overflow: 'scroll',
-    padding: "5px"
+    overflow: 'scroll'
 }
 const Workspace = () => {
     const locationState = Object.entries(useLocation().state);
-    const i18n = useContext(I18nContext);
+    // const i18n = useContext(I18nContext);
     const resources = locationState
         .map(kv => {
             return {...kv[1], local_path: kv[0]}
@@ -55,21 +53,19 @@ const Workspace = () => {
         rootPane.children.pop();
     }
     const paneList = createTilePanes(tileElements)[0];
-    return <Paper>
-        <Box>
-            <Header
-                subtitle={doI18n("pages:workspace:subtitle", i18n)}
-                widget={<BcvPicker/>}
-            />
-            <TileProvider
-                tilePanes={paneList}
-                rootNode={rootPane}
-            >
-                <div style={{width: '100vw', height: '100vh'}}>
-                    <TileContainer/>
-                </div>
-            </TileProvider>
-        </Box>
-    </Paper>
+    return <PtksPage
+        subtitleKey="pages:workspace:subtitle"
+        margin={0}
+        widget={<BcvPicker/>}
+    >
+        <TileProvider
+            tilePanes={paneList}
+            rootNode={rootPane}
+        >
+            <div style={{width: '100vw', height: '100vh'}}>
+                <TileContainer/>
+            </div>
+        </TileProvider>
+    </PtksPage>
 }
 export default Workspace;

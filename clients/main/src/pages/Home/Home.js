@@ -1,4 +1,4 @@
-import Header from '../../components/Header';
+import PtksPage from "../../components/PtksPage";
 import WorkspacePicker from "./WorkspacePicker";
 import {Grid2, Paper} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
@@ -7,7 +7,7 @@ import {useState, useEffect, useContext} from "react";
 import {getJson} from "../../lib/get";
 import DebugContext from "../../contexts/debug";
 import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
+// import {doI18n} from "../../lib/i18n";
 
 function Home() {
     const [repos, setRepos] = useState([]);
@@ -28,32 +28,32 @@ function Home() {
     );
 
     return (
-        <Paper>
-            <Header
-                isHome={true}
-                subtitle={doI18n("pages:home:subtitle", i18n)}
-                widget={
-                    <Grid2 container>
-                        <Grid2 item size={6}>
-                            <Cached
-                                id="reload-projects-button"
-                                fontSize="large"
-                                onClick={() => getRepoList()}
-                                sx={{mr: 2}}
-                            />
-                        </Grid2>
-                        <Grid2 item size={6}>
-                            <AddProjectButton/>
-                        </Grid2>
+        <PtksPage
+            isHome={true}
+            subtitleKey="pages:home:subtitle"
+            margin={0}
+            widget={
+                <Grid2 container>
+                    <Grid2 item size={6}>
+                        <Cached
+                            id="reload-projects-button"
+                            fontSize="large"
+                            onClick={() => getRepoList()}
+                            sx={{mr: 2}}
+                        />
                     </Grid2>
-                }
-            />
+                    <Grid2 item size={6}>
+                        <AddProjectButton/>
+                    </Grid2>
+                </Grid2>
+            }
+        >
             {
                 Object.keys(i18n).length === 0 ?
                     <p>...</p> :
                     <WorkspacePicker repos={repos}/>
             }
-        </Paper>
+        </PtksPage>
     );
 }
 
