@@ -8,11 +8,15 @@ import {getJson} from "../lib/get";
 import MessagesContext from "../contexts/messages";
 import NetContext from "../contexts/net";
 import DebugContext from "../contexts/debug";
+import I18nContext from "../contexts/i18n";
+import {doI18n} from "../lib/i18n";
+
 function Header({isHome, subtitle, widget}) {
     const navigate = useNavigate();
     const {messages, setMessages} = useContext(MessagesContext);
     const {enabledRef} = useContext(NetContext);
     const {debugRef} = useContext(DebugContext);
+    const i18n = useContext(I18nContext);
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -35,7 +39,7 @@ function Header({isHome, subtitle, widget}) {
                             sx={{mr: 2}}
                             onClick={() => navigate("/")}
                         />}
-                        {subtitle && subtitle.length > 0 && <Typography variant="h5">{subtitle}</Typography>}
+                        {subtitle && subtitle.length > 0 && <Typography variant="h5">{doI18n(subtitle, i18n)}</Typography>}
                     </Grid2>
                     <Grid2 container size={{xs: 4, md: 6, lg: 8}} justifyContent="flex-start">
                         {widget}

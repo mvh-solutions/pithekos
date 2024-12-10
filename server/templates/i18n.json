@@ -33,6 +33,10 @@
       "subtitle": {
         "en": "Settings",
         "fr": "Configuration"
+      },
+      "debug_prompt": {
+        "en": "Debug?",
+        "fr": "Débogage ?"
       }
     },
     "new_project": {
