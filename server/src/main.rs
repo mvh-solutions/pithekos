@@ -42,7 +42,7 @@ struct AppSettings {
 
 // CONSTANTS AND STATE
 
-const REACT_STATIC_PATH: &str = relative!("../clients/main/build");
+const REACT_STATIC_PATH: &str = relative!("../clients");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -1230,10 +1230,13 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 // BUILD SERVER
 
 type MsgQueue = Arc<Mutex<VecDeque<String>>>;
+type Clients = Mutex<Vec<String>>;
 
 #[rocket::launch]
 fn rocket() -> _ {
+    // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
+    let mut clients = Clients::new(Vec::new());
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut settings_path = root_path.clone() + "pithekos_settings.json";
@@ -1342,6 +1345,22 @@ fn rocket() -> _ {
             };
         }
     }
+    // Find build dirs as grandchildren of React dir
+    let clients_dir_path = REACT_STATIC_PATH.to_string();
+    let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
+    for child in clients_dir_entries {
+        let child_name = child.unwrap().file_name().into_string().unwrap();
+        let clients_child_path = clients_dir_path.clone() + os_slash_str() + child_name.clone().as_str();
+        if Path::new(&clients_child_path).is_dir() {
+            for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
+                let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
+                if grandchild_leaf_string == "build".to_string() {
+                    println!("{}", child_name.clone());
+                    clients.lock().unwrap().push(child_name.clone());
+                }
+            }
+        }
+    }
     // Require client_dir
     let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
     let client_dir_path_exists = Path::new(&client_dir_path).is_dir();
@@ -1376,6 +1395,9 @@ fn rocket() -> _ {
         )
         .manage(
             msg_queue
+        )
+        .manage(
+            clients
         )
         .mount("/", routes![
             redirect_root,

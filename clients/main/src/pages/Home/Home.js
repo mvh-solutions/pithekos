@@ -1,6 +1,6 @@
 import PtksPage from "../../components/PtksPage";
 import WorkspacePicker from "./WorkspacePicker";
-import {Grid2, Paper} from "@mui/material";
+import {Grid2} from "@mui/material";
 import AddProjectButton from "./AddProjectButton";
 import Cached from '@mui/icons-material/Cached';
 import {useState, useEffect, useContext} from "react";
