@@ -33,7 +33,7 @@ struct AuthEndpoint {
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
-    client_dir: String,
+    clients_dir: String,
     repo_dir: String,
     resources_dir: String,
     languages: Vec<String>,
@@ -1179,15 +1179,28 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
     }
 }
 
-// REDIRECTS ETC
+// CLIENTS
+
+#[get("/list-clients")]
+fn list_clients(clients: &State<Clients>) -> status::Custom<(ContentType, String)> {
+    let client_vec = clients.lock().unwrap().clone();
+    status::Custom(
+        Status::Ok,
+        (
+            ContentType::JSON,
+            serde_json::to_string(&client_vec).unwrap()
+        ),
+    )
+}
+
 #[get("/clients/main/index.html")]
 async fn serve_client_index() -> Option<NamedFile> {
-    let index_path = Path::new(REACT_STATIC_PATH).join("index.html");
+    let index_path = Path::new(REACT_STATIC_PATH).join("main").join("build").join("index.html");
     NamedFile::open(index_path).await.ok()
 }
 
 #[get("/clients/main")]
-async fn serve_client_dir() -> Redirect {
+async fn serve_clients_dir() -> Redirect {
     Redirect::to(uri!(serve_client_index))
 }
 
@@ -1236,7 +1249,7 @@ type Clients = Mutex<Vec<String>>;
 fn rocket() -> _ {
     // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
-    let mut clients = Clients::new(Vec::new());
+    let clients = Clients::new(Vec::new());
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut settings_path = root_path.clone() + "pithekos_settings.json";
@@ -1251,7 +1264,7 @@ fn rocket() -> _ {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
                 "resources_dir": root_path.clone() + "pithekos_resources",
-                "client_dir": relative!("../main/build"),
+                "clients_dir": relative!("../main/build"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -1345,9 +1358,17 @@ fn rocket() -> _ {
             };
         }
     }
-    // Find build dirs as grandchildren of React dir
+    // Require clients_dir
+    let clients_dir_path = settings_json["clients_dir"].as_str().unwrap().to_string();
+    let clients_dir_path_exists = Path::new(&clients_dir_path).is_dir();
+    if !clients_dir_path_exists {
+        println!("Could not find clients directory '{}'", clients_dir_path);
+        exit(1);
+    }
+    // Find client build dirs as grandchildren of clients dir
     let clients_dir_path = REACT_STATIC_PATH.to_string();
     let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
+    let mut found_main = false;
     for child in clients_dir_entries {
         let child_name = child.unwrap().file_name().into_string().unwrap();
         let clients_child_path = clients_dir_path.clone() + os_slash_str() + child_name.clone().as_str();
@@ -1355,30 +1376,28 @@ fn rocket() -> _ {
             for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
                 let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
                 if grandchild_leaf_string == "build".to_string() {
-                    println!("{}", child_name.clone());
+                    if child_name.clone() == "main".to_string() {
+                        found_main = true;
+                    }
                     clients.lock().unwrap().push(child_name.clone());
                 }
             }
         }
     }
-    // Require client_dir
-    let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
-    let client_dir_path_exists = Path::new(&client_dir_path).is_dir();
-    if !client_dir_path_exists {
-        println!("Could not find  client directory '{}'", client_dir_path);
+    // Throw if no main found
+    if !found_main {
+        println!("Could not find a build directory for main client in clients directory");
         exit(1);
     }
 
-    rocket::build()
+    let my_rocket = rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
         ])
-        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
-        .mount("/clients/main", FileServer::from(client_dir_path.clone()))
         .manage(
             AppSettings {
-                client_dir: client_dir_path.clone(),
+                clients_dir: clients_dir_path.clone(),
                 repo_dir: repo_dir_path.clone(),
                 resources_dir: resources_dir_path.clone(),
                 languages: settings_json["languages"]
@@ -1402,8 +1421,9 @@ fn rocket() -> _ {
         .mount("/", routes![
             redirect_root,
             serve_client_index,
-            serve_client_dir,
-            serve_root_favicon
+            serve_clients_dir,
+            serve_root_favicon,
+            list_clients
         ])
         .mount("/notifications", routes![
             notifications_stream,
@@ -1444,5 +1464,9 @@ fn rocket() -> _ {
             post_ingredient_as_usj,
             raw_metadata,
             summary_metadata
-        ])
+        ]);
+    my_rocket
+        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
+        .mount("/clients/main", FileServer::from(clients_dir_path.clone() + os_slash_str() + "main" + os_slash_str() + "build"))
+        .mount("/clients/download", FileServer::from(clients_dir_path.clone() + os_slash_str() + "download" + os_slash_str() + "build"))
 }
