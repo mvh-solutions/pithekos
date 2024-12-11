@@ -30,7 +30,7 @@ function Header({isHome, subtitle, widget}) {
                                  src="/clients/main/favicon.svg"/>
                         </Icon>
                     </Grid2>
-                    <Grid2 container size={{xs: 5, md: 4, lg: 2}} justifyContent="flex-start">
+                    <Grid2 container size={{xs: 5, sm: 4, lg: 3}} justifyContent="flex-start">
                         {!isHome &&
                         <BackIcon
                             fontSize="large"
@@ -41,10 +41,10 @@ function Header({isHome, subtitle, widget}) {
                         />}
                         {subtitle && subtitle.length > 0 && <Typography variant="h5">{doI18n(subtitle, i18n)}</Typography>}
                     </Grid2>
-                    <Grid2 container size={{xs: 4, md: 6, lg: 8}} justifyContent="flex-start">
+                    <Grid2 container size={{xs: 4, sm: 6, lg: 7}} justifyContent="flex-start">
                         {widget}
                     </Grid2>
-                    <Grid2 container size={{xs: 2, md: 1}} justifyContent="flex-end">
+                    <Grid2 container size={{xs: 2, lg: 1}} justifyContent="flex-end">
                         {
                             enabledRef.current ?
                                 <Public

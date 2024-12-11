@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import DownloadProject from './pages/DownloadProject/DownloadProject';
+import DownloadProject from './DownloadProject';
 import {Box} from '@mui/material';
 import './index.css';
 import {useSnackbar} from "notistack";
