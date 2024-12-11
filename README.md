@@ -22,9 +22,10 @@ Install cmake from https://cmake.org/download/
 
 ### Installation 
 ```
-cd client/main
+cd clients/main
 npm install
-cd ../client/download
+npm run build
+cd ../download
 npm install
 npm run build
 cd ../../server
