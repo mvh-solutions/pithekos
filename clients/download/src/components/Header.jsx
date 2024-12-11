@@ -1,8 +1,7 @@
-import {useContext} from 'react';
-import {AppBar, Grid2, Icon, Toolbar, Typography} from "@mui/material";
+import {useState, useContext} from 'react';
+import {AppBar, Grid2, Icon, Menu, MenuItem, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
-import BackIcon from '@mui/icons-material/ArrowBack';
-// import {useNavigate} from "react-router-dom";
+import MenuIcon from '@mui/icons-material/Menu';
 import {Public, PublicOff} from "@mui/icons-material";
 import {getJson} from "../lib/get";
 import MessagesContext from "../contexts/messages";
@@ -12,11 +11,13 @@ import I18nContext from "../contexts/i18n";
 import {doI18n} from "../lib/i18n";
 
 function Header({isHome, subtitle, widget}) {
-    // const navigate = useNavigate();
     const {messages, setMessages} = useContext(MessagesContext);
     const {enabledRef} = useContext(NetContext);
     const {debugRef} = useContext(DebugContext);
     const i18n = useContext(I18nContext);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>
@@ -25,26 +26,35 @@ function Header({isHome, subtitle, widget}) {
                        alignItems="center"
                        sx={{flexGrow: 1}}>
                     <Grid2 container size={{xs: 1}} justifyContent="flex-start">
-                        <Icon size="large" sx={{mt: 1, mb: 1, width: "50pt", height: "50pt"}}>
-                            <img alt="Pithekos logo" style={{width: 'inherit', height: 'inherit'}}
-                                 src="/clients/main/favicon.svg"/>
-                        </Icon>
-                    </Grid2>
-                    <Grid2 container size={{xs: 5, sm: 4, lg: 3}} justifyContent="flex-start">
-                        {!isHome &&
-                        <BackIcon
+                        <MenuIcon
                             fontSize="large"
-                            color="inherit"
-                            aria-label="settings"
-                            sx={{mr: 2}}
-                            // onClick={() => navigate("/")}
-                        />}
+                            onClick={e => setAnchorEl(e.currentTarget)}
+                        />
+                        <Menu
+                            id="add-project-menu"
+                            aria-labelledby="add-project-button"
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={()=>setAnchorEl(null)}
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'left',
+                            }}
+                        >
+                            <MenuItem onClick={()=>{window.location.href = "/"}}>{doI18n("components:header:goto_local_projects_menu_item", i18n)}</MenuItem>
+                        </Menu>
+                    </Grid2>
+                    <Grid2 container size={{xs: 5, md: 4, lg: 3}} justifyContent="flex-start">
                         {subtitle && subtitle.length > 0 && <Typography variant="h5">{doI18n(subtitle, i18n)}</Typography>}
                     </Grid2>
-                    <Grid2 container size={{xs: 4, sm: 6, lg: 7}} justifyContent="flex-start">
+                    <Grid2 container size={{xs: 3, md: 4, lg: 6}} justifyContent="flex-start">
                         {widget}
                     </Grid2>
-                    <Grid2 container size={{xs: 2, lg: 1}} justifyContent="flex-end">
+                    <Grid2 container size={{xs: 3, md: 2}} justifyContent="flex-end">
                         {
                             enabledRef.current ?
                                 <Public
@@ -60,14 +70,14 @@ function Header({isHome, subtitle, widget}) {
                                     sx={{color: "#33FF33"}}
                                 /> :
                                 <PublicOff
-                                    onClick={
+                                    /*onClick={
                                         async () => {
                                             const response = await getJson(`/net/enable`, debugRef.current);
                                             if (!response.ok) {
                                                 setMessages([...messages, `warning--5--${response.url}--${response.status}`])
                                             }
                                         }
-                                    }
+                                    }*/
                                     fontSize="large"
                                     sx={{color: "#AAAAAA"}}
                                 />}
@@ -76,7 +86,7 @@ function Header({isHome, subtitle, widget}) {
                             color="inherit"
                             aria-label="settings"
                             sx={{ml: 2}}
-                            // onClick={() => navigate("/settings")}
+                            //onClick={() => navigate("/settings")}
                         />
                     </Grid2>
                 </Grid2>

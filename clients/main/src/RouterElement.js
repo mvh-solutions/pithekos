@@ -3,7 +3,6 @@ import {createHashRouter, RouterProvider} from "react-router-dom";
 import Home from './pages/Home/Home';
 import Settings from './pages/Settings/Settings';
 import Workspace from './pages/Workspace/Workspace';
-import DownloadProject from './pages/DownloadProject/DownloadProject';
 import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
 import './index.css';
@@ -60,12 +59,6 @@ function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, de
             path: "/workspace/*",
             element: (
                 <Workspace/>
-            ),
-        },
-        {
-            path: "/download-project",
-            element: (
-                <DownloadProject/>
             ),
         },
         {

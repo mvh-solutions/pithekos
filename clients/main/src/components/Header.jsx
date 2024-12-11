@@ -1,4 +1,4 @@
-import {useContext} from 'react';
+import {useContext, useState} from 'react';
 import {AppBar, Grid2, Icon, Toolbar, Typography} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import BackIcon from '@mui/icons-material/ArrowBack';
@@ -17,6 +17,8 @@ function Header({isHome, subtitle, widget}) {
     const {enabledRef} = useContext(NetContext);
     const {debugRef} = useContext(DebugContext);
     const i18n = useContext(I18nContext);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
     return <div sx={{flexGrow: 1}}>
         <AppBar position="static">
             <Toolbar sx={{backgroundColor: "#441650"}}>

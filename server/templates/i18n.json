@@ -11,6 +11,10 @@
       "new_reference": {
         "en": "New Reference",
         "fr": "Nouvelle référence"
+      },
+      "goto_local_projects_menu_item": {
+        "en": "Projects on this machine",
+        "fr": "Projets sur cette machine"
       }
     }
   },
