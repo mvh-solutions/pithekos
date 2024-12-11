@@ -42,7 +42,6 @@ struct AppSettings {
 
 // CONSTANTS AND STATE
 
-const REACT_STATIC_PATH: &str = relative!("../clients");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -1194,8 +1193,9 @@ fn list_clients(clients: &State<Clients>) -> status::Custom<(ContentType, String
 }
 
 #[get("/clients/main/index.html")]
-async fn serve_client_index() -> Option<NamedFile> {
-    let index_path = Path::new(REACT_STATIC_PATH).join("main").join("build").join("index.html");
+async fn serve_client_index(state: &State<AppSettings>) -> Option<NamedFile> {
+    let clients_path = state.clients_dir.clone();
+    let index_path = Path::new(&clients_path).join("main").join("build").join("index.html");
     NamedFile::open(index_path).await.ok()
 }
 
@@ -1205,8 +1205,9 @@ async fn serve_clients_dir() -> Redirect {
 }
 
 #[get("/favicon.ico")]
-async fn serve_root_favicon() -> Option<NamedFile> {
-    let icon_path = Path::new(REACT_STATIC_PATH)
+async fn serve_root_favicon(state: &State<AppSettings>) -> Option<NamedFile> {
+    let clients_path = state.clients_dir.clone();
+    let icon_path = Path::new(&clients_path)
         .join("favicon.ico");
     NamedFile::open(icon_path).await.ok()
 }
@@ -1366,7 +1367,6 @@ fn rocket() -> _ {
         exit(1);
     }
     // Find client build dirs as grandchildren of clients dir
-    let clients_dir_path = REACT_STATIC_PATH.to_string();
     let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
     let mut found_main = false;
     for child in clients_dir_entries {
