@@ -1265,7 +1265,7 @@ fn rocket() -> _ {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
                 "resources_dir": root_path.clone() + "pithekos_resources",
-                "clients_dir": relative!("../main/build"),
+                "clients_dir": relative!("../clients"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
