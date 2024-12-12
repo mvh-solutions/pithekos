@@ -1390,7 +1390,7 @@ fn rocket() -> _ {
         exit(1);
     }
 
-    let my_rocket = rocket::build()
+    let mut my_rocket = rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
@@ -1411,12 +1411,6 @@ fn rocket() -> _ {
                     _ => Vec::new(),
                 },
             }
-        )
-        .manage(
-            msg_queue
-        )
-        .manage(
-            clients
         )
         .mount("/", routes![
             redirect_root,
@@ -1464,9 +1458,16 @@ fn rocket() -> _ {
             post_ingredient_as_usj,
             raw_metadata,
             summary_metadata
-        ]);
+        ])
+        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()));
+    let client_vec = clients.lock().unwrap().clone();
+    for client_name in client_vec {
+        my_rocket = my_rocket.mount(
+            format!("/clients/{}", client_name.clone()),
+            FileServer::from(clients_dir_path.clone() + os_slash_str() + &client_name + os_slash_str() + "build")
+        );
+    }
     my_rocket
-        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
-        .mount("/clients/main", FileServer::from(clients_dir_path.clone() + os_slash_str() + "main" + os_slash_str() + "build"))
-        .mount("/clients/download", FileServer::from(clients_dir_path.clone() + os_slash_str() + "download" + os_slash_str() + "build"))
+        .manage(msg_queue)
+        .manage(clients)
 }

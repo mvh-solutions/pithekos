@@ -1,5 +1,4 @@
 import React, {useState, useContext} from "react";
-// import {useNavigate} from "react-router-dom";
 import {Grid2, IconButton, TextField} from "@mui/material";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import NetContext from "./contexts/net";
@@ -10,7 +9,6 @@ import {doI18n} from "./lib/i18n";
 
 function DownloadProjectForm() {
     const [inputText, setInputText] = useState("");
-    // const navigate = useNavigate();
     const {enableNet} = useContext(NetContext);
     const {debugRef} = useContext(DebugContext);
     const i18n = useContext(I18nContext);
@@ -33,7 +31,7 @@ function DownloadProjectForm() {
                             `/git/fetch-repo/${inputText.replace(/^https?:\/\//, "")}`,
                             debugRef
                         );
-                        // navigate("/");
+                        window.location.href = "/";
                     }
                 }
             >
