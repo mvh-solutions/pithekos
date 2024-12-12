@@ -11,6 +11,7 @@ function DownloadProject() {
         <PtksPage
             isHome={false}
             subtitleKey="pages:download_project:subtitle"
+            requireNet={true}
         >
             <Grid2 container spacing={2}>
                 <DownloadProjectForm/>

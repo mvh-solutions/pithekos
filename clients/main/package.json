@@ -40,11 +40,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "cargo": "cd ./prodution && cargo run",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "watch": "watch 'npm run build' ./src"
+    "build": "react-scripts build"
   },
   "eslintConfig": {
     "extends": [
