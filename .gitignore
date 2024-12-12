@@ -1,6 +1,6 @@
 .idea
 **/node_modules
-client/build/
+clients/*/build/
 scribe-scripture-editor
 
 # Compiled files

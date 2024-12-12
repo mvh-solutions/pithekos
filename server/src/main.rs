@@ -33,7 +33,7 @@ struct AuthEndpoint {
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
-    client_dir: String,
+    clients_dir: String,
     repo_dir: String,
     resources_dir: String,
     languages: Vec<String>,
@@ -42,7 +42,6 @@ struct AppSettings {
 
 // CONSTANTS AND STATE
 
-const REACT_STATIC_PATH: &str = relative!("../client/build");
 static NET_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 static DEBUG_IS_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -287,7 +286,7 @@ fn net_status() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/enable")]
-fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn net_enable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--net--enable".to_string());
     NET_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
@@ -299,7 +298,7 @@ fn net_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(Con
 }
 
 #[get("/disable")]
-fn net_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn net_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--net--disable".to_string());
     NET_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
@@ -322,7 +321,7 @@ fn debug_status() -> status::Custom<(ContentType, String)> {
 }
 
 #[get("/enable")]
-fn debug_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn debug_enable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--debug--enable".to_string());
     DEBUG_IS_ENABLED.store(true, Ordering::Relaxed);
     status::Custom(
@@ -334,7 +333,7 @@ fn debug_enable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(C
 }
 
 #[get("/disable")]
-fn debug_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(ContentType, String)> {
+fn debug_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)> {
     msgs.lock().unwrap().push_back("info--5--debug--disable".to_string());
     DEBUG_IS_ENABLED.store(false, Ordering::Relaxed);
     status::Custom(
@@ -347,7 +346,7 @@ fn debug_disable(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> status::Custom<(
 
 // SSE
 #[get("/")]
-pub async fn notifications_stream(msgs: &State<Arc<Mutex<VecDeque<String>>>>) -> stream::EventStream![stream::Event + '_] {
+pub async fn notifications_stream(msgs: &State<MsgQueue>) -> stream::EventStream![stream::Event + '_] {
     stream::EventStream! {
         let mut count = 0;
         let mut interval = time::interval(Duration::from_millis(250));
@@ -1179,20 +1178,36 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
     }
 }
 
-#[get("/client/index.html")]
-async fn serve_client_index() -> Option<NamedFile> {
-    let index_path = Path::new(REACT_STATIC_PATH).join("index.html");
+// CLIENTS
+
+#[get("/list-clients")]
+fn list_clients(clients: &State<Clients>) -> status::Custom<(ContentType, String)> {
+    let client_vec = clients.lock().unwrap().clone();
+    status::Custom(
+        Status::Ok,
+        (
+            ContentType::JSON,
+            serde_json::to_string(&client_vec).unwrap()
+        ),
+    )
+}
+
+#[get("/clients/main/index.html")]
+async fn serve_client_index(state: &State<AppSettings>) -> Option<NamedFile> {
+    let clients_path = state.clients_dir.clone();
+    let index_path = Path::new(&clients_path).join("main").join("build").join("index.html");
     NamedFile::open(index_path).await.ok()
 }
 
-#[get("/client")]
-async fn serve_client_dir() -> Redirect {
+#[get("/clients/main")]
+async fn serve_clients_dir() -> Redirect {
     Redirect::to(uri!(serve_client_index))
 }
 
 #[get("/favicon.ico")]
-async fn serve_root_favicon() -> Option<NamedFile> {
-    let icon_path = Path::new(REACT_STATIC_PATH)
+async fn serve_root_favicon(state: &State<AppSettings>) -> Option<NamedFile> {
+    let clients_path = state.clients_dir.clone();
+    let icon_path = Path::new(&clients_path)
         .join("favicon.ico");
     NamedFile::open(icon_path).await.ok()
 }
@@ -1228,9 +1243,14 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 // BUILD SERVER
 
+type MsgQueue = Arc<Mutex<VecDeque<String>>>;
+type Clients = Mutex<Vec<String>>;
+
 #[rocket::launch]
 fn rocket() -> _ {
-    let msg_queue = Arc::new(Mutex::new(VecDeque::<String>::new()));
+    // Set up managed state;
+    let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
+    let clients = Clients::new(Vec::new());
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut settings_path = root_path.clone() + "pithekos_settings.json";
@@ -1245,7 +1265,7 @@ fn rocket() -> _ {
             let default_settings = json!({
                 "repo_dir": root_path.clone() + "pithekos_repos",
                 "resources_dir": root_path.clone() + "pithekos_resources",
-                "client_dir": relative!("../client/build"),
+                "clients_dir": relative!("../clients"),
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -1339,24 +1359,45 @@ fn rocket() -> _ {
             };
         }
     }
-    // Require client_dir
-    let client_dir_path = settings_json["client_dir"].as_str().unwrap().to_string();
-    let client_dir_path_exists = Path::new(&client_dir_path).is_dir();
-    if !client_dir_path_exists {
-        println!("Could not find  client directory '{}'", client_dir_path);
+    // Require clients_dir
+    let clients_dir_path = settings_json["clients_dir"].as_str().unwrap().to_string();
+    let clients_dir_path_exists = Path::new(&clients_dir_path).is_dir();
+    if !clients_dir_path_exists {
+        println!("Could not find clients directory '{}'", clients_dir_path);
+        exit(1);
+    }
+    // Find client build dirs as grandchildren of clients dir
+    let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
+    let mut found_main = false;
+    for child in clients_dir_entries {
+        let child_name = child.unwrap().file_name().into_string().unwrap();
+        let clients_child_path = clients_dir_path.clone() + os_slash_str() + child_name.clone().as_str();
+        if Path::new(&clients_child_path).is_dir() {
+            for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
+                let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
+                if grandchild_leaf_string == "build".to_string() {
+                    if child_name.clone() == "main".to_string() {
+                        found_main = true;
+                    }
+                    clients.lock().unwrap().push(child_name.clone());
+                }
+            }
+        }
+    }
+    // Throw if no main found
+    if !found_main {
+        println!("Could not find a build directory for main client in clients directory");
         exit(1);
     }
 
-    rocket::build()
+    let mut my_rocket = rocket::build()
         .register("/", catchers![
             not_found_catcher,
             default_catcher
         ])
-        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()))
-        .mount("/client", FileServer::from(client_dir_path.clone()))
         .manage(
             AppSettings {
-                client_dir: client_dir_path.clone(),
+                clients_dir: clients_dir_path.clone(),
                 repo_dir: repo_dir_path.clone(),
                 resources_dir: resources_dir_path.clone(),
                 languages: settings_json["languages"]
@@ -1371,14 +1412,12 @@ fn rocket() -> _ {
                 },
             }
         )
-        .manage(
-            msg_queue
-        )
         .mount("/", routes![
             redirect_root,
             serve_client_index,
-            serve_client_dir,
-            serve_root_favicon
+            serve_clients_dir,
+            serve_root_favicon,
+            list_clients
         ])
         .mount("/notifications", routes![
             notifications_stream,
@@ -1420,4 +1459,15 @@ fn rocket() -> _ {
             raw_metadata,
             summary_metadata
         ])
+        .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()));
+    let client_vec = clients.lock().unwrap().clone();
+    for client_name in client_vec {
+        my_rocket = my_rocket.mount(
+            format!("/clients/{}", client_name.clone()),
+            FileServer::from(clients_dir_path.clone() + os_slash_str() + &client_name + os_slash_str() + "build")
+        );
+    }
+    my_rocket
+        .manage(msg_queue)
+        .manage(clients)
 }

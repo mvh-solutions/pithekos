@@ -7,10 +7,20 @@
     "i18n": {}
   },
   "components": {
+    "framework": {
+      "no_entry_if_offline": {
+        "en": "You need to be online to view this page.",
+        "fr": "Vous devez vous connecter à l'Internet pour accéder à cette page."
+      }
+    },
     "header": {
       "new_reference": {
         "en": "New Reference",
         "fr": "Nouvelle référence"
+      },
+      "goto_local_projects_menu_item": {
+        "en": "Projects on this machine",
+        "fr": "Projets sur cette machine"
       }
     }
   },
@@ -33,6 +43,10 @@
       "subtitle": {
         "en": "Settings",
         "fr": "Configuration"
+      },
+      "debug_prompt": {
+        "en": "Debug?",
+        "fr": "Débogage ?"
       }
     },
     "new_project": {

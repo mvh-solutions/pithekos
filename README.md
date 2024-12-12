@@ -22,10 +22,13 @@ Install cmake from https://cmake.org/download/
 
 ### Installation 
 ```
-cd client
+cd clients/main
 npm install
 npm run build
-cd ../server
+cd ../download
+npm install
+npm run build
+cd ../../server
 cargo run
 ```
 
