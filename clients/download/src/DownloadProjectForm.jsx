@@ -26,8 +26,8 @@ function DownloadProjectForm() {
             <IconButton
                 disabled={!enableNet}
                 onClick={
-                    () => {
-                        getJson(
+                    async () => {
+                        await getJson(
                             `/git/fetch-repo/${inputText.replace(/^https?:\/\//, "")}`,
                             debugRef
                         );

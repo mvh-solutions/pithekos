@@ -10,8 +10,9 @@ function DeleteProjectButton({project}) {
         <IconButton
             aria-label="delete"
             onClick={
-                () => {
-                    getJson(`/git/delete-repo/${project}`, debugRef.current)
+                async () => {
+                    await getJson(`/git/delete-repo/${project}`, debugRef.current);
+                    window.location.reload();
                 }
             }
         >
