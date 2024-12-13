@@ -6,7 +6,7 @@ import {Box, Grid2, Paper} from "@mui/material";
 import {BlockOutlined} from "@mui/icons-material";
 import {doI18n} from "../lib/i18n";
 
-function PtksPage({isHome, subtitleKey, widget, margin, children, requireNet=false}) {
+function PtksPage({isHome, subtitleKey, widget, margin=2, children, requireNet=false}) {
     const {enableNet} = useContext(NetContext);
     const i18n = useContext(I18nContext);
     if (requireNet && !enableNet) {

@@ -48,7 +48,7 @@ function Header({isHome, subtitle, widget}) {
                         </Menu>
                     </Grid2>
                     <Grid2 container size={{xs: 5, md: 4, lg: 3}} justifyContent="flex-start">
-                        {subtitle && subtitle.length > 0 && <Typography variant="h5">{doI18n(subtitle, i18n)}</Typography>}
+                        {subtitle && subtitle.length > 0 && <Typography variant="h6">{doI18n(subtitle, i18n)}</Typography>}
                     </Grid2>
                     <Grid2 container size={{xs: 3, md: 4, lg: 6}} justifyContent="flex-start">
                         {widget}
