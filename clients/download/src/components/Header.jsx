@@ -27,7 +27,6 @@ function Header({isHome, subtitle, widget}) {
                        sx={{flexGrow: 1}}>
                     <Grid2 container size={{xs: 1}} justifyContent="flex-start">
                         <MenuIcon
-                            fontSize="large"
                             onClick={e => setAnchorEl(e.currentTarget)}
                         />
                         <Menu
@@ -66,7 +65,6 @@ function Header({isHome, subtitle, widget}) {
                                             }
                                         }
                                     }
-                                    fontSize="large"
                                     sx={{color: "#33FF33"}}
                                 /> :
                                 <PublicOff
@@ -78,11 +76,9 @@ function Header({isHome, subtitle, widget}) {
                                             }
                                         }
                                     }*/
-                                    fontSize="large"
                                     sx={{color: "#AAAAAA"}}
                                 />}
                         <SettingsIcon
-                            fontSize="large"
                             color="inherit"
                             aria-label="settings"
                             sx={{ml: 2}}
