@@ -1,62 +1,93 @@
-import {useState, useEffect} from "react";
-import DownloadProject from './DownloadProject';
-import {Box} from '@mui/material';
-import './index.css';
-import {useSnackbar} from "notistack";
-import MessagesContext from "./contexts/messages";
-import NetContext from "./contexts/net";
-import BcvContext from "./contexts/bcv";
-import DebugContext from "./contexts/debug";
-import I18nContext from "./contexts/i18n";
+import {useState, useEffect} from "react"
+import PtksPage from "./lib/PtksPage";
+import {Grid2} from "@mui/material";
+import {CloudDownload, CloudDone} from "@mui/icons-material";
+// import I18nContext from "../../contexts/i18n";
+// import {doI18n} from "../../lib/i18n";
+import {getJson} from "./lib/get";
 
-function App({enableNet, setEnableNet, enabledRef, debug, setDebug, debugRef, i18n}) {
+function App({netValue, debugValue, i18n}) {
+    const [catalog, setCatalog] = useState([]);
+    const [localRepos, setLocalRepos] = useState([]);
+    // const i18n = useContext(I18nContext);
 
-    const netValue = {enableNet, setEnableNet, enabledRef};
-    const debugValue = {debug, setDebug, debugRef};
-    const [systemBcv, setSystemBcv] = useState({
-        bookCode: "TIT",
-        chapterNum: 1,
-        verseNum: 1
-    });
-    const bcvValue = {systemBcv, setSystemBcv};
-    const [messages, setMessages] = useState([]);
-    const messageValue = {messages, setMessages};
-    const {enqueueSnackbar} = useSnackbar();
-    const localHandler = s => {
-        const dataBits = s.split('--');
-        if (dataBits.length === 4) {
-            enqueueSnackbar(
-                `${dataBits[2]} => ${dataBits[3]}`,
-                {
-                    variant: dataBits[0],
-                    anchorOrigin: {vertical: "top", horizontal: "left"}
+    useEffect(
+        () => {
+            const doCatalog = async () => {
+                const catalogResponse = await getJson("/gitea/remote-repos/git.door43.org/BurritoTruck");
+                if (catalogResponse.ok
+                ) {
+                    setCatalog(catalogResponse.json);
                 }
-            );
-        }
-    }
-
-    useEffect(() => {
-            if (messages.length > 0) {
-                messages.forEach(m => localHandler(m));
-                setMessages([]);
-            }
+            };
+            doCatalog();
         },
-        [messages]
-    )
+        []
+    );
 
-    return <DebugContext.Provider value={debugValue}>
-        <NetContext.Provider value={netValue}>
-            <BcvContext.Provider value={bcvValue}>
-                <MessagesContext.Provider value={messageValue}>
-                    <I18nContext.Provider value={i18n}>
-                        <Box sx={{height: '100vh', overflow: 'hidden'}}>
-                            <DownloadProject/>
-                        </Box>
-                    </I18nContext.Provider>
-                </MessagesContext.Provider>
-            </BcvContext.Provider>
-        </NetContext.Provider>
-    </DebugContext.Provider>
+    useEffect(
+        () => {
+            const doLocalRepos = async () => {
+                const localReposResponse = await getJson("/git/list-local-repos");
+                if (localReposResponse.ok) {
+                    setLocalRepos(localReposResponse.json);
+                }
+            };
+            doLocalRepos();
+        },
+        []
+    );
+
+    return (
+        <PtksPage
+            subtitleKey="pages:download_project:subtitle"
+            requireNet={true}
+            netValue={netValue}
+            debugValue={debugValue}
+            i18n={i18n}
+        >
+            <Grid2 container spacing={2}>
+                <Grid2 container>
+                    {
+                        catalog
+                            .filter(ce => ce.flavor)
+                            .map(
+                                ce => {
+                                    const remoteRepoPath = `git.door43.org/BurritoTruck/${ce.name}`;
+                                    return <>
+                                        <Grid2 item size={1}>
+                                            {ce.abbreviation.toUpperCase()}
+                                        </Grid2>
+                                        <Grid2 item size={1}>
+                                            {ce.language_code}
+                                        </Grid2>
+                                        <Grid2 item size={6}>
+                                            {ce.description}
+                                        </Grid2>
+                                        <Grid2 item size={3}>
+                                            {`${ce.flavor}/${ce.flavor_type}`}
+                                        </Grid2>
+                                        <Grid2 item size={1}>
+                                            {
+                                                localRepos.includes(remoteRepoPath) ?
+                                                    <CloudDone color="disabled"/> :
+                                                    <CloudDownload
+                                                        disabled={localRepos.includes(remoteRepoPath)}
+                                                        onClick={async () => {
+                                                            await getJson(`/git/fetch-repo/${remoteRepoPath}`);
+                                                            window.location.href = "/";
+                                                        }}
+                                                    />
+                                            }
+                                        </Grid2>
+                                    </>
+                                }
+                            )
+                    }
+                </Grid2>
+            </Grid2>
+        </PtksPage>
+    );
 }
 
 export default App;
