@@ -1,14 +1,14 @@
 import {createRoot} from "react-dom/client";
-import SPSPA from "./framework/components/SPSPA";
+import SpSpa from "./framework/components/SpSpa";
 import App from "./App";
 import './index.css';
 
 createRoot(document.getElementById("root"))
     .render(
-        <SPSPA
+        <SpSpa
             requireNet={true}
             subtitleKey="pages:download_project:subtitle"
         >
             <App/>
-        </SPSPA>
+        </SpSpa>
     );

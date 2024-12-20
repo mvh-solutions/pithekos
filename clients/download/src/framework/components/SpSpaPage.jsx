@@ -142,7 +142,7 @@ function Header({subtitle, widget}) {
     </div>
 }
 
-function PtksPage({subtitleKey, widget, margin = 2, children, requireNet = false, netValue, debugValue, i18n}) {
+function SpSpaPage({subtitleKey, widget, margin = 2, children, requireNet = false, netValue, debugValue, i18n}) {
     const {enableNet} = netValue;
     if (requireNet && !enableNet) {
         return (
@@ -199,4 +199,4 @@ function PtksPage({subtitleKey, widget, margin = 2, children, requireNet = false
     );
 }
 
-export default PtksPage;
+export default SpSpaPage;
