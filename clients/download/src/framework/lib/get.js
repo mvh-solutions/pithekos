@@ -73,4 +73,12 @@ async function getText(url, debug=false) {
     }
 }
 
-export {getJson, getText};
+const getAndSetJson = async ({url, setter}) => {
+    const response = await getJson(url);
+    if (response.ok
+    ) {
+        setter(response.json);
+    }
+}
+
+export {getJson, getAndSetJson, getText};

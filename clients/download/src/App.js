@@ -1,36 +1,24 @@
 import {useState, useEffect} from "react"
 import {Grid2} from "@mui/material";
 import {CloudDownload, CloudDone} from "@mui/icons-material";
-import {getJson} from "./framework/lib/get";
+import {getAndSetJson, getJson} from "./framework/lib/get";
 
 function App() {
     const [catalog, setCatalog] = useState([]);
-    const [localRepos, setLocalRepos] = useState([]);
-
     useEffect(
-        () => {
-            const doCatalog = async () => {
-                const catalogResponse = await getJson("/gitea/remote-repos/git.door43.org/BurritoTruck");
-                if (catalogResponse.ok
-                ) {
-                    setCatalog(catalogResponse.json);
-                }
-            };
-            doCatalog();
-        },
+        () => {getAndSetJson({
+                url: "/gitea/remote-repos/git.door43.org/BurritoTruck",
+                setter: setCatalog
+            }).then()},
         []
     );
 
+    const [localRepos, setLocalRepos] = useState([]);
     useEffect(
-        () => {
-            const doLocalRepos = async () => {
-                const localReposResponse = await getJson("/git/list-local-repos");
-                if (localReposResponse.ok) {
-                    setLocalRepos(localReposResponse.json);
-                }
-            };
-            doLocalRepos();
-        },
+        () => {getAndSetJson({
+                url: "/git/list-local-repos",
+                setter: setLocalRepos
+            }).then()},
         []
     );
 
