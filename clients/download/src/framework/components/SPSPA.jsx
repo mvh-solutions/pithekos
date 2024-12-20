@@ -1,10 +1,10 @@
 import {useEffect, useRef, useState} from "react";
-import {getJson} from "./lib/get";
+import {getJson} from "../lib/get";
 import {enqueueSnackbar, SnackbarProvider} from "notistack";
 import {fetchEventSource} from "@microsoft/fetch-event-source";
-import App from "./App";
+import PtksPage from "./PtksPage";
 
-function SPSPA() {
+function SPSPA({children, subtitleKey, requireNet}) {
     const [enableNet, _setEnableNet] = useState(false);
     const enabledRef = useRef(enableNet);
     const setEnableNet = nv => {
@@ -111,11 +111,15 @@ function SPSPA() {
     const debugValue = {debug, setDebug, debugRef};
 
     return <SnackbarProvider maxSnack={3}>
-        <App
+        <PtksPage
+            subtitleKey={subtitleKey}
+            requireNet={requireNet}
             netValue={netValue}
             debugValue={debugValue}
             i18n={i18n}
-        />
+        >
+            {children}
+        </PtksPage>
     </SnackbarProvider>
 }
 

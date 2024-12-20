@@ -3,13 +3,13 @@ import I18nContext from "../contexts/i18n";
 import NetContext from "../contexts/net";
 import {AppBar, Box, Grid2, Menu, MenuItem, Paper, Toolbar, Typography} from "@mui/material";
 import {BlockOutlined, Public, PublicOff} from "@mui/icons-material";
-import {doI18n} from "./i18n";
+import {doI18n} from "../lib/i18n";
 import {useSnackbar} from "notistack";
 import DebugContext from "../contexts/debug";
-import BcvContext from "../contexts/bcv";
+import BcvContext from "../../contexts/bcv";
 import MessagesContext from "../contexts/messages";
 import MenuIcon from "@mui/icons-material/Menu";
-import {getJson} from "./get";
+import {getJson} from "../lib/get";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 

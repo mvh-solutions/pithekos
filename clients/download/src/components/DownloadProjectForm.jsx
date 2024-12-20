@@ -1,11 +1,11 @@
 import React, {useState, useContext} from "react";
 import {Grid2, IconButton, TextField} from "@mui/material";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import NetContext from "../contexts/net";
-import DebugContext from "../contexts/debug";
-import {getJson} from "../lib/get";
-import I18nContext from "../contexts/i18n";
-import {doI18n} from "../lib/i18n";
+import NetContext from "../framework/contexts/net";
+import DebugContext from "../framework/contexts/debug";
+import {getJson} from "../framework/lib/get";
+import I18nContext from "../framework/contexts/i18n";
+import {doI18n} from "../framework/lib/i18n";
 
 function DownloadProjectForm() {
     const [inputText, setInputText] = useState("");
