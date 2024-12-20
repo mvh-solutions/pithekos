@@ -1,17 +1,13 @@
 import React, {useState, useContext} from "react";
 import {Grid2, IconButton, TextField} from "@mui/material";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import NetContext from "../framework/contexts/net";
-import DebugContext from "../framework/contexts/debug";
-import {getJson} from "../framework/lib/get";
-import I18nContext from "../framework/contexts/i18n";
-import {doI18n} from "../framework/lib/i18n";
+import {netContext, debugContext, getJson, i18nContext, doI18n} from "pithekos-lib";
 
 function DownloadProjectForm() {
     const [inputText, setInputText] = useState("");
-    const {enableNet} = useContext(NetContext);
-    const {debugRef} = useContext(DebugContext);
-    const i18n = useContext(I18nContext);
+    const {enableNet} = useContext(netContext);
+    const {debugRef} = useContext(debugContext);
+    const i18n = useContext(i18nContext);
     return <>
         <Grid2 size={10}>
             <TextField

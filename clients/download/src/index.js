@@ -1,5 +1,5 @@
 import {createRoot} from "react-dom/client";
-import SpSpa from "./framework/components/SpSpa";
+import {SpSpa} from "pithekos-lib";
 import App from "./App";
 import './index.css';
 

@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react"
 import {Grid2} from "@mui/material";
 import {CloudDownload, CloudDone} from "@mui/icons-material";
-import {getAndSetJson, getJson} from "./framework/lib/get";
+import {getAndSetJson, getJson} from "pithekos-lib";
 
 function App() {
     const [catalog, setCatalog] = useState([]);
