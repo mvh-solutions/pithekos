@@ -17,7 +17,7 @@ function AddProjectButton() {
     };
 
     const handleNewProject = () => {
-        navigate("/new-project");
+        window.location.href = "../new_project";
     };
 
     const handleDownloadProject = () => {

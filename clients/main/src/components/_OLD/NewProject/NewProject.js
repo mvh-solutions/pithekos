@@ -1,5 +1,5 @@
 // import {useContext} from "react";
-import PtksPage from "../../components/PtksPage";
+import PtksPage from "../../PtksPage";
 import {Grid2} from "@mui/material";
 // import I18nContext from "../../contexts/i18n";
 // import {doI18n} from "../../lib/i18n";

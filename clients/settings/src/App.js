@@ -1,19 +1,11 @@
-import {useContext} from 'react';
-import PtksPage from "../../components/PtksPage";
+import {useContext} from "react"
 import {Grid2, Switch} from "@mui/material";
-import {getJson} from "../../lib/get";
-import DebugContext from "../../contexts/debug";
-import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
+import {debugContext, i18nContext, doI18n, getJson} from "pithekos-lib";
 
-function Settings() {
-    const {debugRef} = useContext(DebugContext);
-    const i18n = useContext(I18nContext);
+function App() {
+        const {debugRef} = useContext(debugContext);
+    const i18n = useContext(i18nContext);
     return (
-        <PtksPage
-            isHome={false}
-            subtitleKey="pages:settings:subtitle"
-        >
             <Grid2 container>
                 <Grid2 item size={6}>
                     {doI18n("pages:settings:debug_prompt", i18n)}
@@ -29,8 +21,8 @@ function Settings() {
                     />
                 </Grid2>
             </Grid2>
-        </PtksPage>
-    );
+    )
+
 }
 
-export default Settings;
+export default App;

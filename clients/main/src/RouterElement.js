@@ -1,9 +1,7 @@
 import {useState, useEffect} from "react";
 import {createHashRouter, RouterProvider} from "react-router-dom";
 import Home from './pages/Home/Home';
-import Settings from './pages/Settings/Settings';
 import Workspace from './pages/Workspace/Workspace';
-import NewProject from './pages/NewProject/NewProject';
 import {Box} from '@mui/material';
 import './index.css';
 import {useSnackbar} from "notistack";
@@ -59,18 +57,6 @@ function RouterElement({enableNet, setEnableNet, enabledRef, debug, setDebug, de
             path: "/workspace/*",
             element: (
                 <Workspace/>
-            ),
-        },
-        {
-            path: "/new-project",
-            element: (
-                <NewProject/>
-            ),
-        },
-        {
-            path: "/settings",
-            element: (
-                <Settings/>
             ),
         }
     ]);
