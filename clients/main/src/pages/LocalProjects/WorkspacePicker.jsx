@@ -11,16 +11,13 @@ import {
 import DeleteProjectButton from "./DeleteProjectButton";
 import {EditNote} from "@mui/icons-material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DebugContext from "../../contexts/debug";
-import I18nContext from "../../contexts/i18n";
-import {getJson} from "../../lib/get";
-import {doI18n} from "../../lib/i18n";
+import {debugContext, i18nContext, getJson, doI18n} from "pithekos-lib";
 
 function WorkspacePicker({repos}) {
     const [repoData, setRepoData] = useState({});
     const [rows, setRows] = useState([]);
-    const {debugRef} = useContext(DebugContext);
-    const i18n = useContext(I18nContext);
+    const {debugRef} = useContext(debugContext);
+    const i18n = useContext(i18nContext);
     const navigate = useNavigate();
 
     const getAllData = async () => {

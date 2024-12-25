@@ -3,10 +3,8 @@ import {Box, InputLabel, MenuItem, FormControl, Select} from "@mui/material";
 import FontMenuItem from "./FontMenuItem";
 import sx from "./PithekosToolbar.styles";
 import PropTypes from 'prop-types';
-
 import WebFontsArray from '../webfonts/_webfonts.json';
-import I18nContext from "../contexts/i18n";
-import {doI18n} from "../lib/i18n";
+import {i18nContext as I18nContext, doI18n} from "pithekos-lib";
 
 export default function PithekosToolbarSelectFont(PithekosToolbarSelectFontProps) {
     const i18n = useContext(I18nContext);

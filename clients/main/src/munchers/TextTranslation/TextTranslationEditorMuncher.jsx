@@ -6,11 +6,7 @@ import {
 } from "./blockRenderers";
 import {Grid2} from "@mui/material";
 import dcopy from "deep-copy";
-import DebugContext from "../../contexts/debug";
-import BcvContext from "../../contexts/bcv";
-// import I18nContext from "../../contexts/i18n";
-import {getJson} from "../../lib/get";
-// import {doI18n} from "../../lib/i18n";
+import {bcvContext as BcvContext, debugContext as DebugContext, getJson} from "pithekos-lib";
 
 function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
     const {systemBcv} = useContext(BcvContext);

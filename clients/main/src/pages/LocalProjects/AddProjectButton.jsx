@@ -2,9 +2,7 @@ import React, {useState, useContext} from "react";
 import {Menu, MenuItem} from "@mui/material";
 import AddCircleIcon from '@mui/icons-material/AddCircleOutline';
 import {useNavigate} from "react-router-dom";
-import NetContext from "../../contexts/net";
-import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
+import {netContext as NetContext, i18nContext as I18nContext, doI18n} from "pithekos-lib";
 
 function AddProjectButton() {
     const i18n = useContext(I18nContext);

@@ -1,11 +1,14 @@
 import {useEffect, useState, useContext} from "react";
 import {Box, Grid2, Typography} from "@mui/material";
-import NetContext from "../../contexts/net";
-import BcvContext from "../../contexts/bcv";
-import DebugContext from "../../contexts/debug";
-import I18nContext from "../../contexts/i18n";
-import {getText} from "../../lib/get";
-import {doI18n} from "../../lib/i18n";
+
+import {
+    i18nContext as I18nContext,
+    debugContext as DebugContext,
+    bcvContext as BcvContext,
+    netContext as NetContext,
+    getText,
+    doI18n
+} from "pithekos-lib";
 
 function VideoLinksViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);

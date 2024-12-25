@@ -1,8 +1,10 @@
 import React, {useState, useContext} from "react";
 import {Box, TextField, Typography} from "@mui/material";
-import BcvContext from "../../contexts/bcv";
-import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
+import {
+    bcvContext as BcvContext,
+    i18nContext as I18nContext,
+    doI18n
+} from "pithekos-lib";
 
 function BcvPicker() {
     const [newRef, setNewRef] = useState("");

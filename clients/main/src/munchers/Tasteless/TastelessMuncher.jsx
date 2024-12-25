@@ -2,10 +2,7 @@ import {useEffect, useState, useContext} from "react";
 import {Box, Button, Grid2} from "@mui/material";
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import DebugContext from "../../contexts/debug";
-import I18nContext from "../../contexts/i18n";
-import {getJson} from "../../lib/get";
-import {doI18n} from "../../lib/i18n";
+import {i18nContext as I18nContext, debugContext as DebugContext, getJson, doI18n} from "pithekos-lib";
 
 function TastelessMuncher({metadata}) {
     const [sbMetadata, setSbMetadata] = useState();

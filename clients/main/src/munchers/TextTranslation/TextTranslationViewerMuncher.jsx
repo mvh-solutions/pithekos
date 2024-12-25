@@ -1,16 +1,13 @@
 import {useEffect, useState, useContext} from "react";
 import "./TextTranslationViewerMuncher.css";
 import {Grid2} from "@mui/material";
-import BcvContext from "../../contexts/bcv";
-import DebugContext from "../../contexts/debug";
-// import I18nContext from "../../contexts/i18n";
-import {getJson} from "../../lib/get";
-// import {doI18n} from "../../lib/i18n";
+
+import {getJson, debugContext, bcvContext} from "pithekos-lib";
 
 function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
-    const {systemBcv} = useContext(BcvContext);
-    const {debugRef} = useContext(DebugContext);
-    // const i18n = useContext(I18nContext);
+    const {systemBcv} = useContext(bcvContext);
+    const {debugRef} = useContext(debugContext);
+    // const i18n = useContext(i18nContext);
     const [state, setState] = useState({
         usj: {
             working: null,

@@ -1,11 +1,14 @@
 import {useEffect, useState, useContext} from "react";
 import {Box} from "@mui/material";
 import Markdown from 'react-markdown';
-import BcvContext from "../../contexts/bcv";
-import DebugContext from "../../contexts/debug";
-import I18nContext from "../../contexts/i18n";
-import {doI18n} from "../../lib/i18n";
-import {getText} from "../../lib/get";
+
+import {
+    i18nContext as I18nContext,
+    debugContext as DebugContext,
+    bcvContext as BcvContext,
+    doI18n,
+    getText
+} from "pithekos-lib";
 
 function BcvNotesViewerMuncher({metadata}) {
     const [ingredient, setIngredient] = useState([]);
