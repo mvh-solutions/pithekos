@@ -1,0 +1,16 @@
+{
+  "id": "core-local-workspace",
+  "require": {
+    "net": false
+  },
+  "i18n": {
+    "title": {
+      "en": "Local Workspace",
+      "fr": "Espace de Travail Local"
+    },
+    "summary": {
+      "en": "Manage and edit local resources",
+      "fr": "Gérer et modifier des ressources locales"
+    }
+  }
+}

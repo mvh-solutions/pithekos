@@ -9,9 +9,8 @@ use home::home_dir;
 use rocket::form::Form;
 use rocket::fs::{FileServer, relative, NamedFile, TempFile};
 use rocket::http::{Status, ContentType};
-use rocket::{Request, get, post, routes, catch, catchers, uri, FromForm};
+use rocket::{Rocket, State, Build, Request, get, post, routes, catch, catchers, uri, FromForm};
 use rocket::response::{status, Redirect, stream};
-use rocket::State;
 use rocket::tokio::{time};
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
@@ -916,7 +915,7 @@ async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::
 #[derive(Serialize, Deserialize)]
 struct GitStatusRecord {
     path: String,
-    change_type: String
+    change_type: String,
 }
 #[get("/status/<repo_path..>")]
 async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
@@ -930,7 +929,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
                         ContentType::JSON,
                         make_bad_json_data_response("cannot get status of bare repo".to_string())
                     ),
-                )
+                );
             };
             let mut opts = StatusOptions::new();
             opts.include_untracked(true);
@@ -941,7 +940,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
                         .iter()
                         .filter(|e| e.status() != git2::Status::CURRENT)
                     {
-                        let mut istatus = match entry.status() {
+                        let i_status = match entry.status() {
                             s if s.contains(git2::Status::INDEX_NEW) || s.contains(git2::Status::WT_NEW) => "new",
                             s if s.contains(git2::Status::INDEX_MODIFIED) || s.contains(git2::Status::WT_MODIFIED) => "modified",
                             s if s.contains(git2::Status::INDEX_DELETED) || s.contains(git2::Status::WT_DELETED) => "deleted",
@@ -956,7 +955,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
                         status_changes.push(
                             GitStatusRecord {
                                 path: entry.path().unwrap().to_string(),
-                                change_type: istatus.to_string()
+                                change_type: i_status.to_string(),
                             }
                         );
                         // println!("{} ({})", entry.path().unwrap(), istatus);
@@ -966,9 +965,9 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
                         (
                             ContentType::JSON,
                             serde_json::to_string_pretty(&status_changes).unwrap()
-                        )
+                        ),
                     )
-                },
+                }
                 Err(e) => status::Custom(
                     Status::InternalServerError,
                     (
@@ -977,7 +976,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
                     ),
                 )
             }
-        },
+        }
         Err(e) => status::Custom(
             Status::InternalServerError,
             (
@@ -1258,7 +1257,7 @@ async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBu
 
 #[get("/list-clients")]
 fn list_clients(clients: &State<Clients>) -> status::Custom<(ContentType, String)> {
-    let client_vec = clients.lock().unwrap().clone();
+    let client_vec = public_serialize_clients(clients.lock().unwrap().clone());
     status::Custom(
         Status::Ok,
         (
@@ -1320,10 +1319,32 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 // BUILD SERVER
 
 type MsgQueue = Arc<Mutex<VecDeque<String>>>;
-type Clients = Mutex<Vec<String>>;
+
+#[derive(Clone)]
+struct Client {
+    id: String,
+    requires: BTreeMap<String, bool>,
+    path: String,
+}
+
+#[derive(Serialize)]
+struct PublicClient {
+    id: String,
+    requires: BTreeMap<String, bool>,
+}
+fn public_serialize_client(c: Client) -> PublicClient {
+    PublicClient {
+        id: c.id.clone(),
+        requires: c.requires.clone()
+    }
+}
+fn public_serialize_clients(cv: Vec<Client>)-> Vec<PublicClient> {
+    cv.into_iter().map(|c| public_serialize_client(c)).collect()
+}
+type Clients = Mutex<Vec<Client>>;
 
 #[rocket::launch]
-fn rocket() -> _ {
+fn rocket() -> Rocket<Build> {
     // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
     let clients = Clients::new(Vec::new());
@@ -1414,6 +1435,7 @@ fn rocket() -> _ {
             }
         }
     };
+    /*
     // Copy templates to resources_dir if not present
     let template_dir_path = relative!("./templates").to_string();
     let template_dir_entries = std::fs::read_dir(template_dir_path.clone()).unwrap();
@@ -1435,6 +1457,7 @@ fn rocket() -> _ {
             };
         }
     }
+     */
     // Require clients_dir
     let clients_dir_path = settings_json["clients_dir"].as_str().unwrap().to_string();
     let clients_dir_path_exists = Path::new(&clients_dir_path).is_dir();
@@ -1442,12 +1465,36 @@ fn rocket() -> _ {
         println!("Could not find clients directory '{}'", clients_dir_path);
         exit(1);
     }
-    // Find client build dirs as grandchildren of clients dir
+    // Find client build dirs as grandchildren of clients dir, for now
+    // Process clients metadata:
+    // - load i18n templates
+    // - initialize client array
+    // - for each client metadata file:
+    // --- load it
+    // --- merge i18N
+    // --- build client array
+    // - write out i18n to destination
     let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
     let mut found_main = false;
     for child in clients_dir_entries {
         let child_name = child.unwrap().file_name().into_string().unwrap();
         let clients_child_path = clients_dir_path.clone() + os_slash_str() + child_name.clone().as_str();
+        let child_metadata_path = clients_child_path.clone() + os_slash_str() + "pankosmia_metadata.json";
+        let metadata_json: Value = match fs::read_to_string(&child_metadata_path) {
+            Ok(mt) => {
+                match serde_json::from_str(&mt) {
+                    Ok(m) => m,
+                    Err(e) => {
+                        println!("Could not parse metadata file {} as JSON: {}\n{}", &child_metadata_path, e, mt);
+                        exit(1);
+                    }
+                }
+            },
+            Err(e) => {
+                println!("Could not read metadata file {}: {}", child_metadata_path, e);
+                exit(1);
+            }
+        };
         if Path::new(&clients_child_path).is_dir() {
             for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
                 let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
@@ -1455,7 +1502,16 @@ fn rocket() -> _ {
                     if child_name.clone() == "main".to_string() {
                         found_main = true;
                     }
-                    clients.lock().unwrap().push(child_name.clone());
+                    let mut requires_map = BTreeMap::new();
+                    requires_map.insert("net".to_string(), metadata_json["require"]["net"].as_bool().unwrap());
+                    clients.lock().unwrap()
+                        .push(
+                            Client {
+                                id: metadata_json["id"].as_str().unwrap().to_string(),
+                                requires: requires_map,
+                                path: child_name.clone()
+                            }
+                        );
                 }
             }
         }
@@ -1538,10 +1594,10 @@ fn rocket() -> _ {
         ])
         .mount("/webfonts", FileServer::from(webfonts_dir_path.clone()));
     let client_vec = clients.lock().unwrap().clone();
-    for client_name in client_vec {
+    for client_record in client_vec {
         my_rocket = my_rocket.mount(
-            format!("/clients/{}", client_name.clone()),
-            FileServer::from(clients_dir_path.clone() + os_slash_str() + &client_name + os_slash_str() + "build")
+            format!("/clients/{}", client_record.path.clone()),
+            FileServer::from(clients_dir_path.clone() + os_slash_str() + &client_record.path + os_slash_str() + "build"),
         );
     }
     my_rocket

@@ -24,7 +24,7 @@
       }
     }
   },
-  "pages": {
+  "old_pages": {
     "home": {
       "subtitle": {
         "en": "Projects on this machine",

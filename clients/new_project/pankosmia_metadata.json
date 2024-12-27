@@ -1,0 +1,16 @@
+{
+  "id": "core-new-project",
+  "require": {
+    "net": false
+  },
+  "i18n": {
+    "title": {
+      "en": "New Project",
+      "fr": "Nouveau Project"
+    },
+    "summary": {
+      "en": "Create a new project on your machine",
+      "fr": "Créer un nouveau projet sur votre machine"
+    }
+  }
+}
