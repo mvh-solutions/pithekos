@@ -1325,17 +1325,20 @@ struct Client {
     id: String,
     requires: BTreeMap<String, bool>,
     path: String,
+    url: String
 }
 
 #[derive(Serialize)]
 struct PublicClient {
     id: String,
     requires: BTreeMap<String, bool>,
+    url: String
 }
 fn public_serialize_client(c: Client) -> PublicClient {
     PublicClient {
         id: c.id.clone(),
-        requires: c.requires.clone()
+        requires: c.requires.clone(),
+        url: c.url.clone()
     }
 }
 fn public_serialize_clients(cv: Vec<Client>)-> Vec<PublicClient> {
@@ -1435,29 +1438,6 @@ fn rocket() -> Rocket<Build> {
             }
         }
     };
-    /*
-    // Copy templates to resources_dir if not present
-    let template_dir_path = relative!("./templates").to_string();
-    let template_dir_entries = std::fs::read_dir(template_dir_path.clone()).unwrap();
-    for entry in template_dir_entries {
-        let leaf_name = entry.unwrap().file_name().into_string().unwrap();
-        let resource_leaf_path = resources_dir_path.clone() + os_slash_str() + leaf_name.as_str();
-        if !Path::new(&resource_leaf_path).is_dir() && !Path::new(&resource_leaf_path).is_file() {
-            let template_leaf_path = template_dir_path.clone() + os_slash_str() + leaf_name.as_str();
-            match copy_dir(template_leaf_path, resource_leaf_path) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!(
-                        "Could not copy {} to resources directory: {}",
-                        leaf_name.as_str(),
-                        e
-                    );
-                    exit(1);
-                }
-            };
-        }
-    }
-     */
     // Require clients_dir
     let clients_dir_path = settings_json["clients_dir"].as_str().unwrap().to_string();
     let clients_dir_path_exists = Path::new(&clients_dir_path).is_dir();
@@ -1465,16 +1445,26 @@ fn rocket() -> Rocket<Build> {
         println!("Could not find clients directory '{}'", clients_dir_path);
         exit(1);
     }
+    // Process clients metadata to build clients and i18n
     // Find client build dirs as grandchildren of clients dir, for now
-    // Process clients metadata:
-    // - load i18n templates
-    // - initialize client array
-    // - for each client metadata file:
-    // --- load it
-    // --- merge i18N
-    // --- build client array
-    // - write out i18n to destination
     let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
+    let i18n_template_path = relative!("./templates").to_string() + os_slash_str() + "i18n.json";
+    let mut i18n_json_map: Map<String, Value> = match fs::read_to_string(&i18n_template_path) {
+        Ok(it) => {
+            match serde_json::from_str(&it) {
+                Ok(i) => i,
+                Err(e) => {
+                    println!("Could not parse i18n file {} as JSON: {}\n{}", &i18n_template_path, e, it);
+                    exit(1);
+                }
+            }
+        },
+        Err(e) => {
+            println!("Could not read i18n file {}: {}", i18n_template_path, e);
+            exit(1);
+        }
+    };
+    let mut i18n_pages_map = Map::new();
     let mut found_main = false;
     for child in clients_dir_entries {
         let child_name = child.unwrap().file_name().into_string().unwrap();
@@ -1495,6 +1485,9 @@ fn rocket() -> Rocket<Build> {
                 exit(1);
             }
         };
+        let metadata_id = metadata_json["id"].as_str().unwrap().to_string();
+        let metadata_i18n = metadata_json["i18n"].clone();
+        i18n_pages_map.insert(metadata_id.clone(), metadata_i18n);
         if Path::new(&clients_child_path).is_dir() {
             for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
                 let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
@@ -1507,13 +1500,30 @@ fn rocket() -> Rocket<Build> {
                     clients.lock().unwrap()
                         .push(
                             Client {
-                                id: metadata_json["id"].as_str().unwrap().to_string(),
+                                id: metadata_id.clone(),
                                 requires: requires_map,
-                                path: child_name.clone()
+                                path: child_name.clone(),
+                                url: "/foo".to_string()
                             }
                         );
                 }
             }
+        }
+    }
+    i18n_json_map.insert("pages".to_string(), serde_json::Value::Object(i18n_pages_map));
+    let i18n_target_path = resources_dir_path.clone() + os_slash_str() + "i18n.json";
+    let mut i18n_file_handle = match fs::File::create(&i18n_target_path) {
+        Ok(h) => h,
+        Err(e) => {
+            println!("Could not open target i18n file '{}': {}", i18n_target_path, e);
+            exit(1);
+        }
+    };
+    match i18n_file_handle.write_all(serde_json::Value::Object(i18n_json_map).to_string().as_bytes()) {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Could not write target i18n file to '{}': {}", i18n_target_path, e);
+            exit(1);
         }
     }
     // Throw if no main found
