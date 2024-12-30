@@ -32,8 +32,32 @@ function WorkspacePicker() {
 
     const [repos, setRepos] = useState([]);
     const pollingFunc = async () => {
-        const response = await fetch("/git/list-local-repos");
-        setRepos(await response.json());
+        try {
+            const response = await fetch("/git/list-local-repos");
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                const text = await response.text();
+                console.error("Response text:", text);
+                return;
+            }
+            
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("Response is not JSON:", contentType);
+                const text = await response.text();
+                console.error("Response text:", text);
+                return;
+            }
+
+            const data = await response.json();
+            setRepos(data);
+        } catch (error) {
+            console.error("Polling error:", error);
+            if (error instanceof SyntaxError) {
+                // JSON parse error
+                console.error("Invalid JSON response");
+            }
+        }
     }
     const pollingRef = useRef(null);
     useEffect(() => {
