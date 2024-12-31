@@ -2,7 +2,7 @@
   "name": "react-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/clients/new_project",
+  "homepage": "/clients/new-project",
   "dependencies": {
     "@biblionexus-foundation/scribe-editor": "^0.0.4",
     "@emotion/react": "^11.13.3",
@@ -20,7 +20,7 @@
     "deep-equal": "^2.2.3",
     "lodash": "^4.17.21",
     "notistack": "^3.0.1",
-    "pithekos-lib": "^0.0.11",
+    "pithekos-lib": "^0.0.13",
     "prop-types": "^15.8.1",
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",

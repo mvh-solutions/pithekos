@@ -8,7 +8,7 @@ function App() {
     return (
             <Grid2 container>
                 <Grid2 item size={6}>
-                    {doI18n("pages:settings:debug_prompt", i18n)}
+                    {doI18n("pages:core-settings:debug_prompt", i18n)}
                 </Grid2>
                 <Grid2 item size={6}>
                     <Switch

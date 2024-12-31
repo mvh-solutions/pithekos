@@ -7,7 +7,7 @@ createRoot(document.getElementById("root"))
     .render(
         <SpSpa
             requireNet={false}
-            subtitleKey="pages:settings:subtitle"
+            subtitleKey="pages:core-settings:title"
         >
             <App/>
         </SpSpa>
