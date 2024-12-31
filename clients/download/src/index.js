@@ -8,6 +8,7 @@ createRoot(document.getElementById("root"))
         <SpSpa
             requireNet={true}
             subtitleKey="pages:core-remote-resources:title"
+            currentId="core-remote-resources"
         >
             <App/>
         </SpSpa>

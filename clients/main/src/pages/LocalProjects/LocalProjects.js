@@ -26,8 +26,9 @@ function LocalProjects() {
         <p>...</p> :
         <>
             <Header
-                subtitleKey="pages:local_projects:subtitle"
+                subtitleKey="pages:core-local-workspace:title"
                 requireNet={false}
+                currentId="core-local-workspace"
             />
             <WorkspacePicker repos={repos}/>
         </>

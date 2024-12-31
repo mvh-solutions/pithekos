@@ -8,6 +8,7 @@ createRoot(document.getElementById("root"))
         <SpSpa
             requireNet={false}
             subtitleKey="pages:core-settings:title"
+            currentId="core-settings"
         >
             <App/>
         </SpSpa>

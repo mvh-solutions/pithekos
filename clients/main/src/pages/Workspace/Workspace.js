@@ -50,8 +50,9 @@ const Workspace = () => {
     const paneList = createTilePanes(tileElements)[0];
     return <>
         <Header
-            subtitleKey="pages:workspace:subtitle"
+            subtitleKey="pages:core-local-workspace:title"
             requireNet={false}
+            currentId="core-local-workspace"
         />
         <TileProvider
             tilePanes={paneList}
