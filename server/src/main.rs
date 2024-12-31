@@ -7,9 +7,9 @@ use git2::{Repository, StatusOptions};
 use hallomai::transform;
 use home::home_dir;
 use rocket::form::Form;
-use rocket::fs::{FileServer, relative, NamedFile, TempFile};
+use rocket::fs::{FileServer, relative, TempFile};
 use rocket::http::{Status, ContentType};
-use rocket::{Rocket, State, Build, Request, get, post, routes, catch, catchers, uri, FromForm};
+use rocket::{Rocket, State, Build, Request, get, post, routes, catch, catchers, FromForm};
 use rocket::response::{status, Redirect, stream};
 use rocket::tokio::{time};
 use serde::{Serialize, Deserialize};
@@ -32,9 +32,8 @@ struct AuthEndpoint {
 
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
-    clients_dir: String,
+    working_dir: String,
     repo_dir: String,
-    resources_dir: String,
     languages: Vec<String>,
     auth_endpoints: Vec<AuthEndpoint>,
 }
@@ -386,7 +385,7 @@ pub async fn notifications_stream(msgs: &State<MsgQueue>) -> stream::EventStream
 
 #[get("/raw")]
 async fn raw_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let path_to_serve = state.working_dir.clone() + os_slash_str() + "i18n.json";
     match fs::read_to_string(path_to_serve) {
         Ok(v) => {
             status::Custom(
@@ -409,7 +408,7 @@ async fn raw_i18n(state: &State<AppSettings>) -> status::Custom<(ContentType, St
 
 #[get("/negotiated/<filter..>")]
 async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custom<(ContentType, String)> {
-    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let path_to_serve = state.working_dir.clone() + os_slash_str() + "i18n.json";
     let filter_items: Vec<String> = filter.display().to_string().split('/').map(String::from).collect();
     if filter_items.len() > 2 {
         return status::Custom(
@@ -506,7 +505,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
 
 #[get("/flat/<filter..>")]
 async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custom<(ContentType, String)> {
-    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let path_to_serve = state.working_dir.clone() + os_slash_str() + "i18n.json";
     let filter_items: Vec<String> = filter.display().to_string().split('/').map(String::from).collect();
     if filter_items.len() > 2 {
         return status::Custom(
@@ -602,7 +601,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
 
 #[get("/untranslated/<lang>")]
 async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::Custom<(ContentType, String)> {
-    let path_to_serve = state.resources_dir.clone() + os_slash_str() + "i18n.json";
+    let path_to_serve = state.working_dir.clone() + os_slash_str() + "i18n.json";
     match fs::read_to_string(path_to_serve) {
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
@@ -760,7 +759,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join("/")
+                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[5..].join("/")
             )
         )
         .collect();
@@ -1035,7 +1034,8 @@ struct MetadataSummary {
 async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + os_slash_str() + "metadata.json";
+        println!("{}", path_to_serve);
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
             Err(e) => return status::Custom(
@@ -1267,29 +1267,15 @@ fn list_clients(clients: &State<Clients>) -> status::Custom<(ContentType, String
     )
 }
 
-#[get("/clients/main/index.html")]
-async fn serve_client_index(state: &State<AppSettings>) -> Option<NamedFile> {
-    let clients_path = state.clients_dir.clone();
-    let index_path = Path::new(&clients_path).join("main").join("build").join("index.html");
-    NamedFile::open(index_path).await.ok()
-}
-
-#[get("/clients/main")]
-async fn serve_clients_dir() -> Redirect {
-    Redirect::to(uri!(serve_client_index))
-}
 
 #[get("/favicon.ico")]
-async fn serve_root_favicon(state: &State<AppSettings>) -> Option<NamedFile> {
-    let clients_path = state.clients_dir.clone();
-    let icon_path = Path::new(&clients_path)
-        .join("favicon.ico");
-    NamedFile::open(icon_path).await.ok()
+async fn serve_root_favicon() -> Redirect {
+    Redirect::to("/clients/main/favicon.ico")
 }
 
 #[get("/")]
 fn redirect_root() -> Redirect {
-    Redirect::to(uri!(serve_client_index))
+    Redirect::to("/clients/main")
 }
 
 // ERROR HANDLING
@@ -1320,28 +1306,28 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 type MsgQueue = Arc<Mutex<VecDeque<String>>>;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 struct Client {
     id: String,
     requires: BTreeMap<String, bool>,
     path: String,
-    url: String
+    url: String,
 }
 
 #[derive(Serialize)]
 struct PublicClient {
     id: String,
     requires: BTreeMap<String, bool>,
-    url: String
+    url: String,
 }
 fn public_serialize_client(c: Client) -> PublicClient {
     PublicClient {
         id: c.id.clone(),
         requires: c.requires.clone(),
-        url: c.url.clone()
+        url: c.url.clone(),
     }
 }
-fn public_serialize_clients(cv: Vec<Client>)-> Vec<PublicClient> {
+fn public_serialize_clients(cv: Vec<Client>) -> Vec<PublicClient> {
     cv.into_iter().map(|c| public_serialize_client(c)).collect()
 }
 type Clients = Mutex<Vec<Client>>;
@@ -1350,22 +1336,48 @@ type Clients = Mutex<Vec<Client>>;
 fn rocket() -> Rocket<Build> {
     // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
-    let clients = Clients::new(Vec::new());
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
-    let mut settings_path = root_path.clone() + "pithekos_settings.json";
+    let mut working_dir_path = root_path.clone() + "pankosmia_working";
+    let mut settings_path = format!("{}/settings.json", working_dir_path);
     let args: Vec<String> = env::args().collect();
     if args.len() == 2 {
         // Do not auto-make at non-default location.
-        settings_path = args[1].clone();
+        working_dir_path = args[1].clone();
+        settings_path = format!("{}/settings.json", working_dir_path);
     } else {
-        // Well-known location. If file doesn't exist make one.
-        let settings_file_exists = Path::new(&settings_path).is_file();
-        if !settings_file_exists {
+        // Well-known location.
+        // If directory doesn't exist make one.
+        // If it doesn't, expect it to contain a settings file.
+        let workspace_dir_exists = Path::new(&working_dir_path).is_dir();
+        if !workspace_dir_exists {
+            match fs::create_dir_all(&working_dir_path) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Could not create working dir '{}': {}", working_dir_path, e);
+                    exit(1);
+                }
+            };
             let default_settings = json!({
-                "repo_dir": root_path.clone() + "pithekos_repos",
-                "resources_dir": root_path.clone() + "pithekos_resources",
-                "clients_dir": relative!("../clients"),
+                "repo_dir": format!("{}/repos", working_dir_path),
+                "clients": [
+                    {
+                        "id": "core-local-workspace",
+                        "requires": {
+                            "net": false
+                        },
+                        "path": relative!("../clients/main"),
+                        "url": "/clients/main"
+                    },
+                    {
+                        "id": relative!("../clients/settings"),
+                        "requires": {
+                            "net": false
+                        },
+                        "path": relative!("../clients/settings"),
+                        "url": "/clients/settings"
+                    }
+                ],
                 "languages": ["en"]
             });
             let mut file_handle = match fs::File::create(&settings_path) {
@@ -1378,7 +1390,7 @@ fn rocket() -> Rocket<Build> {
             match file_handle.write_all(&default_settings.to_string().as_bytes()) {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("Could not write default settings file to '{}: {}' to write default", settings_path, e);
+                    println!("Could not write default settings file to '{}: {}'", settings_path, e);
                     exit(1);
                 }
             }
@@ -1400,118 +1412,103 @@ fn rocket() -> Rocket<Build> {
         }
     };
     // Find or make repo_dir
-    let repo_dir_path = settings_json["repo_dir"].as_str().unwrap().to_string();
+    let repo_dir_path = match settings_json["repo_dir"].as_str() {
+        Some(v) => v.to_string(),
+        None => {
+            println!("Could not parse repo_dir in settings file '{}' as a string", settings_path);
+            exit(1);
+        }
+    };
     let repo_dir_path_exists = Path::new(&repo_dir_path).is_dir();
     if !repo_dir_path_exists {
         match fs::create_dir_all(&repo_dir_path) {
             Ok(_) => {}
             Err(e) => {
-                println!("Could not create repo dir '{}': {}", repo_dir_path, e);
-                exit(1);
-            }
-        };
-    }
-    // Find or make resources_dir
-    let resources_dir_path = settings_json["resources_dir"].as_str().unwrap().to_string();
-    let resources_dir_path_exists = Path::new(&resources_dir_path).is_dir();
-    if !resources_dir_path_exists {
-        match fs::create_dir_all(&resources_dir_path) {
-            Ok(_) => {}
-            Err(e) => {
-                println!("Could not create resources dir '{}': {}", resources_dir_path, e);
+                println!("Repo dir '{}' doe not exist and could not be created: {}", repo_dir_path, e);
                 exit(1);
             }
         };
     }
     // Copy web fonts
     let template_webfonts_dir_path = relative!("./webfonts").to_string();
-    let webfonts_dir_path = resources_dir_path.clone() + os_slash_str() + "webfonts";
+    let webfonts_dir_path = working_dir_path.clone() + os_slash_str() + "webfonts";
     if !Path::new(&webfonts_dir_path).is_dir() {
         match copy_dir(template_webfonts_dir_path.clone(), webfonts_dir_path.clone()) {
             Ok(_) => {}
             Err(e) => {
                 println!(
-                    "Could not copy web fonts to resources directory: {}",
+                    "Could not copy web fonts to working directory: {}",
                     e
                 );
                 exit(1);
             }
         }
     };
-    // Require clients_dir
-    let clients_dir_path = settings_json["clients_dir"].as_str().unwrap().to_string();
-    let clients_dir_path_exists = Path::new(&clients_dir_path).is_dir();
-    if !clients_dir_path_exists {
-        println!("Could not find clients directory '{}'", clients_dir_path);
-        exit(1);
-    }
     // Process clients metadata to build clients and i18n
     // Find client build dirs as grandchildren of clients dir, for now
-    let clients_dir_entries = std::fs::read_dir(clients_dir_path.clone()).unwrap();
+    let clients: Clients = match serde_json::from_value(settings_json["clients"].clone()) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("Could not parse clients array in settings file '{}' as client records: {}", settings_path, e);
+            exit(1);
+        }
+    };
     let i18n_template_path = relative!("./templates").to_string() + os_slash_str() + "i18n.json";
     let mut i18n_json_map: Map<String, Value> = match fs::read_to_string(&i18n_template_path) {
         Ok(it) => {
             match serde_json::from_str(&it) {
                 Ok(i) => i,
                 Err(e) => {
-                    println!("Could not parse i18n file {} as JSON: {}\n{}", &i18n_template_path, e, it);
+                    println!("Could not parse i18n template {} as JSON: {}\n{}", &i18n_template_path, e, it);
                     exit(1);
                 }
             }
-        },
+        }
         Err(e) => {
-            println!("Could not read i18n file {}: {}", i18n_template_path, e);
+            println!("Could not read i18n template {}: {}", i18n_template_path, e);
             exit(1);
         }
     };
     let mut i18n_pages_map = Map::new();
     let mut found_main = false;
-    for child in clients_dir_entries {
-        let child_name = child.unwrap().file_name().into_string().unwrap();
-        let clients_child_path = clients_dir_path.clone() + os_slash_str() + child_name.clone().as_str();
-        let child_metadata_path = clients_child_path.clone() + os_slash_str() + "pankosmia_metadata.json";
-        let metadata_json: Value = match fs::read_to_string(&child_metadata_path) {
+    let mut locked_clients = clients.lock().unwrap().clone();
+    let inner_clients = &mut *locked_clients;
+    // Iterate over clients to build i18n
+    for client_record in inner_clients {
+        if !Path::new(&client_record.path.clone()).is_dir() {
+            println!("Client path {} from settings file {} is not a directory", client_record.path, settings_path);
+            exit(1);
+        }
+        let build_path = format!("{}/build", client_record.path.clone());
+        if !Path::new(&build_path.clone()).is_dir() {
+            println!("Client build path within {} from settings file {} does not exist or is not a directory", client_record.path.clone(), settings_path);
+            exit(1);
+        }
+        let client_metadata_path = client_record.path.clone() + os_slash_str() + "pankosmia_metadata.json";
+        let metadata_json: Value = match fs::read_to_string(&client_metadata_path) {
             Ok(mt) => {
                 match serde_json::from_str(&mt) {
                     Ok(m) => m,
                     Err(e) => {
-                        println!("Could not parse metadata file {} as JSON: {}\n{}", &child_metadata_path, e, mt);
+                        println!("Could not parse metadata file {} as JSON: {}\n{}", &client_metadata_path, e, mt);
                         exit(1);
                     }
                 }
-            },
+            }
             Err(e) => {
-                println!("Could not read metadata file {}: {}", child_metadata_path, e);
+                println!("Could not read metadata file {}: {}", client_metadata_path, e);
                 exit(1);
             }
         };
         let metadata_id = metadata_json["id"].as_str().unwrap().to_string();
         let metadata_i18n = metadata_json["i18n"].clone();
         i18n_pages_map.insert(metadata_id.clone(), metadata_i18n);
-        if Path::new(&clients_child_path).is_dir() {
-            for grandchild_leaf_name in std::fs::read_dir(clients_child_path.clone()).unwrap() {
-                let grandchild_leaf_string = grandchild_leaf_name.unwrap().file_name().into_string().unwrap();
-                if grandchild_leaf_string == "build".to_string() {
-                    if child_name.clone() == "main".to_string() {
-                        found_main = true;
-                    }
-                    let mut requires_map = BTreeMap::new();
-                    requires_map.insert("net".to_string(), metadata_json["require"]["net"].as_bool().unwrap());
-                    clients.lock().unwrap()
-                        .push(
-                            Client {
-                                id: metadata_id.clone(),
-                                requires: requires_map,
-                                path: child_name.clone(),
-                                url: "/foo".to_string()
-                            }
-                        );
-                }
-            }
+        if client_record.url.clone() == "/clients/main".to_string() {
+            found_main = true;
         }
     }
     i18n_json_map.insert("pages".to_string(), serde_json::Value::Object(i18n_pages_map));
-    let i18n_target_path = resources_dir_path.clone() + os_slash_str() + "i18n.json";
+    let i18n_target_path = working_dir_path.clone() + os_slash_str() + "i18n.json";
     let mut i18n_file_handle = match fs::File::create(&i18n_target_path) {
         Ok(h) => h,
         Err(e) => {
@@ -1528,7 +1525,7 @@ fn rocket() -> Rocket<Build> {
     }
     // Throw if no main found
     if !found_main {
-        println!("Could not find a build directory for main client in clients directory");
+        println!("Could not find a client registered at /main among clients in settings file");
         exit(1);
     }
 
@@ -1539,9 +1536,8 @@ fn rocket() -> Rocket<Build> {
         ])
         .manage(
             AppSettings {
-                clients_dir: clients_dir_path.clone(),
                 repo_dir: repo_dir_path.clone(),
-                resources_dir: resources_dir_path.clone(),
+                working_dir: working_dir_path.clone(),
                 languages: settings_json["languages"]
                     .as_array()
                     .unwrap()
@@ -1556,8 +1552,6 @@ fn rocket() -> Rocket<Build> {
         )
         .mount("/", routes![
             redirect_root,
-            serve_client_index,
-            serve_clients_dir,
             serve_root_favicon,
             list_clients
         ])
@@ -1606,8 +1600,8 @@ fn rocket() -> Rocket<Build> {
     let client_vec = clients.lock().unwrap().clone();
     for client_record in client_vec {
         my_rocket = my_rocket.mount(
-            format!("/clients/{}", client_record.path.clone()),
-            FileServer::from(clients_dir_path.clone() + os_slash_str() + &client_record.path + os_slash_str() + "build"),
+            client_record.url.clone(),
+            FileServer::from(client_record.path.clone() + os_slash_str() + "build"),
         );
     }
     my_rocket
