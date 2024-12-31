@@ -1310,6 +1310,7 @@ type MsgQueue = Arc<Mutex<VecDeque<String>>>;
 struct Client {
     id: String,
     requires: BTreeMap<String, bool>,
+    exclude_from_menu: bool,
     path: String,
     url: String,
 }
@@ -1318,12 +1319,14 @@ struct Client {
 struct PublicClient {
     id: String,
     requires: BTreeMap<String, bool>,
+    exclude_from_menu: bool,
     url: String,
 }
 fn public_serialize_client(c: Client) -> PublicClient {
     PublicClient {
         id: c.id.clone(),
         requires: c.requires.clone(),
+        exclude_from_menu: c.exclude_from_menu.clone(),
         url: c.url.clone(),
     }
 }
@@ -1366,6 +1369,7 @@ fn rocket() -> Rocket<Build> {
                         "requires": {
                             "net": false
                         },
+                        "exclude_from_menu": false,
                         "path": relative!("../clients/main"),
                         "url": "/clients/main"
                     },
@@ -1374,6 +1378,7 @@ fn rocket() -> Rocket<Build> {
                         "requires": {
                             "net": false
                         },
+                        "exclude_from_menu": true,
                         "path": relative!("../clients/settings"),
                         "url": "/clients/settings"
                     }
@@ -1444,9 +1449,43 @@ fn rocket() -> Rocket<Build> {
             }
         }
     };
+    // Merge client config into into settings JSON
+    let mut clients_merged_array: Vec<Value> = Vec::new();
+    for client_record in settings_json["clients"].as_array().unwrap().iter() {
+        // Get requires from metadata
+        let client_metadata_path = client_record["path"].as_str().unwrap().to_string() + os_slash_str() + "pankosmia_metadata.json";
+        let metadata_json: Value = match fs::read_to_string(&client_metadata_path) {
+            Ok(mt) => {
+                match serde_json::from_str(&mt) {
+                    Ok(m) => m,
+                    Err(e) => {
+                        println!("Could not parse metadata file {} as JSON: {}\n{}", &client_metadata_path, e, mt);
+                        exit(1);
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Could not read metadata file {}: {}", client_metadata_path, e);
+                exit(1);
+            }
+        };
+        let requires = json!({
+            "new": metadata_json["require"].as_object().unwrap()["net"].as_bool().unwrap()
+        });
+        clients_merged_array.push(json!({
+            "id": client_record["id"].as_str().unwrap(),
+            "path": client_record["path"].as_str().unwrap(),
+            "url": client_record["url"].as_str().unwrap(),
+            "requires": requires,
+            "exclude_from_menu": match client_record["exclude_from_menu"].as_bool() {
+                Some(v) => v,
+                None => false
+            }
+        }));
+    }
+    let clients_value = serde_json::to_value(clients_merged_array).unwrap();
     // Process clients metadata to build clients and i18n
-    // Find client build dirs as grandchildren of clients dir, for now
-    let clients: Clients = match serde_json::from_value(settings_json["clients"].clone()) {
+    let clients: Clients = match serde_json::from_value(clients_value) {
         Ok(v) => v,
         Err(e) => {
             println!("Could not parse clients array in settings file '{}' as client records: {}", settings_path, e);

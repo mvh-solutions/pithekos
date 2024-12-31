@@ -39,16 +39,6 @@
         "fr": "Télécharger un projet"
       }
     },
-    "settings": {
-      "subtitle": {
-        "en": "Settings",
-        "fr": "Configuration"
-      },
-      "debug_prompt": {
-        "en": "Debug?",
-        "fr": "Débogage ?"
-      }
-    },
     "new_project": {
       "subtitle": {
         "en": "New Project",
