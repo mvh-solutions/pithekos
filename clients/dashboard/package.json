@@ -2,7 +2,7 @@
   "name": "react-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/clients/local-projects",
+  "homepage": "/clients/main",
   "dependencies": {
     "@biblionexus-foundation/scribe-editor": "^0.0.4",
     "@emotion/react": "^11.13.3",
