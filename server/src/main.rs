@@ -1470,7 +1470,7 @@ fn rocket() -> Rocket<Build> {
             }
         };
         let requires = json!({
-            "new": metadata_json["require"].as_object().unwrap()["net"].as_bool().unwrap()
+            "net": metadata_json["require"].as_object().unwrap()["net"].as_bool().unwrap()
         });
         clients_merged_array.push(json!({
             "id": client_record["id"].as_str().unwrap(),
