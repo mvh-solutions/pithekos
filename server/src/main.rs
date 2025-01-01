@@ -1472,10 +1472,28 @@ fn rocket() -> Rocket<Build> {
         let requires = json!({
             "net": metadata_json["require"].as_object().unwrap()["net"].as_bool().unwrap()
         });
+        // Get url from package.json
+        let package_json_path = client_record["path"].as_str().unwrap().to_string() + os_slash_str() + "package.json";
+        let package_json: Value = match fs::read_to_string(&package_json_path) {
+            Ok(pj) => {
+                match serde_json::from_str(&pj) {
+                    Ok(p) => p,
+                    Err(e) => {
+                        println!("Could not parse package.json file {} as JSON: {}\n{}", &package_json_path, e, pj);
+                        exit(1);
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Could not read package.json file {}: {}", package_json_path, e);
+                exit(1);
+            }
+        };
+        // Build client record
         clients_merged_array.push(json!({
-            "id": client_record["id"].as_str().unwrap(),
+            "id": metadata_json["id"].as_str().unwrap(),
             "path": client_record["path"].as_str().unwrap(),
-            "url": client_record["url"].as_str().unwrap(),
+            "url": package_json["homepage"].as_str().unwrap(),
             "requires": requires,
             "exclude_from_menu": match client_record["exclude_from_menu"].as_bool() {
                 Some(v) => v,
