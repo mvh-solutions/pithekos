@@ -1,14 +1,13 @@
 import React from 'react';
 import {useLocation} from "react-router-dom";
 import WorkspaceCard from "./WorkspaceCard";
-// import BcvPicker from "./BcvPicker";
+import BcvPicker from "./BcvPicker";
 import {
     createTilePanes,
     TileContainer,
     TileProvider,
 } from 'react-tile-pane'
 import {Header} from "pithekos-lib";
-
 
 const paneStyle = {
     width: '100%',
@@ -50,9 +49,10 @@ const Workspace = () => {
     const paneList = createTilePanes(tileElements)[0];
     return <>
         <Header
-            subtitleKey="pages:core-local-workspace:title"
+            subtitle="pages:core-local-workspace:title"
             requireNet={false}
             currentId="core-local-workspace"
+            widget={<BcvPicker/>}
         />
         <TileProvider
             tilePanes={paneList}
