@@ -26,7 +26,7 @@ function LocalProjects() {
         <p>...</p> :
         <>
             <Header
-                subtitle="pages:core-local-workspace:title"
+                titleKey="pages:core-local-workspace:title"
                 requireNet={false}
                 currentId="core-local-workspace"
             />

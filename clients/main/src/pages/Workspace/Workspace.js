@@ -49,7 +49,7 @@ const Workspace = () => {
     const paneList = createTilePanes(tileElements)[0];
     return <>
         <Header
-            subtitle="pages:core-local-workspace:title"
+            titleKey="pages:core-local-workspace:title"
             requireNet={false}
             currentId="core-local-workspace"
             widget={<BcvPicker/>}
