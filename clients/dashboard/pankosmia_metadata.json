@@ -1,0 +1,16 @@
+{
+  "id": "core-dashboard",
+  "require": {
+    "net": false
+  },
+  "i18n": {
+    "title": {
+      "en": "Dashboard",
+      "fr": "Tableau de bord"
+    },
+    "summary": {
+      "en": "An overview of your projects and tasks",
+      "fr": "Vos projets et tâches en survol"
+    }
+  }
+}
