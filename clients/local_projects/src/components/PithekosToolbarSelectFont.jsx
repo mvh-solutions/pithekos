@@ -30,7 +30,7 @@ export default function PithekosToolbarSelectFont(PithekosToolbarSelectFontProps
             <Box sx={{minWidth: 250}}>
                 <FormControl fullWidth style={{maxWidth: 300}}>
                     <InputLabel id="select-font-label" htmlFor="select-font-id" sx={sx.inputLabel}>
-                        {doI18n("pages:workspace:select_fontset", i18n)}
+                        {doI18n("pages:core-local-workspace:select_fontset", i18n)}
                     </InputLabel>
                     <Select
                         variant="standard"
@@ -45,7 +45,7 @@ export default function PithekosToolbarSelectFont(PithekosToolbarSelectFontProps
                         sx={sx.select}
                     >
                         <b>
-                            {doI18n("pages:workspace:select_fontset", i18n)}
+                            {doI18n("pages:core-local-workspace:select_fontset", i18n)}
                         </b>
                         {WebFonts}
                     </Select>

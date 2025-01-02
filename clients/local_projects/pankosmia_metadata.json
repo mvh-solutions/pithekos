@@ -11,6 +11,14 @@
     "summary": {
       "en": "Manage and edit local resources",
       "fr": "Gérer et modifier des ressources locales"
+    },
+    "select_fontset": {
+      "en": "Select Fonts",
+      "fr": "Choisir des polices"
+    },
+    "webfonts": {
+      "en": "Fonts in Pithekos",
+      "fr": "Polices via Pithekos"
     }
   }
 }
