@@ -1365,23 +1365,21 @@ fn rocket() -> Rocket<Build> {
                 "repo_dir": format!("{}/repos", working_dir_path),
                 "clients": [
                     {
-                        "id": "core-local-workspace",
-                        "requires": {
-                            "net": false
-                        },
-                        "exclude_from_menu": false,
-                        "path": relative!("../clients/main"),
-                        "url": "/clients/main"
+                        "path": relative!("../clients/dashboard")
                     },
                     {
-                        "id": relative!("../clients/settings"),
-                        "requires": {
-                            "net": false
-                        },
                         "exclude_from_menu": true,
-                        "path": relative!("../clients/settings"),
-                        "url": "/clients/settings"
-                    }
+                        "path": relative!("../clients/settings")
+                    },
+                    {
+                        "path": relative!("../clients/new_project")
+                    },
+                    {
+                        "path": relative!("../clients/download")
+                    },
+                    {
+                        "path": relative!("../clients/local_projects")
+                    },
                 ],
                 "languages": ["en"]
             });
