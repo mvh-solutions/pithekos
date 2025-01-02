@@ -1,0 +1,16 @@
+{
+  "id": "core-remote-resources",
+  "require": {
+    "net": true
+  },
+  "i18n": {
+    "title": {
+      "en": "Resources on Servers",
+      "fr": "Ressources sur Serveur"
+    },
+    "summary": {
+      "en": "Search and download remote resources from Pankosmia servers.",
+      "fr": "Chercher et télécharger des ressources depuis des serveurs Pankosmia."
+    }
+  }
+}

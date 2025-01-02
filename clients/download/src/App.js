@@ -1,62 +1,69 @@
-import {useState, useEffect} from "react";
-import DownloadProject from './DownloadProject';
-import {Box} from '@mui/material';
-import './index.css';
-import {useSnackbar} from "notistack";
-import MessagesContext from "./contexts/messages";
-import NetContext from "./contexts/net";
-import BcvContext from "./contexts/bcv";
-import DebugContext from "./contexts/debug";
-import I18nContext from "./contexts/i18n";
+import {useState, useEffect} from "react"
+import {Grid2} from "@mui/material";
+import {CloudDownload, CloudDone} from "@mui/icons-material";
+import {getAndSetJson, getJson} from "pithekos-lib";
 
-function App({enableNet, setEnableNet, enabledRef, debug, setDebug, debugRef, i18n}) {
+function App() {
+    const [catalog, setCatalog] = useState([]);
+    useEffect(
+        () => {getAndSetJson({
+                url: "/gitea/remote-repos/git.door43.org/BurritoTruck",
+                setter: setCatalog
+            }).then()},
+        []
+    );
 
-    const netValue = {enableNet, setEnableNet, enabledRef};
-    const debugValue = {debug, setDebug, debugRef};
-    const [systemBcv, setSystemBcv] = useState({
-        bookCode: "TIT",
-        chapterNum: 1,
-        verseNum: 1
-    });
-    const bcvValue = {systemBcv, setSystemBcv};
-    const [messages, setMessages] = useState([]);
-    const messageValue = {messages, setMessages};
-    const {enqueueSnackbar} = useSnackbar();
-    const localHandler = s => {
-        const dataBits = s.split('--');
-        if (dataBits.length === 4) {
-            enqueueSnackbar(
-                `${dataBits[2]} => ${dataBits[3]}`,
+    const [localRepos, setLocalRepos] = useState([]);
+    useEffect(
+        () => {getAndSetJson({
+                url: "/git/list-local-repos",
+                setter: setLocalRepos
+            }).then()},
+        []
+    );
+
+    return (
+        <Grid2 container spacing={2}>
+            <Grid2 container>
                 {
-                    variant: dataBits[0],
-                    anchorOrigin: {vertical: "top", horizontal: "left"}
+                    catalog
+                        .filter(ce => ce.flavor)
+                        .map(
+                            ce => {
+                                const remoteRepoPath = `git.door43.org/BurritoTruck/${ce.name}`;
+                                return <>
+                                    <Grid2 item size={1}>
+                                        {ce.abbreviation.toUpperCase()}
+                                    </Grid2>
+                                    <Grid2 item size={1}>
+                                        {ce.language_code}
+                                    </Grid2>
+                                    <Grid2 item size={6}>
+                                        {ce.description}
+                                    </Grid2>
+                                    <Grid2 item size={3}>
+                                        {`${ce.flavor_type}/${ce.flavor}`}
+                                    </Grid2>
+                                    <Grid2 item size={1}>
+                                        {
+                                            localRepos.includes(remoteRepoPath) ?
+                                                <CloudDone color="disabled"/> :
+                                                <CloudDownload
+                                                    disabled={localRepos.includes(remoteRepoPath)}
+                                                    onClick={async () => {
+                                                        await getJson(`/git/fetch-repo/${remoteRepoPath}`);
+                                                        window.location.href = "/";
+                                                    }}
+                                                />
+                                        }
+                                    </Grid2>
+                                </>
+                            }
+                        )
                 }
-            );
-        }
-    }
-
-    useEffect(() => {
-            if (messages.length > 0) {
-                messages.forEach(m => localHandler(m));
-                setMessages([]);
-            }
-        },
-        [messages]
-    )
-
-    return <DebugContext.Provider value={debugValue}>
-        <NetContext.Provider value={netValue}>
-            <BcvContext.Provider value={bcvValue}>
-                <MessagesContext.Provider value={messageValue}>
-                    <I18nContext.Provider value={i18n}>
-                        <Box sx={{height: '100vh', overflow: 'hidden'}}>
-                            <DownloadProject/>
-                        </Box>
-                    </I18nContext.Provider>
-                </MessagesContext.Provider>
-            </BcvContext.Provider>
-        </NetContext.Provider>
-    </DebugContext.Provider>
+            </Grid2>
+        </Grid2>
+    );
 }
 
 export default App;

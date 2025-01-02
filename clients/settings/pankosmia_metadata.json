@@ -1,0 +1,20 @@
+{
+  "id": "core-settings",
+  "require": {
+    "net": false
+  },
+  "i18n": {
+    "title": {
+      "en": "Settings",
+      "fr": "Paramètres"
+    },
+    "summary": {
+      "en": "Settings for languages, debugging, data sources...",
+      "fr": "Configuration (langues, déboguage, sources de données...)"
+    },
+    "debug_prompt": {
+      "en": "Debug?",
+      "fr": "Débogage ?"
+    }
+  }
+}

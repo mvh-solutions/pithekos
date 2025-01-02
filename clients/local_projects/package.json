@@ -2,7 +2,7 @@
   "name": "react-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/clients/download",
+  "homepage": "/clients/local-projects",
   "dependencies": {
     "@biblionexus-foundation/scribe-editor": "^0.0.4",
     "@emotion/react": "^11.13.3",
@@ -25,9 +25,12 @@
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
     "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
     "react-tile-pane": "^0.5.1",
-    "react-use-measure": "^2.1.1"
+    "react-use-measure": "^2.1.1",
+    "watch": "^1.0.2",
+    "web-vitals": "^2.1.4"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"

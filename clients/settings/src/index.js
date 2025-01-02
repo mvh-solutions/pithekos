@@ -6,9 +6,9 @@ import './index.css';
 createRoot(document.getElementById("root"))
     .render(
         <SpSpa
-            requireNet={true}
-            titleKey="pages:core-remote-resources:title"
-            currentId="core-remote-resources"
+            requireNet={false}
+            titleKey="pages:core-settings:title"
+            currentId="core-settings"
         >
             <App/>
         </SpSpa>
