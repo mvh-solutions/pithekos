@@ -42,7 +42,7 @@ function App() {
                                         {ce.description}
                                     </Grid2>
                                     <Grid2 item size={3}>
-                                        {`${ce.flavor}/${ce.flavor_type}`}
+                                        {`${ce.flavor_type}/${ce.flavor}`}
                                     </Grid2>
                                     <Grid2 item size={1}>
                                         {
