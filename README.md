@@ -22,12 +22,11 @@ Install cmake from https://cmake.org/download/
 
 ### Installation 
 ```
-cd clients/main
+cd clients/dashboard
 npm install
 npm run build
-cd ../download
-npm install
-npm run build
+# Likewise for each client in the clients directory
+# Script to do this intelligently coming soon...
 cd ../../server
 cargo run
 ```
@@ -39,13 +38,9 @@ Enable Internet by clicking on the crossed-out globe, top right. (Green globe ==
 
 Go to Download
 
-Paste in an https URL from a github-like server, eg
-- https://git.door43.org/BurritoTruck/en_tsn.git
-- https://git.door43.org/BurritoTruck/en_bsb.git
-- https://github.com/Proskomma/ar-textTranslation-New_Testament-vandyke.git
-- https://github.com/Proskomma/en-x-resourcelinks-Bible-ubs-images.git
+Download some content
 
-Repos show up on homepage. Select some of them.
+Repos show up under "local projects". Select some of them.
 
 Click on one of the "write" icons in the rightmost column
 
