@@ -24,52 +24,6 @@
       }
     }
   },
-  "old_pages": {
-    "home": {
-      "subtitle": {
-        "en": "Projects on this machine",
-        "fr": "Projets sur cette machine"
-      },
-      "new_project_menu_item": {
-        "en": "Create New Project",
-        "fr": "Créer un nouveau projet"
-      },
-      "download_project_menu_item": {
-        "en": "Download Project",
-        "fr": "Télécharger un projet"
-      }
-    },
-    "new_project": {
-      "subtitle": {
-        "en": "New Project",
-        "fr": "Nouveau projet"
-      }
-    },
-    "workspace": {
-      "subtitle": {
-        "en": "Workspace",
-        "fr": "Espace de travail"
-      },
-      "select_fontset": {
-        "en": "Select Fonts",
-        "fr": "Choisir des polices"
-      },
-      "webfonts": {
-        "en": "Fonts in Pithekos",
-        "fr": "Polices via Pithekos"
-      }
-    },
-    "download_project": {
-      "subtitle": {
-        "en": "Download Project",
-        "fr": "Télécharger un projet"
-      },
-      "url_prompt": {
-        "en": "Download Link (Github, Door43...)",
-        "fr": "Lien de téléchargement (Github, Door43...)"
-      }
-    }
-  },
   "munchers": {
     "bcv_notes_viewer": {
       "title": {
