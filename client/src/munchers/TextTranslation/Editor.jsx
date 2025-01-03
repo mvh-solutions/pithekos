@@ -6,7 +6,7 @@ import {
   CursorHandlerPlugin,
 } from "@scriptural/react/plugins/CursorHandlerPlugin";
 import { ScripturalNodesMenuPlugin } from "@scriptural/react/plugins/ScripturalNodesMenuPlugin";
-import { useToolbarSettings } from "@scriptural/react/plugins/ToolbarPlugin";
+import { DEFAULT_SCRIPTURAL_BASE_SETTINGS, useBaseSettings } from "@scriptural/react/plugins/BaseSettingsPlugin";
 
 import { useMemo } from "react";
 import { CustomToolbar } from "./CustomToolbar";
@@ -33,11 +33,11 @@ export default function Editor({
       editable,
       initialLexicalState,
       initialSettings: {
+        ...DEFAULT_SCRIPTURAL_BASE_SETTINGS,
         onSave,
-        enhancedCursorPosition: true,
       },
     };
-  }, [usj, editable, onSave, bookCode, initialLexicalState]);
+  }, [usj, editable, bookCode, initialLexicalState, onSave]);
 
   return (
     <ScripturalEditorComposer initialConfig={initialConfig}>
@@ -48,7 +48,7 @@ export default function Editor({
 }
 
 function EditorPlugins({ onSave, onHistoryChange }) {
-  const { enhancedCursorPosition, contextMenuTriggerKey } = useToolbarSettings();
+  const { enhancedCursorPosition, contextMenuTriggerKey } = useBaseSettings();
 
   return (
     <>

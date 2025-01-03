@@ -108,7 +108,7 @@ function TextTranslationEditorMuncher({metadata, systemBcv}) {
                         }).catch(err => console.log("TextTranslation fetch error", err));
             }
         },
-        [systemBcv, state]
+        [systemBcv, state, metadata.local_path]
     );
 
     // Move incoming USJ to working and increment updates

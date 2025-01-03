@@ -173,7 +173,7 @@ function TextTranslationEditorMuncher({metadata, systemBcv}) {
     const onSave = (usj) => {
         console.log("onSave", usj);
         if(usj.content.length > 0) {
-            uploadJsonIngredient(metadata.local_path, systemBcv.bookCode + ".json", usj);
+            uploadJsonIngredient(metadata.local_path, systemBcv.bookCode + ".usj", usj);
         }
     }
 

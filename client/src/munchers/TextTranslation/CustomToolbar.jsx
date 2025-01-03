@@ -17,7 +17,6 @@ import {
   SaveButton,
   ScriptureReferenceInfo,
   ToolbarContainer,
-  ToolbarMarkerSections,
   ToolbarSection,
   ViewButton,
 } from '@scriptural/react';
@@ -48,7 +47,6 @@ export function CustomToolbar({ onSave }) {
         <ScriptureReferenceInfo />
         <hr />
       </ToolbarSection>
-      <ToolbarMarkerSections />
     </ToolbarContainer>
   );
 }
