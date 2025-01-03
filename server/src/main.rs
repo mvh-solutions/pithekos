@@ -759,7 +759,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[5..].join("/")
+                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[4..].join("/")
             )
         )
         .collect();
