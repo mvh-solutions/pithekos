@@ -751,7 +751,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
         for org_path in fs::read_dir(uw_server_path).unwrap() {
             let uw_org_path = format!("{}", org_path.unwrap().path().display());
             for repo_path in fs::read_dir(uw_org_path).unwrap() {
-                repos.push(repo_path.unwrap().path().display().to_string().as_str().to_owned());
+                repos.push(repo_path.unwrap().path().display().to_string().as_str().replace("\\", "/").to_owned());
             }
         }
     };
@@ -759,7 +759,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split(os_slash_str()).collect::<Vec<&str>>()[5..].join("/")
+                "{}", str.split("/").collect::<Vec<&str>>()[5..].join("/")
             )
         )
         .collect();
