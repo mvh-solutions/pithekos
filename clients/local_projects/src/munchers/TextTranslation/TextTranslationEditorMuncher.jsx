@@ -1,12 +1,39 @@
 import {useEffect, useState, useContext} from "react";
 import "./TextTranslationEditorMuncher.css";
-import {
-    ParaRenderer,
-    ChapterRenderer
-} from "./blockRenderers";
-import {Grid2} from "@mui/material";
-import dcopy from "deep-copy";
-import {bcvContext as BcvContext, debugContext as DebugContext, getJson} from "pithekos-lib";
+import { bcvContext as BcvContext, debugContext as DebugContext, getJson } from "pithekos-lib";
+
+import Editor from "./Editor";
+
+const uploadJsonIngredient = async (repoPath, ingredientPath, jsonData) => {
+    // Convert JSON object to a file
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const file = new Blob([jsonString], { type: 'application/json' });
+
+    // Create form data and append the file
+    const formData = new FormData();
+    formData.append('file', file, 'ingredient.json');
+
+    try {
+        const response = await fetch(
+            `/burrito/ingredient/as-usj/${repoPath}?ipath=${ingredientPath}`,
+            {
+                method: 'POST',
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.reason || 'Upload failed');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error uploading ingredient:', error);
+        throw error;
+    }
+}
 
 function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
     const {systemBcv} = useContext(BcvContext);
@@ -28,45 +55,6 @@ function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
         firstBodyPara: null
     });
 
-    const setSelectedPath = newPath => setState({
-        ...state,
-        selectedPath: newPath,
-        rerenderNeeded: true
-    });
-
-    const setUsjNode1 = (usj, path, newValue) => {
-        // console.log(path, newValue);
-        if (path.length === 0) {
-            console.log(`Path empty in setUsjNode() for newValue of '${newValue}'`);
-            return;
-        }
-        if (path.length > 1) {
-            setUsjNode1(
-                usj["content"][path[0]],
-                path.slice(1),
-                newValue
-            );
-        } else { // attribute of object
-            if (typeof path[0] === "number") {
-                usj.content[path[0]] = newValue;
-            } else { // attribute of object
-                usj[path[0]] = newValue;
-            }
-        }
-    }
-
-    const setUsjNode = (path, newValue) => {
-        const newUsj = dcopy(state.usj.working);
-        setUsjNode1(newUsj, path, newValue);
-        // console.log(newUsj);
-        setState({
-            ...state,
-            usj: {
-                ...state.usj,
-                working: newUsj
-            },
-        });
-    }
 
     // Fetch new USFM as USJ, put in incoming
     useEffect(
@@ -174,53 +162,25 @@ function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
         [state]
     );
 
-    return state.rendered ?
-        <div className={selectedFontsetName}>
-            <Grid2 container spacing={2}>
-                {
-                    Object.entries(state.rendered.headers).map(
-                        (h, n) => <>
-                            <Grid2 key={`${n}a`} size={1}>
-                                {h[0]}
-                            </Grid2>
-                            <Grid2  key={`${n}b`} size={11}>
-                                {h[1]}
-                            </Grid2>
-                            </>
-                    )
-                }
-            </Grid2>
-            {
-                state.rendered.paras
-                    .map(
-                        (cj, n) => {
-                            if (!state.usj.working.content[cj.nPara]) {
-                                return <div key={n}>?</div>;
-                            }
-                            if (cj.marker === "c") {
-                                return <ChapterRenderer
-                                    key={n}
-                                    usj={state.usj.working}
-                                    nPara={cj.nPara}
-                                    selectedPath={cj.selectedPath || [-1]}
-                                    setSelectedPath={setSelectedPath}
-                                    setUsjNode={setUsjNode}
-                                />
-                            } else return <ParaRenderer
-                                key={n}
-                                usj={state.usj.working}
-                                marker={cj.marker}
-                                nPara={cj.nPara}
-                                selectedPath={cj.selectedPath || [-1]}
-                                setSelectedPath={setSelectedPath}
-                                setUsjNode={setUsjNode}
-                            />
-                        }
-                    )
-            }
-        </div>
-        :
-        <div>Rendering</div>
+     const onSave = (usj) => {
+        console.log("onSave", usj);
+        if(usj.content.length > 0) {
+            uploadJsonIngredient(metadata.local_path, systemBcv.bookCode + ".usj", usj);
+        }
+    }
+
+    const onHistoryChange = ({ editorState }) => {
+
+        /**
+         * editorState is a LexicalEditorState object.
+         * It has a toJSON() method that returns a JSON object.
+         * This JSON object can be used to recover the editorState and save it to the browser local storage.
+         */
+        const recoverableState = editorState.toJSON();
+        console.log("onHistoryChange", recoverableState);
+    }
+
+    return state.usj.working ? <Editor usj={state.usj.working} editable={true} bookCode={systemBcv.bookCode} onSave={onSave} onHistoryChange={onHistoryChange}/> : <div>Loading data...</div>;
 }
 
 export default TextTranslationEditorMuncher;
