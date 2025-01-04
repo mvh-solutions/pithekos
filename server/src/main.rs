@@ -12,6 +12,7 @@ use rocket::http::{Status, ContentType};
 use rocket::{Rocket, State, Build, Request, get, post, routes, catch, catchers, FromForm};
 use rocket::response::{status, Redirect, stream};
 use rocket::tokio::{time};
+use rustix::path::Arg;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, VecDeque};
@@ -747,11 +748,23 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
-        let uw_server_path = format!("{}", server_path.unwrap().path().display());
-        for org_path in fs::read_dir(uw_server_path).unwrap() {
-            let uw_org_path = format!("{}", org_path.unwrap().path().display());
-            for repo_path in fs::read_dir(uw_org_path).unwrap() {
-                repos.push(repo_path.unwrap().path().display().to_string().as_str().replace("\\", "/").to_owned());
+        let uw_server_path_ob = server_path.unwrap().path();
+        let uw_server_path_ob2 = uw_server_path_ob.clone();
+        let server_leaf = uw_server_path_ob2.file_name().unwrap();
+        for org_path in fs::read_dir(uw_server_path_ob).unwrap() {
+            let uw_org_path_ob = org_path.unwrap().path();
+            let uw_org_path_ob2 = uw_org_path_ob.clone();
+            let org_leaf = uw_org_path_ob2.file_name().unwrap();
+            for repo_path in fs::read_dir(uw_org_path_ob).unwrap() {
+                let uw_repo_path_ob = repo_path.unwrap().path();
+                let repo_leaf = uw_repo_path_ob.file_name().unwrap();
+                let repo_url_string = format!(
+                    "{}/{}/{}",
+                    server_leaf.as_str().unwrap(),
+                    org_leaf.as_str().unwrap(),
+                    repo_leaf.as_str().unwrap()
+                );
+                repos.push(repo_url_string);
             }
         }
     };
@@ -759,7 +772,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
         .into_iter()
         .map(
             |str: String| format!(
-                "{}", str.split("/").collect::<Vec<&str>>()[5..].join("/")
+                "{}", str
             )
         )
         .collect();
