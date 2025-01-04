@@ -1,25 +1,33 @@
-import {useContext} from "react";
+import {useContext, useState, useEffect} from "react";
 import {Box, InputLabel, MenuItem, FormControl, Select} from "@mui/material";
 import FontMenuItem from "./FontMenuItem";
 import sx from "./PithekosToolbar.styles";
 import PropTypes from 'prop-types';
-import WebFontsArray from '../webfonts/_webfonts.json';
-import {i18nContext as I18nContext, doI18n} from "pithekos-lib";
+// import WebFontsArray from '../webfonts/_webfonts.json';
+import {i18nContext as I18nContext, doI18n, getAndSetJson} from "pithekos-lib";
 
 export default function PithekosToolbarSelectFont(PithekosToolbarSelectFontProps) {
+    const [webFonts, setWebFonts] = useState([]);
     const i18n = useContext(I18nContext);
     const {
         selectedFontsetName,
         setSelectedFontsetName,
     } = PithekosToolbarSelectFontProps;
 
+    useEffect(
+        () => {getAndSetJson({
+            url: "/webfonts/webfonts.json",
+            setter: setWebFonts
+        }).then()},
+        []
+    );
     const handleChange = (event) => {
         setSelectedFontsetName(event.target.value);
     };
 
     // WebFonts use a different css id from the actual font name to avoid conflict with locally installed fonts which could be a different version.
     const WebFonts =
-        WebFontsArray.map((font, index) => (
+        webFonts.map((font, index) => (
             <MenuItem key={index} value={font.name} dense>
                 <FontMenuItem font={font}/>
             </MenuItem>

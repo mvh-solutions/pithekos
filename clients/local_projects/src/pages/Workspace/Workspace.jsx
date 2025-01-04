@@ -1,18 +1,36 @@
 import React from 'react';
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import WorkspaceCard from "./WorkspaceCard";
 import BcvPicker from "./BcvPicker";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 import {
     createTilePanes,
     TileContainer,
     TileProvider,
 } from 'react-tile-pane'
 import {Header} from "pithekos-lib";
+import {IconButton} from "@mui/material";
 
 const paneStyle = {
     width: '100%',
     height: '100%',
     overflow: 'scroll'
+}
+
+const BackToProjects = () => {
+    const navigate = useNavigate();
+    return <IconButton
+        sx={{"color": "#FFF"}}
+        onClick={
+            (e) => {
+                navigate("/");
+                e.stopPropagation();
+            }
+        }
+    >
+        <ArrowBack/>
+    </IconButton>
+
 }
 const Workspace = () => {
     const locationState = Object.entries(useLocation().state);
@@ -52,7 +70,7 @@ const Workspace = () => {
             titleKey="pages:core-local-workspace:title"
             requireNet={false}
             currentId="core-local-workspace"
-            widget={<BcvPicker/>}
+            widget={<><BackToProjects/><BcvPicker/></>}
         />
         <TileProvider
             tilePanes={paneList}
