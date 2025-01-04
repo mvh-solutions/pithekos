@@ -12,7 +12,6 @@ use rocket::http::{Status, ContentType};
 use rocket::{Rocket, State, Build, Request, get, post, routes, catch, catchers, FromForm};
 use rocket::response::{status, Redirect, stream};
 use rocket::tokio::{time};
-use rustix::path::Arg;
 use serde::{Serialize, Deserialize};
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, VecDeque};
@@ -760,9 +759,9 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
                 let repo_leaf = uw_repo_path_ob.file_name().unwrap();
                 let repo_url_string = format!(
                     "{}/{}/{}",
-                    server_leaf.as_str().unwrap(),
-                    org_leaf.as_str().unwrap(),
-                    repo_leaf.as_str().unwrap()
+                    server_leaf.to_str().unwrap(),
+                    org_leaf.to_str().unwrap(),
+                    repo_leaf.to_str().unwrap()
                 );
                 repos.push(repo_url_string);
             }
