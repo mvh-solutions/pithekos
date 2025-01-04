@@ -180,7 +180,7 @@ function TextTranslationEditorMuncher({metadata, selectedFontsetName}) {
         console.log("onHistoryChange", recoverableState);
     }
 
-    return state.usj.working ? <Editor usj={state.usj.working} editable={true} bookCode={systemBcv.bookCode} onSave={onSave} onHistoryChange={onHistoryChange}/> : <div>Loading...</div>;
+    return state.usj.working ? <Editor usj={state.usj.working} editable={true} bookCode={systemBcv.bookCode} onSave={onSave} onHistoryChange={onHistoryChange}/> : <div>Loading data...</div>;
 }
 
 export default TextTranslationEditorMuncher;

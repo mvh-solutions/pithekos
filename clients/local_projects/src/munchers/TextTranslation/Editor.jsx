@@ -2,6 +2,7 @@ import { ScripturalEditorComposer } from "@scriptural/react";
 import { HistoryPlugin } from "@scriptural/react/internal-packages/shared-react/plugins/History/HistoryPlugin";
 import "@scriptural/react/styles/scriptural-editor.css";
 import "@scriptural/react/styles/nodes-menu.css";
+import "./custom-editor.css";
 import {
   CursorHandlerPlugin,
 } from "@scriptural/react/plugins/CursorHandlerPlugin";
