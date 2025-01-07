@@ -24,10 +24,26 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use ureq;
 
+// STRUCTS
+
 #[derive(Serialize, Deserialize, Clone)]
 struct AuthEndpoint {
     service: String,
     uri: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct Bcv {
+    book_code: String,
+    chapter: u16,
+    verse: u16
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct Typography {
+    font_set: String,
+    size: String,
+    direction: String
 }
 
 #[derive(Serialize, Deserialize)]
@@ -36,6 +52,70 @@ struct AppSettings {
     repo_dir: String,
     languages: Vec<String>,
     auth_endpoints: Vec<AuthEndpoint>,
+    bcv: Bcv,
+    typography: Typography,
+}
+
+#[derive(Serialize, Deserialize)]
+struct JsonDataResponse {
+    is_good: bool,
+    reason: String,
+}
+#[derive(Serialize, Deserialize)]
+struct JsonNetStatusResponse {
+    is_enabled: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RemoteRepoRecord {
+    name: String,
+    abbreviation: String,
+    description: String,
+    avatar_url: String,
+    flavor: String,
+    flavor_type: String,
+    language_code: String,
+    script_direction: String,
+    branch_or_tag: String,
+    clone_url: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct GitStatusRecord {
+    path: String,
+    change_type: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct MetadataSummary {
+    name: String,
+    description: String,
+    flavor_type: String,
+    flavor: String,
+    language_code: String,
+    script_direction: String,
+}
+
+#[derive(FromForm)]
+struct Upload<'f> {
+    file: TempFile<'f>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct Client {
+    id: String,
+    requires: BTreeMap<String, bool>,
+    exclude_from_menu: bool,
+    path: String,
+    url: String,
+}
+
+#[derive(Serialize)]
+struct PublicClient {
+    id: String,
+    requires: BTreeMap<String, bool>,
+    exclude_from_menu: bool,
+    url: String,
 }
 
 // CONSTANTS AND STATE
@@ -130,16 +210,6 @@ fn mime_types() -> BTreeMap<String, ContentType> {
         ("xml".to_string(), ContentType::XML),
         ("zip".to_string(), ContentType::ZIP)
     ])
-}
-
-#[derive(Serialize, Deserialize)]
-struct JsonDataResponse {
-    is_good: bool,
-    reason: String,
-}
-#[derive(Serialize, Deserialize)]
-struct JsonNetStatusResponse {
-    is_enabled: bool,
 }
 
 fn check_path_components(path_components: &mut Components<'_>) -> bool {
@@ -269,6 +339,31 @@ fn get_auth_endpoint(state: &State<AppSettings>, endpoint_key: String) -> status
                 )
             ),
         )
+    }
+}
+
+#[get("/typography")]
+fn get_typography(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let typography = state.typography.clone();
+    match serde_json::to_string(&typography) {
+        Ok(v) =>
+            status::Custom(
+                Status::Ok, (
+                    ContentType::JSON,
+                    v
+                ),
+            ),
+        Err(e) => status::Custom(
+            Status::InternalServerError, (
+                ContentType::JSON,
+                make_bad_json_data_response(
+                    format!(
+                        "Could not parse typography settings as JSON object: {}",
+                        e
+                    )
+                )
+            ),
+        ),
     }
 }
 
@@ -654,21 +749,33 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
     }
 }
 
-// GITEA
-
-#[derive(Serialize, Deserialize)]
-struct RemoteRepoRecord {
-    name: String,
-    abbreviation: String,
-    description: String,
-    avatar_url: String,
-    flavor: String,
-    flavor_type: String,
-    language_code: String,
-    script_direction: String,
-    branch_or_tag: String,
-    clone_url: String,
+// NAVIGATION
+#[get("/bcv")]
+fn get_bcv(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
+    let bcv = state.bcv.clone();
+    match serde_json::to_string(&bcv) {
+        Ok(v) =>
+            status::Custom(
+                Status::Ok, (
+                    ContentType::JSON,
+                    v
+                ),
+            ),
+        Err(e) => status::Custom(
+            Status::InternalServerError, (
+                ContentType::JSON,
+                make_bad_json_data_response(
+                    format!(
+                        "Could not parse bcv state as JSON object: {}",
+                        e
+                    )
+                )
+            ),
+        ),
+    }
 }
+
+// GITEA
 
 #[get("/remote-repos/<gitea_server>/<gitea_org>")]
 fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(ContentType, String)> {
@@ -923,11 +1030,6 @@ async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::
     }
 }
 
-#[derive(Serialize, Deserialize)]
-struct GitStatusRecord {
-    path: String,
-    change_type: String,
-}
 #[get("/status/<repo_path..>")]
 async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
@@ -1030,16 +1132,6 @@ async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status:
             ),
         )
     }
-}
-
-#[derive(Serialize, Deserialize)]
-struct MetadataSummary {
-    name: String,
-    description: String,
-    flavor_type: String,
-    flavor: String,
-    language_code: String,
-    script_direction: String,
 }
 
 #[get("/metadata/summary/<repo_path..>")]
@@ -1187,10 +1279,6 @@ async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, i
         )
     }
 }
-#[derive(FromForm)]
-struct Upload<'f> {
-    file: TempFile<'f>,
-}
 
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
 async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
@@ -1318,22 +1406,6 @@ fn default_catcher(req: &Request<'_>) -> status::Custom<(ContentType, String)> {
 
 type MsgQueue = Arc<Mutex<VecDeque<String>>>;
 
-#[derive(Clone, Serialize, Deserialize)]
-struct Client {
-    id: String,
-    requires: BTreeMap<String, bool>,
-    exclude_from_menu: bool,
-    path: String,
-    url: String,
-}
-
-#[derive(Serialize)]
-struct PublicClient {
-    id: String,
-    requires: BTreeMap<String, bool>,
-    exclude_from_menu: bool,
-    url: String,
-}
 fn public_serialize_client(c: Client) -> PublicClient {
     PublicClient {
         id: c.id.clone(),
@@ -1615,6 +1687,26 @@ fn rocket() -> Rocket<Build> {
                     serde_json::Value::Array(v) => serde_json::from_value(serde_json::Value::Array(v)).unwrap(),
                     _ => Vec::new(),
                 },
+                typography: match settings_json["typography"].clone() {
+                serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
+                _ => serde_json::from_value(
+                    json!({
+                        "font_set": "gentiumPlus",
+                        "size": "medium",
+                        "direction": "ltr"
+                    })
+                ).unwrap(),
+                },
+                bcv: match settings_json["bcv"].clone() {
+                    serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
+                    _ => serde_json::from_value(
+                        json!({
+                        "book_code": "TIT",
+                        "chapter": 1,
+                        "verse": 1
+                    })
+                    ).unwrap(),
+                },
             }
         )
         .mount("/", routes![
@@ -1627,7 +1719,8 @@ fn rocket() -> Rocket<Build> {
         ])
         .mount("/settings", routes![
             get_languages,
-            get_auth_endpoint
+            get_auth_endpoint,
+            get_typography
         ])
         .mount("/net", routes![
             net_status,
@@ -1644,6 +1737,9 @@ fn rocket() -> Rocket<Build> {
             negotiated_i18n,
             flat_i18n,
             untranslated_i18n
+        ])
+        .mount("/navigation", routes![
+            get_bcv
         ])
         .mount("/gitea", routes![
             gitea_remote_repos

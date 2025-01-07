@@ -16,10 +16,9 @@ function App() {
     );
     const i18n = useContext(i18nContext);
     const {enabledRef} = useContext(netContext);
-    console.log("enableRef", enabledRef);
     return <Grid2 container spacing={2}>
         <Grid2 size={12}>
-            <h1>{doI18n("pages:core-dashboard:title", i18n)}</h1>
+            <p><b>{doI18n("pages:core-dashboard:summary", i18n)}</b></p>
         </Grid2>
         {
             clients
