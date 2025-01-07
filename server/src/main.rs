@@ -36,14 +36,14 @@ struct AuthEndpoint {
 struct Bcv {
     book_code: String,
     chapter: u16,
-    verse: u16
+    verse: u16,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 struct Typography {
     font_set: String,
     size: String,
-    direction: String
+    direction: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -52,8 +52,8 @@ struct AppSettings {
     repo_dir: String,
     languages: Vec<String>,
     auth_endpoints: Vec<AuthEndpoint>,
-    bcv: Bcv,
-    typography: Typography,
+    bcv: Mutex<Bcv>,
+    typography: Mutex<Typography>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -344,7 +344,7 @@ fn get_auth_endpoint(state: &State<AppSettings>, endpoint_key: String) -> status
 
 #[get("/typography")]
 fn get_typography(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let typography = state.typography.clone();
+    let typography = state.typography.lock().unwrap().clone();
     match serde_json::to_string(&typography) {
         Ok(v) =>
             status::Custom(
@@ -365,6 +365,21 @@ fn get_typography(state: &State<AppSettings>) -> status::Custom<(ContentType, St
             ),
         ),
     }
+}
+
+#[post("/typography/<font_set>/<size>/<direction>")]
+fn post_typography(state: &State<AppSettings>, font_set: String, size: String, direction: String) -> status::Custom<(ContentType, String)> {
+    *state.typography.lock().unwrap() = Typography {
+        font_set,
+        size,
+        direction,
+    };
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
 }
 
 // NETWORK OPERATIONS
@@ -752,7 +767,7 @@ async fn untranslated_i18n(state: &State<AppSettings>, lang: String) -> status::
 // NAVIGATION
 #[get("/bcv")]
 fn get_bcv(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let bcv = state.bcv.clone();
+    let bcv = state.bcv.lock().unwrap().clone();
     match serde_json::to_string(&bcv) {
         Ok(v) =>
             status::Custom(
@@ -773,6 +788,21 @@ fn get_bcv(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> 
             ),
         ),
     }
+}
+
+#[post("/bcv/<book_code>/<chapter>/<verse>")]
+fn post_bcv(state: &State<AppSettings>, book_code: String, chapter: u16, verse: u16) -> status::Custom<(ContentType, String)> {
+    *state.bcv.lock().unwrap() = Bcv {
+        book_code,
+        chapter,
+        verse,
+    };
+    status::Custom(
+        Status::Ok, (
+            ContentType::JSON,
+            make_good_json_data_response("ok".to_string())
+        ),
+    )
 }
 
 // GITEA
@@ -1688,14 +1718,14 @@ fn rocket() -> Rocket<Build> {
                     _ => Vec::new(),
                 },
                 typography: match settings_json["typography"].clone() {
-                serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
-                _ => serde_json::from_value(
-                    json!({
+                    serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
+                    _ => serde_json::from_value(
+                        json!({
                         "font_set": "gentiumPlus",
                         "size": "medium",
                         "direction": "ltr"
                     })
-                ).unwrap(),
+                    ).unwrap(),
                 },
                 bcv: match settings_json["bcv"].clone() {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
@@ -1720,7 +1750,8 @@ fn rocket() -> Rocket<Build> {
         .mount("/settings", routes![
             get_languages,
             get_auth_endpoint,
-            get_typography
+            get_typography,
+            post_typography
         ])
         .mount("/net", routes![
             net_status,
@@ -1739,7 +1770,8 @@ fn rocket() -> Rocket<Build> {
             untranslated_i18n
         ])
         .mount("/navigation", routes![
-            get_bcv
+            get_bcv,
+            post_bcv
         ])
         .mount("/gitea", routes![
             gitea_remote_repos
