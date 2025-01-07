@@ -3,12 +3,13 @@ import {Box, TextField, Typography} from "@mui/material";
 import {
     bcvContext as BcvContext,
     i18nContext as I18nContext,
-    doI18n
+    doI18n,
+    postEmptyJson,
 } from "pithekos-lib";
 
 function BcvPicker() {
     const [newRef, setNewRef] = useState("");
-    const {systemBcv, setSystemBcv} = useContext(BcvContext);
+    const {systemBcv} = useContext(BcvContext);
     const i18n = useContext(I18nContext);
     return <Box>
         <Typography variant="h6">{`${systemBcv.bookCode} ${systemBcv.chapterNum}:${systemBcv.verseNum}`}</Typography>
@@ -34,11 +35,7 @@ function BcvPicker() {
                             c = parseInt(c);
                             v = parseInt(v);
                             if (typeof c === "number" && typeof v === "number" && c>0 && v > 0 && c <= 150 && v <= 176) {
-                                setSystemBcv({
-                                    bookCode,
-                                    chapterNum: c,
-                                    verseNum: v
-                                })
+                                postEmptyJson(`/navigation/bcv/${bookCode}/${c}/${v}`);
                             }
                         }
                     }

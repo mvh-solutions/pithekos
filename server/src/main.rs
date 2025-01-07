@@ -36,7 +36,7 @@ struct AuthEndpoint {
 struct Bcv {
     book_code: String,
     chapter: u16,
-    verse: u16,
+    verse: u16
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -368,11 +368,11 @@ fn get_typography(state: &State<AppSettings>) -> status::Custom<(ContentType, St
 }
 
 #[post("/typography/<font_set>/<size>/<direction>")]
-fn post_typography(state: &State<AppSettings>, font_set: String, size: String, direction: String) -> status::Custom<(ContentType, String)> {
+fn post_typography(state: &State<AppSettings>, font_set: &str, size: &str, direction: &str) -> status::Custom<(ContentType, String)> {
     *state.typography.lock().unwrap() = Typography {
-        font_set,
-        size,
-        direction,
+        font_set: font_set.to_string(),
+        size: size.to_string(),
+        direction: direction.to_string(),
     };
     status::Custom(
         Status::Ok, (
@@ -454,10 +454,10 @@ fn debug_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)
 
 // SSE
 #[get("/")]
-pub async fn notifications_stream(msgs: &State<MsgQueue>) -> stream::EventStream![stream::Event + '_] {
+pub async fn notifications_stream<'a>(msgs: &'a State<MsgQueue>, state: &'a State<AppSettings>) -> stream::EventStream![stream::Event + 'a] {
     stream::EventStream! {
         let mut count = 0;
-        let mut interval = time::interval(Duration::from_millis(250));
+        let mut interval = time::interval(Duration::from_millis(500));
         yield stream::Event::retry(Duration::from_secs(1));
         loop {
             while !msgs.lock().unwrap().is_empty() {
@@ -484,6 +484,13 @@ pub async fn notifications_stream(msgs: &State<MsgQueue>) -> stream::EventStream
                     }
             )
             .event("debug")
+            .id(format!("{}", count));
+            count+=1;
+            let bcv = state.bcv.lock().unwrap().clone();
+            yield stream::Event::data(
+                format!("{}--{}--{}", bcv.book_code, bcv.chapter, bcv.verse)
+            )
+            .event("bcv")
             .id(format!("{}", count));
             count+=1;
             interval.tick().await;
@@ -791,11 +798,11 @@ fn get_bcv(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> 
 }
 
 #[post("/bcv/<book_code>/<chapter>/<verse>")]
-fn post_bcv(state: &State<AppSettings>, book_code: String, chapter: u16, verse: u16) -> status::Custom<(ContentType, String)> {
+fn post_bcv(state: &State<AppSettings>, book_code: &str, chapter: u16, verse: u16) -> status::Custom<(ContentType, String)> {
     *state.bcv.lock().unwrap() = Bcv {
-        book_code,
+        book_code: book_code.to_string(),
         chapter,
-        verse,
+        verse
     };
     status::Custom(
         Status::Ok, (
