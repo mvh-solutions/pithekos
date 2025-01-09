@@ -454,7 +454,7 @@ fn debug_disable(msgs: &State<MsgQueue>) -> status::Custom<(ContentType, String)
 
 // SSE
 #[get("/")]
-pub async fn notifications_stream<'a>(msgs: &'a State<MsgQueue>, state: &'a State<AppSettings>) -> stream::EventStream![stream::Event + 'a] {
+async fn notifications_stream<'a>(msgs: &'a State<MsgQueue>, state: &'a State<AppSettings>) -> stream::EventStream![stream::Event + 'a] {
     stream::EventStream! {
         let mut count = 0;
         let mut interval = time::interval(Duration::from_millis(500));
@@ -491,6 +491,13 @@ pub async fn notifications_stream<'a>(msgs: &'a State<MsgQueue>, state: &'a Stat
                 format!("{}--{}--{}", bcv.book_code, bcv.chapter, bcv.verse)
             )
             .event("bcv")
+            .id(format!("{}", count));
+            count+=1;
+            let typography = state.typography.lock().unwrap().clone();
+            yield stream::Event::data(
+                format!("{}--{}--{}", typography.font_set, typography.size, typography.direction)
+            )
+            .event("typography")
             .id(format!("{}", count));
             count+=1;
             interval.tick().await;
@@ -1502,7 +1509,12 @@ fn rocket() -> Rocket<Build> {
                         "path": relative!("../clients/local_projects")
                     },
                 ],
-                "languages": ["en"]
+                "languages": ["en"],
+                "typography": {
+                    "font_set": "gentiumPlus",
+                    "size": "medium",
+                    "direction": "ltr"
+                }
             });
             let mut file_handle = match fs::File::create(&settings_path) {
                 Ok(h) => h,
