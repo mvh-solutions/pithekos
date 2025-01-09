@@ -1322,7 +1322,7 @@ async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, 
     let path_components: Components<'_> = repo_path.components();
     let destination = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
-        let _ = form.file.persist_to(destination).await;
+        let _ = form.file.persist_to(transform(destination, "usj".to_string(), "usfm".to_string())).await;
         status::Custom(
             Status::Ok,
             (
