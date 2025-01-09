@@ -1600,8 +1600,14 @@ fn rocket() -> Rocket<Build> {
                 exit(1);
             }
         };
+        let mut debug_flag = false;
+        let md_require = metadata_json["require"].as_object().unwrap();
+        if md_require.contains_key("debug") {
+            debug_flag = md_require.clone()["debug"].as_bool().unwrap();
+        }
         let requires = json!({
-            "net": metadata_json["require"].as_object().unwrap()["net"].as_bool().unwrap()
+            "net": md_require.clone()["net"].as_bool().unwrap(),
+            "debug": debug_flag
         });
         // Get url from package.json
         let package_json_path = client_record["path"].as_str().unwrap().to_string() + os_slash_str() + "package.json";
