@@ -1,7 +1,8 @@
 {
   "id": "core-new-project",
   "require": {
-    "net": false
+    "net": false,
+    "debug": true
   },
   "i18n": {
     "title": {
