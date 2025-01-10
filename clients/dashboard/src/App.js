@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {Box, Grid2} from "@mui/material";
-import {getAndSetJson, i18nContext, netContext, doI18n, postEmptyJson, bcvContext} from 'pithekos-lib';
+import {getAndSetJson, i18nContext, netContext, doI18n, debugContext} from 'pithekos-lib';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 
 function App() {
@@ -15,18 +15,16 @@ function App() {
         []
     );
     const i18n = useContext(i18nContext);
-    const {bcvRef} = useContext(bcvContext);
     const {enabledRef} = useContext(netContext);
+    const {debugRef} = useContext(debugContext);
     return <Grid2 container spacing={2}>
         <Grid2 size={12}>
             <p><b>{doI18n("pages:core-dashboard:summary", i18n)}</b></p>
         </Grid2>
-        <Grid2 size={12}>
-            <p onClick={()=> postEmptyJson("/navigation/bcv/MRK/3/5")}>Do Bcv {JSON.stringify(bcvRef.current)}</p>
-        </Grid2>
-        {
+       {
             clients
                 .filter(c => !c.id.includes("dashboard"))
+                .filter(c => (c.requires.debug && debugRef.current) || !c.requires.debug)
                 .map(
                     c => <Grid2 size={6}>
                         <Box
