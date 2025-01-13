@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173, // Unique port for local_projects
+    port: 5171, // Unique port for dashboard
     strictPort: true,
     host: true,
     cors: true,
@@ -16,5 +16,5 @@ export default defineConfig({
     emptyOutDir: true,
     
   },
-  base: '/clients/local-projects/'
+  base: '/clients/main/'
 })
