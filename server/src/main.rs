@@ -1472,11 +1472,13 @@ fn rocket() -> Rocket<Build> {
     let mut working_dir_path = root_path.clone() + "pankosmia_working";
     let mut user_settings_path = format!("{}/user_settings.json", working_dir_path);
     let mut app_setup_path = format!("{}/app_setup.json", working_dir_path);
+    let mut app_state_path = format!("{}/app_state.json", working_dir_path);
     let args: Vec<String> = env::args().collect();
     if args.len() == 2 {
         // Do not auto-make at non-default location.
         working_dir_path = args[1].clone();
         app_setup_path = format!("{}/app_setup.json", working_dir_path);
+        app_state_path = format!("{}/app_state.json", working_dir_path);
         user_settings_path = format!("{}/user_settings.json", working_dir_path);
     } else {
         // Well-known location.
@@ -1538,6 +1540,29 @@ fn rocket() -> Rocket<Build> {
                     exit(1);
                 }
             }
+            // Copy app_state file to working dir
+            let app_state_template_path = relative!("./templates/app_state.json");
+            let app_state_json_string = match fs::read_to_string(&app_state_template_path) {
+                Ok(s) => s.replace("%%WORKINGDIR%%", &working_dir_path),
+                Err(e) => {
+                    println!("Could not read app state template file '{}': {}", user_settings_template_path, e);
+                    exit(1);
+                }
+            };
+            let mut file_handle = match fs::File::create(&app_state_path) {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("Could not open app_state file '{}' to write default: {}", app_state_path, e);
+                    exit(1);
+                }
+            };
+            match file_handle.write_all(&app_state_json_string.as_bytes()) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Could not write default app_state file to '{}: {}'", app_state_path, e);
+                    exit(1);
+                }
+            }
         }
     }
     // Try to load app_setup JSON
@@ -1555,6 +1580,21 @@ fn rocket() -> Rocket<Build> {
             exit(1);
         }
     };
+    // Try to load app state JSON
+    let app_state_json_string = match fs::read_to_string(&app_state_path) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("Could not read app_state file '{}': {}", app_state_path, e);
+            exit(1);
+        }
+    };
+    let app_state_json: Value = match serde_json::from_str(app_state_json_string.as_str()) {
+        Ok(j) => j,
+        Err(e) => {
+            println!("Could not parse app_state file '{}': {}", app_state_path, e);
+            exit(1);
+        }
+    };
     // Try to load user settings JSON
     let user_settings_json_string = match fs::read_to_string(&user_settings_path) {
         Ok(s) => s,
@@ -1566,7 +1606,7 @@ fn rocket() -> Rocket<Build> {
     let user_settings_json: Value = match serde_json::from_str(user_settings_json_string.as_str()) {
         Ok(j) => j,
         Err(e) => {
-            println!("Could not parse settings file '{}': {}", user_settings_path, e);
+            println!("Could not parse user_settings file '{}': {}", user_settings_path, e);
             exit(1);
         }
     };
@@ -1775,7 +1815,7 @@ fn rocket() -> Rocket<Build> {
                     })
                     ).unwrap(),
                 },
-                bcv: match user_settings_json["bcv"].clone() {
+                bcv: match app_state_json["bcv"].clone() {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
                     _ => serde_json::from_value(
                         json!({
