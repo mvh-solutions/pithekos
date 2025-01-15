@@ -49,9 +49,9 @@ struct Typography {
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
     working_dir: String,
-    repo_dir: String,
-    languages: Vec<String>,
-    auth_endpoints: Vec<AuthEndpoint>,
+    repo_dir: Mutex<String>,
+    languages: Mutex<Vec<String>>,
+    auth_endpoints: Mutex<Vec<AuthEndpoint>>,
     bcv: Mutex<Bcv>,
     typography: Mutex<Typography>,
 }
@@ -277,7 +277,7 @@ fn home_dir_string() -> String {
 // SETTINGS
 #[get("/languages")]
 fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let languages = state.languages.clone();
+    let languages = state.languages.lock().unwrap().clone();
     match serde_json::to_string(&languages) {
         Ok(v) =>
             status::Custom(
@@ -301,7 +301,7 @@ fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, Str
 }
 #[get("/auth-endpoint/<endpoint_key>")]
 fn get_auth_endpoint(state: &State<AppSettings>, endpoint_key: String) -> status::Custom<(ContentType, String)> {
-    let matching_endpoint_array = state.auth_endpoints
+    let matching_endpoint_array = state.auth_endpoints.lock().unwrap()
         .clone()
         .into_iter()
         .filter(|a| a.service == endpoint_key)
@@ -555,7 +555,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
                 Ok(sj) => {
-                    let languages = state.languages.clone();
+                    let languages = state.languages.lock().unwrap().clone();
                     let mut negotiated = Map::new();
                     for (i18n_type, subtypes) in sj.as_object().unwrap() {
                         // println!("{}", i18n_type);
@@ -652,7 +652,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
                 Ok(sj) => {
-                    let languages = state.languages.clone();
+                    let languages = state.languages.lock().unwrap().clone();
                     let mut flat = Map::new();
                     for (i18n_type, subtypes) in sj.as_object().unwrap() {
                         // println!("{}", i18n_type);
@@ -894,7 +894,7 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
 
 #[get("/list-local-repos")]
 fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let root_path = state.repo_dir.clone();
+    let root_path = state.repo_dir.lock().unwrap().clone();
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
@@ -937,7 +937,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
 
 #[get("/add-and-commit/<repo_path..>")]
 async fn add_and_commit(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
+    let repo_path_string: String = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string().clone();
     let result = match Repository::open(repo_path_string) {
         Ok(repo) => {
             repo.index()
@@ -1005,7 +1005,7 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
         let url = "https://".to_string() + &repo_path.display().to_string().replace("\\", "/");
         match Repository::clone(
             &url,
-            state.repo_dir.clone() +
+            state.repo_dir.lock().unwrap().clone() +
                 os_slash_str() +
                 source +
                 os_slash_str() +
@@ -1046,7 +1046,7 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
 async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_delete = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string();
+        let path_to_delete = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string();
         match fs::remove_dir_all(path_to_delete) {
             Ok(_) => status::Custom(
                 Status::Ok,
@@ -1076,7 +1076,7 @@ async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::
 
 #[get("/status/<repo_path..>")]
 async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
+    let repo_path_string: String = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string().clone();
     match Repository::open(repo_path_string) {
         Ok(repo) => {
             if repo.is_bare() {
@@ -1150,7 +1150,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
 async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -1182,7 +1182,7 @@ async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status:
 async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + os_slash_str() + "metadata.json";
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + os_slash_str() + "metadata.json";
         println!("{}", path_to_serve);
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
@@ -1252,7 +1252,7 @@ async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> sta
 async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
@@ -1296,7 +1296,7 @@ async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: S
 async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -1327,7 +1327,7 @@ async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, i
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
 async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
-    let destination = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
+    let destination = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
         let _ = form.file.persist_to(transform(destination, "usj".to_string(), "usfm".to_string())).await;
         status::Custom(
@@ -1352,7 +1352,7 @@ async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, 
 async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) =>
                 v,
@@ -1793,17 +1793,19 @@ fn rocket() -> Rocket<Build> {
         ])
         .manage(
             AppSettings {
-                repo_dir: repo_dir_path.clone(),
+                repo_dir: Mutex::new(repo_dir_path.clone()),
                 working_dir: working_dir_path.clone(),
-                languages: user_settings_json["languages"]
+                languages: Mutex::new(
+                    user_settings_json["languages"]
                     .as_array()
                     .unwrap()
                     .into_iter()
-                    .map(|i| { i.as_str().expect("Non-string in user_settings language array").to_string() })
-                    .collect(),
+                    .map( | i| { i.as_str().expect("Non-string in user_settings language array").to_string() })
+                    .collect()
+                ),
                 auth_endpoints: match user_settings_json["auth_endpoints"].clone() {
-                    serde_json::Value::Array(v) => serde_json::from_value(serde_json::Value::Array(v)).unwrap(),
-                    _ => Vec::new(),
+                    serde_json::Value::Array(v) => Mutex::new(serde_json::from_value(serde_json::Value::Array(v)).unwrap()),
+                    _ => Mutex::new(Vec::new()),
                 },
                 typography: match user_settings_json["typography"].clone() {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
