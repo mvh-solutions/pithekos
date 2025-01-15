@@ -1,0 +1,20 @@
+{
+  "clients": [
+    {
+      "path": "%%STUBCLIENTSDIR%%/dashboard"
+    },
+    {
+      "exclude_from_menu": true,
+      "path": "%%STUBCLIENTSDIR%%/settings"
+    },
+    {
+      "path": "%%STUBCLIENTSDIR%%/new_project"
+    },
+    {
+      "path": "%%STUBCLIENTSDIR%%/download"
+    },
+    {
+      "path": "%%STUBCLIENTSDIR%%/local_projects"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "languages": [
+    "en"
+  ],
+  "repo_dir": "%%WORKINGDIR%%/repos",
+  "bcv": {
+    "book_code": "TIT",
+    "chapter": 2,
+    "verse": 4
+  },
+  "typography": {
+    "direction": "ltr",
+    "font_set": "gentiumPlus",
+    "size": "medium"
+  }
+}
