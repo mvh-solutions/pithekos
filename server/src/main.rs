@@ -132,6 +132,13 @@ fn os_slash_str() -> &'static str {
     }
 }
 
+fn os_quoted_slash_str() -> &'static str {
+    match env::consts::OS {
+        "windows" => "\\\\",
+        _ => "/"
+    }
+}
+
 fn forbidden_path_strings() -> Vec<String> {
     Vec::from([
         "..".to_string(),
@@ -1499,7 +1506,7 @@ fn rocket() -> Rocket<Build> {
             let app_setup_json_string = match fs::read_to_string(app_setup_template_path) {
                 Ok(s) => s
                     .replace("%%STUBCLIENTSDIR%%", relative!("../clients"))
-                    .replace("%%OSSLASH%%", os_slash_str()),
+                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
                     println!("Could not read app_setup file '{}': {}", app_setup_template_path, e);
                     exit(1);
@@ -1524,7 +1531,7 @@ fn rocket() -> Rocket<Build> {
             let user_settings_json_string = match fs::read_to_string(&user_settings_template_path) {
                 Ok(s) => s
                     .replace("%%WORKINGDIR%%", &working_dir_path)
-                    .replace("%%OSSLASH%%", os_slash_str()),
+                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
                     println!("Could not read user settings template file '{}': {}", user_settings_template_path, e);
                     exit(1);
@@ -1549,7 +1556,7 @@ fn rocket() -> Rocket<Build> {
             let app_state_json_string = match fs::read_to_string(&app_state_template_path) {
                 Ok(s) => s
                     .replace("%%WORKINGDIR%%", &working_dir_path)
-                    .replace("%%OSSLASH%%", os_slash_str()),
+                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
                     println!("Could not read app state template file '{}': {}", user_settings_template_path, e);
                     exit(1);
