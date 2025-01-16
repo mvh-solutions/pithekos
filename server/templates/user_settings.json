@@ -2,7 +2,7 @@
   "languages": [
     "en"
   ],
-  "repo_dir": "%%WORKINGDIR%%/repos",
+  "repo_dir": "%%WORKINGDIR%%%%OSSLASH%%repos",
   "typography": {
     "direction": "ltr",
     "font_set": "gentiumPlus",

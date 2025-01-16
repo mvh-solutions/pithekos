@@ -1,20 +1,20 @@
 {
   "clients": [
     {
-      "path": "%%STUBCLIENTSDIR%%/dashboard"
+      "path": "%%STUBCLIENTSDIR%%%%OSSLASH%%dashboard"
     },
     {
       "exclude_from_menu": true,
-      "path": "%%STUBCLIENTSDIR%%/settings"
+      "path": "%%STUBCLIENTSDIR%%%%OSSLASH%%settings"
     },
     {
-      "path": "%%STUBCLIENTSDIR%%/new_project"
+      "path": "%%STUBCLIENTSDIR%%%%OSSLASH%%new_project"
     },
     {
-      "path": "%%STUBCLIENTSDIR%%/download"
+      "path": "%%STUBCLIENTSDIR%%%%OSSLASH%%download"
     },
     {
-      "path": "%%STUBCLIENTSDIR%%/local_projects"
+      "path": "%%STUBCLIENTSDIR%%%%OSSLASH%%local_projects"
     }
   ]
 }
