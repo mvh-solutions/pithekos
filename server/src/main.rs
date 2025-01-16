@@ -1477,9 +1477,9 @@ fn rocket() -> Rocket<Build> {
     if args.len() == 2 {
         // Do not auto-make at non-default location.
         working_dir_path = args[1].clone();
-        app_setup_path = format!("{}/app_setup.json", working_dir_path);
-        app_state_path = format!("{}/app_state.json", working_dir_path);
-        user_settings_path = format!("{}/user_settings.json", working_dir_path);
+        app_setup_path = format!("{}{}app_setup.json", working_dir_path, os_slash_str());
+        app_state_path = format!("{}{}app_state.json", working_dir_path, os_slash_str());
+        user_settings_path = format!("{}{}user_settings.json", working_dir_path, os_slash_str());
     } else {
         // Well-known location.
         // If directory doesn't exist make one.
