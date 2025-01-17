@@ -49,9 +49,9 @@ struct Typography {
 #[derive(Serialize, Deserialize)]
 struct AppSettings {
     working_dir: String,
-    repo_dir: String,
-    languages: Vec<String>,
-    auth_endpoints: Vec<AuthEndpoint>,
+    repo_dir: Mutex<String>,
+    languages: Mutex<Vec<String>>,
+    auth_endpoints: Mutex<Vec<AuthEndpoint>>,
     bcv: Mutex<Bcv>,
     typography: Mutex<Typography>,
 }
@@ -130,6 +130,22 @@ fn os_slash_str() -> &'static str {
         "windows" => "\\",
         _ => "/"
     }
+}
+
+fn os_quoted_slash_str() -> &'static str {
+    match env::consts::OS {
+        "windows" => "\\\\",
+        _ => "/"
+    }
+}
+
+fn maybe_os_quoted_path_str(s: String) -> String {
+    let quoted = match env::consts::OS {
+        "windows" => s.replace("\\", "\\\\").replace("/", "\\\\"),
+        _ => s
+    };
+    println!("{}", quoted.clone());
+    quoted
 }
 
 fn forbidden_path_strings() -> Vec<String> {
@@ -277,7 +293,7 @@ fn home_dir_string() -> String {
 // SETTINGS
 #[get("/languages")]
 fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let languages = state.languages.clone();
+    let languages = state.languages.lock().unwrap().clone();
     match serde_json::to_string(&languages) {
         Ok(v) =>
             status::Custom(
@@ -301,7 +317,7 @@ fn get_languages(state: &State<AppSettings>) -> status::Custom<(ContentType, Str
 }
 #[get("/auth-endpoint/<endpoint_key>")]
 fn get_auth_endpoint(state: &State<AppSettings>, endpoint_key: String) -> status::Custom<(ContentType, String)> {
-    let matching_endpoint_array = state.auth_endpoints
+    let matching_endpoint_array = state.auth_endpoints.lock().unwrap()
         .clone()
         .into_iter()
         .filter(|a| a.service == endpoint_key)
@@ -555,7 +571,7 @@ async fn negotiated_i18n(state: &State<AppSettings>, filter: PathBuf) -> status:
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
                 Ok(sj) => {
-                    let languages = state.languages.clone();
+                    let languages = state.languages.lock().unwrap().clone();
                     let mut negotiated = Map::new();
                     for (i18n_type, subtypes) in sj.as_object().unwrap() {
                         // println!("{}", i18n_type);
@@ -652,7 +668,7 @@ async fn flat_i18n(state: &State<AppSettings>, filter: PathBuf) -> status::Custo
         Ok(v) => {
             match serde_json::from_str::<Value>(v.as_str()) {
                 Ok(sj) => {
-                    let languages = state.languages.clone();
+                    let languages = state.languages.lock().unwrap().clone();
                     let mut flat = Map::new();
                     for (i18n_type, subtypes) in sj.as_object().unwrap() {
                         // println!("{}", i18n_type);
@@ -894,7 +910,7 @@ fn gitea_remote_repos(gitea_server: &str, gitea_org: &str) -> status::Custom<(Co
 
 #[get("/list-local-repos")]
 fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, String)> {
-    let root_path = state.repo_dir.clone();
+    let root_path = state.repo_dir.lock().unwrap().clone();
     let server_paths = fs::read_dir(root_path).unwrap();
     let mut repos: Vec<String> = Vec::new();
     for server_path in server_paths {
@@ -937,7 +953,7 @@ fn list_local_repos(state: &State<AppSettings>) -> status::Custom<(ContentType, 
 
 #[get("/add-and-commit/<repo_path..>")]
 async fn add_and_commit(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
+    let repo_path_string: String = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string().clone();
     let result = match Repository::open(repo_path_string) {
         Ok(repo) => {
             repo.index()
@@ -1005,7 +1021,7 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
         let url = "https://".to_string() + &repo_path.display().to_string().replace("\\", "/");
         match Repository::clone(
             &url,
-            state.repo_dir.clone() +
+            state.repo_dir.lock().unwrap().clone() +
                 os_slash_str() +
                 source +
                 os_slash_str() +
@@ -1046,7 +1062,7 @@ async fn fetch_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
 async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_delete = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string();
+        let path_to_delete = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string();
         match fs::remove_dir_all(path_to_delete) {
             Ok(_) => status::Custom(
                 Status::Ok,
@@ -1076,7 +1092,7 @@ async fn delete_repo(state: &State<AppSettings>, repo_path: PathBuf) -> status::
 
 #[get("/status/<repo_path..>")]
 async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
-    let repo_path_string: String = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string().clone();
+    let repo_path_string: String = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string().clone();
     match Repository::open(repo_path_string) {
         Ok(repo) => {
             if repo.is_bare() {
@@ -1150,7 +1166,7 @@ async fn git_status(state: &State<AppSettings>, repo_path: PathBuf) -> status::C
 async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/metadata.json";
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -1182,7 +1198,7 @@ async fn raw_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status:
 async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + os_slash_str() + "metadata.json";
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + os_slash_str() + "metadata.json";
         println!("{}", path_to_serve);
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) => v,
@@ -1252,7 +1268,7 @@ async fn summary_metadata(state: &State<AppSettings>, repo_path: PathBuf) -> sta
 async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => {
                 let mut split_ipath = ipath.split(".").clone();
@@ -1296,7 +1312,7 @@ async fn raw_ingredient(state: &State<AppSettings>, repo_path: PathBuf, ipath: S
 async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         match fs::read_to_string(path_to_serve) {
             Ok(v) => status::Custom(
                 Status::Ok,
@@ -1327,7 +1343,7 @@ async fn get_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, i
 #[post("/ingredient/as-usj/<repo_path..>?<ipath>", format = "multipart/form-data", data = "<form>")]
 async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, ipath: String, mut form: Form<Upload<'_>>) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
-    let destination = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
+    let destination = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.clone().as_str();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath) && fs::metadata(destination.clone()).is_ok() {
         let _ = form.file.persist_to(transform(destination, "usj".to_string(), "usfm".to_string())).await;
         status::Custom(
@@ -1352,7 +1368,7 @@ async fn post_ingredient_as_usj(state: &State<AppSettings>, repo_path: PathBuf, 
 async fn get_ingredient_prettified(state: &State<AppSettings>, repo_path: PathBuf, ipath: String) -> status::Custom<(ContentType, String)> {
     let path_components: Components<'_> = repo_path.components();
     if check_path_components(&mut path_components.clone()) && check_path_string_components(ipath.clone()) {
-        let path_to_serve = state.repo_dir.clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
+        let path_to_serve = state.repo_dir.lock().unwrap().clone() + os_slash_str() + &repo_path.display().to_string() + "/ingredients/" + ipath.as_str();
         let file_string = match fs::read_to_string(path_to_serve) {
             Ok(v) =>
                 v,
@@ -1465,23 +1481,29 @@ type Clients = Mutex<Vec<Client>>;
 
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
+    println!("OS = '{}'", env::consts::OS);
     // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
     // Get settings path, default to well-known homedir location
     let root_path = home_dir_string() + os_slash_str();
     let mut working_dir_path = root_path.clone() + "pankosmia_working";
-    let mut settings_path = format!("{}/settings.json", working_dir_path);
+    let mut user_settings_path = format!("{}/user_settings.json", working_dir_path);
+    let mut app_setup_path = format!("{}/app_setup.json", working_dir_path);
+    let mut app_state_path = format!("{}/app_state.json", working_dir_path);
     let args: Vec<String> = env::args().collect();
     if args.len() == 2 {
         // Do not auto-make at non-default location.
         working_dir_path = args[1].clone();
-        settings_path = format!("{}/settings.json", working_dir_path);
+        app_setup_path = format!("{}{}app_setup.json", working_dir_path, os_slash_str());
+        app_state_path = format!("{}{}app_state.json", working_dir_path, os_slash_str());
+        user_settings_path = format!("{}{}user_settings.json", working_dir_path, os_slash_str());
     } else {
         // Well-known location.
         // If directory doesn't exist make one.
-        // If it doesn't, expect it to contain a settings file.
+        // If it doesn't, expect it to contain user_settings and app_setup files.
         let workspace_dir_exists = Path::new(&working_dir_path).is_dir();
         if !workspace_dir_exists {
+            // Make working dir
             match fs::create_dir_all(&working_dir_path) {
                 Ok(_) => {}
                 Err(e) => {
@@ -1489,69 +1511,135 @@ fn rocket() -> Rocket<Build> {
                     exit(1);
                 }
             };
-            let default_settings = json!({
-                "repo_dir": format!("{}/repos", working_dir_path),
-                "clients": [
-                    {
-                        "path": relative!("../clients/dashboard")
-                    },
-                    {
-                        "exclude_from_menu": true,
-                        "path": relative!("../clients/settings")
-                    },
-                    {
-                        "path": relative!("../clients/new_project")
-                    },
-                    {
-                        "path": relative!("../clients/download")
-                    },
-                    {
-                        "path": relative!("../clients/local_projects")
-                    },
-                ],
-                "languages": ["en"],
-                "typography": {
-                    "font_set": "gentiumPlus",
-                    "size": "medium",
-                    "direction": "ltr"
-                }
-            });
-            let mut file_handle = match fs::File::create(&settings_path) {
-                Ok(h) => h,
+            // Copy app_setuo file to working dir
+            let app_setup_template_path = relative!("./templates/app_setup.json");
+            let app_setup_json_string = match fs::read_to_string(app_setup_template_path) {
+                Ok(s) => maybe_os_quoted_path_str(
+                    s
+                        .replace("%%STUBCLIENTSDIR%%", relative!("../clients"))
+                        .replace("%%OSSLASH%%", os_quoted_slash_str())
+                ),
                 Err(e) => {
-                    println!("Could not open settings file '{}' to write default: {}", settings_path, e);
+                    println!("Could not read app_setup file '{}': {}", app_setup_template_path, e);
                     exit(1);
                 }
             };
-            match file_handle.write_all(&default_settings.to_string().as_bytes()) {
+            let mut file_handle = match fs::File::create(&app_setup_path) {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("Could not open app_setup file '{}' to write default: {}", app_setup_path, e);
+                    exit(1);
+                }
+            };
+            match file_handle.write_all(&app_setup_json_string.as_bytes()) {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("Could not write default settings file to '{}: {}'", settings_path, e);
+                    println!("Could not write app_setup file to '{}: {}'", app_setup_path, e);
+                    exit(1);
+                }
+            }
+            // Copy user_settings file to working dir
+            let user_settings_template_path = relative!("./templates/user_settings.json");
+            let user_settings_json_string = match fs::read_to_string(&user_settings_template_path) {
+                Ok(s) => s
+                    .replace("%%WORKINGDIR%%", &working_dir_path)
+                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
+                Err(e) => {
+                    println!("Could not read user settings template file '{}': {}", user_settings_template_path, e);
+                    exit(1);
+                }
+            };
+            let mut file_handle = match fs::File::create(&user_settings_path) {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("Could not open user_settings file '{}' to write default: {}", user_settings_path, e);
+                    exit(1);
+                }
+            };
+            match file_handle.write_all(&user_settings_json_string.as_bytes()) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Could not write default user_settings file to '{}: {}'", user_settings_path, e);
+                    exit(1);
+                }
+            }
+            // Copy app_state file to working dir
+            let app_state_template_path = relative!("./templates/app_state.json");
+            let app_state_json_string = match fs::read_to_string(&app_state_template_path) {
+                Ok(s) => s
+                    .replace("%%WORKINGDIR%%", &working_dir_path)
+                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
+                Err(e) => {
+                    println!("Could not read app state template file '{}': {}", user_settings_template_path, e);
+                    exit(1);
+                }
+            };
+            let mut file_handle = match fs::File::create(&app_state_path) {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("Could not open app_state file '{}' to write default: {}", app_state_path, e);
+                    exit(1);
+                }
+            };
+            match file_handle.write_all(&app_state_json_string.as_bytes()) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Could not write default app_state file to '{}: {}'", app_state_path, e);
                     exit(1);
                 }
             }
         }
     }
-    // Try to load settings JSON
-    let settings_json_string = match fs::read_to_string(&settings_path) {
+    // Try to load app_setup JSON
+    let app_setup_json_string = match fs::read_to_string(&app_setup_path) {
         Ok(s) => s,
         Err(e) => {
-            println!("Could not read settings file '{}': {}", settings_path, e);
+            println!("Could not read app_setup file '{}': {}", app_setup_path, e);
             exit(1);
         }
     };
-    let settings_json: Value = match serde_json::from_str(settings_json_string.as_str()) {
+    let app_setup_json: Value = match serde_json::from_str(app_setup_json_string.as_str()) {
         Ok(j) => j,
         Err(e) => {
-            println!("Could not parse settings file '{}': {}", settings_path, e);
+            println!("Could not parse app_setup file '{}': {}", app_setup_path, e);
+            exit(1);
+        }
+    };
+    // Try to load app state JSON
+    let app_state_json_string = match fs::read_to_string(&app_state_path) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("Could not read app_state file '{}': {}", app_state_path, e);
+            exit(1);
+        }
+    };
+    let app_state_json: Value = match serde_json::from_str(app_state_json_string.as_str()) {
+        Ok(j) => j,
+        Err(e) => {
+            println!("Could not parse app_state file '{}': {}", app_state_path, e);
+            exit(1);
+        }
+    };
+    // Try to load user settings JSON
+    let user_settings_json_string = match fs::read_to_string(&user_settings_path) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("Could not read user_settings file '{}': {}", user_settings_path, e);
+            exit(1);
+        }
+    };
+    let user_settings_json: Value = match serde_json::from_str(user_settings_json_string.as_str()) {
+        Ok(j) => j,
+        Err(e) => {
+            println!("Could not parse user_settings file '{}': {}", user_settings_path, e);
             exit(1);
         }
     };
     // Find or make repo_dir
-    let repo_dir_path = match settings_json["repo_dir"].as_str() {
+    let repo_dir_path = match user_settings_json["repo_dir"].as_str() {
         Some(v) => v.to_string(),
         None => {
-            println!("Could not parse repo_dir in settings file '{}' as a string", settings_path);
+            println!("Could not parse repo_dir in user_settings file '{}' as a string", user_settings_path);
             exit(1);
         }
     };
@@ -1580,9 +1668,9 @@ fn rocket() -> Rocket<Build> {
             }
         }
     };
-    // Merge client config into into settings JSON
+    // Merge client config into settings JSON
     let mut clients_merged_array: Vec<Value> = Vec::new();
-    for client_record in settings_json["clients"].as_array().unwrap().iter() {
+    for client_record in app_setup_json["clients"].as_array().unwrap().iter() {
         // Get requires from metadata
         let client_metadata_path = client_record["path"].as_str().unwrap().to_string() + os_slash_str() + "pankosmia_metadata.json";
         let metadata_json: Value = match fs::read_to_string(&client_metadata_path) {
@@ -1643,7 +1731,7 @@ fn rocket() -> Rocket<Build> {
     let clients: Clients = match serde_json::from_value(clients_value) {
         Ok(v) => v,
         Err(e) => {
-            println!("Could not parse clients array in settings file '{}' as client records: {}", settings_path, e);
+            println!("Could not parse clients array in settings file '{}' as client records: {}", app_setup_path, e);
             exit(1);
         }
     };
@@ -1670,12 +1758,12 @@ fn rocket() -> Rocket<Build> {
     // Iterate over clients to build i18n
     for client_record in inner_clients {
         if !Path::new(&client_record.path.clone()).is_dir() {
-            println!("Client path {} from settings file {} is not a directory", client_record.path, settings_path);
+            println!("Client path {} from app_setup file {} is not a directory", client_record.path, app_setup_path);
             exit(1);
         }
         let build_path = format!("{}/build", client_record.path.clone());
         if !Path::new(&build_path.clone()).is_dir() {
-            println!("Client build path within {} from settings file {} does not exist or is not a directory", client_record.path.clone(), settings_path);
+            println!("Client build path within {} from app_setup file {} does not exist or is not a directory", client_record.path.clone(), app_setup_path);
             exit(1);
         }
         let client_metadata_path = client_record.path.clone() + os_slash_str() + "pankosmia_metadata.json";
@@ -1730,19 +1818,21 @@ fn rocket() -> Rocket<Build> {
         ])
         .manage(
             AppSettings {
-                repo_dir: repo_dir_path.clone(),
+                repo_dir: Mutex::new(repo_dir_path.clone()),
                 working_dir: working_dir_path.clone(),
-                languages: settings_json["languages"]
+                languages: Mutex::new(
+                    user_settings_json["languages"]
                     .as_array()
                     .unwrap()
                     .into_iter()
-                    .map(|i| { i.as_str().expect("Non-string in settings language array").to_string() })
-                    .collect(),
-                auth_endpoints: match settings_json["auth_endpoints"].clone() {
-                    serde_json::Value::Array(v) => serde_json::from_value(serde_json::Value::Array(v)).unwrap(),
-                    _ => Vec::new(),
+                    .map( | i| { i.as_str().expect("Non-string in user_settings language array").to_string() })
+                    .collect()
+                ),
+                auth_endpoints: match user_settings_json["auth_endpoints"].clone() {
+                    serde_json::Value::Array(v) => Mutex::new(serde_json::from_value(serde_json::Value::Array(v)).unwrap()),
+                    _ => Mutex::new(Vec::new()),
                 },
-                typography: match settings_json["typography"].clone() {
+                typography: match user_settings_json["typography"].clone() {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
                     _ => serde_json::from_value(
                         json!({
@@ -1752,7 +1842,7 @@ fn rocket() -> Rocket<Build> {
                     })
                     ).unwrap(),
                 },
-                bcv: match settings_json["bcv"].clone() {
+                bcv: match app_state_json["bcv"].clone() {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
                     _ => serde_json::from_value(
                         json!({
