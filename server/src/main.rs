@@ -139,6 +139,13 @@ fn os_quoted_slash_str() -> &'static str {
     }
 }
 
+fn maybe_os_quoted_path_str(s: String) -> String {
+    match env::consts::OS {
+        "windows" => s.replace("/", "\\\\"),
+        _ => s
+    }
+}
+
 fn forbidden_path_strings() -> Vec<String> {
     Vec::from([
         "..".to_string(),
@@ -1504,7 +1511,7 @@ fn rocket() -> Rocket<Build> {
             // Copy app_setuo file to working dir
             let app_setup_template_path = relative!("./templates/app_setup.json");
             let app_setup_json_string = match fs::read_to_string(app_setup_template_path) {
-                Ok(s) => s
+                Ok(s) => maybe_os_quoted_path_str(s)
                     .replace("%%STUBCLIENTSDIR%%", relative!("../clients"))
                     .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
@@ -1529,7 +1536,7 @@ fn rocket() -> Rocket<Build> {
             // Copy user_settings file to working dir
             let user_settings_template_path = relative!("./templates/user_settings.json");
             let user_settings_json_string = match fs::read_to_string(&user_settings_template_path) {
-                Ok(s) => s
+                Ok(s) => maybe_os_quoted_path_str(s)
                     .replace("%%WORKINGDIR%%", &working_dir_path)
                     .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
@@ -1554,7 +1561,7 @@ fn rocket() -> Rocket<Build> {
             // Copy app_state file to working dir
             let app_state_template_path = relative!("./templates/app_state.json");
             let app_state_json_string = match fs::read_to_string(&app_state_template_path) {
-                Ok(s) => s
+                Ok(s) => maybe_os_quoted_path_str(s)
                     .replace("%%WORKINGDIR%%", &working_dir_path)
                     .replace("%%OSSLASH%%", os_quoted_slash_str()),
                 Err(e) => {
