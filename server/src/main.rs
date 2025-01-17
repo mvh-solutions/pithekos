@@ -141,7 +141,7 @@ fn os_quoted_slash_str() -> &'static str {
 
 fn maybe_os_quoted_path_str(s: String) -> String {
     match env::consts::OS {
-        "windows" => s.replace("/", "\\\\"),
+        "windows" => s.replace("\\", "\\\\").replace("/", "\\\\"),
         _ => s
     }
 }
@@ -1479,6 +1479,7 @@ type Clients = Mutex<Vec<Client>>;
 
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
+    println!("OS = '{}'", env::consts::OS);
     // Set up managed state;
     let msg_queue = MsgQueue::new(Mutex::new(VecDeque::new()));
     // Get settings path, default to well-known homedir location
