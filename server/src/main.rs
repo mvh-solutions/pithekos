@@ -132,20 +132,19 @@ fn os_slash_str() -> &'static str {
     }
 }
 
-fn os_quoted_slash_str() -> &'static str {
+/*fn os_quoted_slash_str() -> &'static str {
     match env::consts::OS {
         "windows" => "\\\\",
         _ => "/"
     }
 }
+ */
 
 fn maybe_os_quoted_path_str(s: String) -> String {
-    let quoted = match env::consts::OS {
+    match env::consts::OS {
         "windows" => s.replace("\\", "\\\\").replace("/", "\\\\"),
         _ => s
-    };
-    println!("{}", quoted.clone());
-    quoted
+    }
 }
 
 fn forbidden_path_strings() -> Vec<String> {
@@ -1511,13 +1510,11 @@ fn rocket() -> Rocket<Build> {
                     exit(1);
                 }
             };
-            // Copy app_setuo file to working dir
+            // Copy app_setup file to working dir
             let app_setup_template_path = relative!("./templates/app_setup.json");
             let app_setup_json_string = match fs::read_to_string(app_setup_template_path) {
                 Ok(s) => maybe_os_quoted_path_str(
-                    s
-                        .replace("%%STUBCLIENTSDIR%%", relative!("../clients"))
-                        .replace("%%OSSLASH%%", os_quoted_slash_str())
+                    s.replace("%%STUBCLIENTSDIR%%", relative!("../clients"))
                 ),
                 Err(e) => {
                     println!("Could not read app_setup file '{}': {}", app_setup_template_path, e);
@@ -1541,9 +1538,9 @@ fn rocket() -> Rocket<Build> {
             // Copy user_settings file to working dir
             let user_settings_template_path = relative!("./templates/user_settings.json");
             let user_settings_json_string = match fs::read_to_string(&user_settings_template_path) {
-                Ok(s) => s
-                    .replace("%%WORKINGDIR%%", &working_dir_path)
-                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
+                Ok(s) => maybe_os_quoted_path_str(
+                    s.replace("%%WORKINGDIR%%", &working_dir_path)
+                ),
                 Err(e) => {
                     println!("Could not read user settings template file '{}': {}", user_settings_template_path, e);
                     exit(1);
@@ -1566,9 +1563,8 @@ fn rocket() -> Rocket<Build> {
             // Copy app_state file to working dir
             let app_state_template_path = relative!("./templates/app_state.json");
             let app_state_json_string = match fs::read_to_string(&app_state_template_path) {
-                Ok(s) => s
-                    .replace("%%WORKINGDIR%%", &working_dir_path)
-                    .replace("%%OSSLASH%%", os_quoted_slash_str()),
+                Ok(s) => maybe_os_quoted_path_str(
+                    s.replace("%%WORKINGDIR%%", &working_dir_path)),
                 Err(e) => {
                     println!("Could not read app state template file '{}': {}", user_settings_template_path, e);
                     exit(1);
