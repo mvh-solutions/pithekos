@@ -1,0 +1,11 @@
+{
+  "languages": [
+    "en"
+  ],
+  "repo_dir": "%%WORKINGDIR%%/repos",
+  "typography": {
+    "direction": "ltr",
+    "font_set": "gentiumPlus",
+    "size": "medium"
+  }
+}
