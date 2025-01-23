@@ -10,7 +10,7 @@ import {
 } from 'react-tile-pane'
 import {Header} from "pithekos-lib";
 import {IconButton} from "@mui/material";
-import PithekosToolbar from "../../components/PithekosToolbar";
+import {getAndSetJson} from "pithekos-lib";
 
 const paneStyle = {
     width: '100%',
@@ -66,27 +66,20 @@ const Workspace = () => {
         rootPane.children.pop();
     }
     const paneList = createTilePanes(tileElements)[0];
-    const [selectedHebrewFontClass, setSelectedHebrewFontClass] = useState('Pankosmia-EzraSIL');
-    const [selectedMyanmarFontClass, setSelectedMyanmarFontClass] = useState('Pankosmia-Padauk');
-    const [selectedArabicUrduFontClass, setSelectedArabicUrduFontClass] = useState('Pankosmia-AwamiNastaliqPankosmia-NotoNastaliqUrdu');
-    const [selectedOtherFontClass, setSelectedOtherFontClass] = useState('');
-    const [selectedFallbackFontClass, setSelectedFallbackFontClass] = useState('Pankosmia-GentiumPlus');
-    const [selectedFontClass, setSelectedFontClass] = useState('fonts-Pankosmia-EzraSILPankosmia-PadaukPankosmia-AwamiNastaliqPankosmia-NotoNastaliqUrduPankosmia-GentiumPlus')
+    const [selectedFontClass, setSelectedFontClass] = useState('');
+    const [fontClass, setFontClass] = useState([]);
+    useEffect(
+      () => {
+          getAndSetJson({
+              url: "/settings/typography",
+              setter: setFontClass
+          }).then()},
+      []
+    );
+    useEffect(() => {
+      setSelectedFontClass(fontClass.font_class)
+    },[fontClass.font_class])
 
-    const pithekosToolbarProps = {
-      selectedFontClass,
-      setSelectedFontClass,
-      selectedHebrewFontClass,
-      setSelectedHebrewFontClass,
-      selectedMyanmarFontClass,
-      setSelectedMyanmarFontClass,
-      selectedArabicUrduFontClass,
-      setSelectedArabicUrduFontClass,
-      selectedOtherFontClass,
-      setSelectedOtherFontClass,
-      selectedFallbackFontClass,
-      setSelectedFallbackFontClass,
-    };
     return <>
         <Header
             titleKey="pages:core-local-workspace:title"
@@ -94,7 +87,6 @@ const Workspace = () => {
             currentId="core-local-workspace"
             widget={<><BackToProjects/><BcvPicker/></>}
         />
-        <PithekosToolbar key="pithekos toolbar" {...pithekosToolbarProps} />
         <div className={selectedFontClass}>
           <TileProvider
               tilePanes={paneList}
