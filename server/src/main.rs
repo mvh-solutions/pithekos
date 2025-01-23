@@ -1832,7 +1832,7 @@ fn rocket() -> Rocket<Build> {
                     serde_json::Value::Object(v) => serde_json::from_value(serde_json::Value::Object(v)).unwrap(),
                     _ => serde_json::from_value(
                         json!({
-                        "font_set": "gentiumPlus",
+                        "font_set": "fonts-Pankosmia-EzraSILPankosmia-PadaukPankosmia-AwamiNastaliqPankosmia-NotoNastaliqUrduPankosmia-GentiumPlus",
                         "size": "medium",
                         "direction": "ltr"
                     })

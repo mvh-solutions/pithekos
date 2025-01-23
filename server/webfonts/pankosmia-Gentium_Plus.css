@@ -1,0 +1,42 @@
+/* Copyright (c) 2000-2023, SIL International (https://www.sil.org/) with Reserved Font Names "Gentium" and "SIL".*/
+/* This Font Software is licensed under the SIL Open Font License, Version 1.1. See https://openfontlicense.org/ .*/
+
+/* normal */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: normal;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./gentiumplus/GentiumPlus-Regular.woff2);
+  font-size: 200%;
+  padding: 2em;
+}
+
+/* italic */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: italic;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./gentiumplus/GentiumPlus-Italic.woff2);
+  font-size: 200%;
+  padding: 2em;
+}
+
+/* bold */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: normal;
+  font-weight: bold; /* 700 */
+  src: url(./gentiumplus/GentiumPlus-Bold.woff2);
+  font-size: 200%;
+  padding: 2em;
+}
+
+/* bold italic */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: italic;
+  font-weight: bold; /* 700 */
+  src: url(./gentiumplus/GentiumPlus-BoldItalic.woff2);
+  font-size: 200%;
+  padding: 2em;
+}

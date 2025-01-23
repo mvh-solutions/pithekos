@@ -6,27 +6,24 @@ export default function FontMenuItem(fontMenuItemProps) {
 
   const styles = {
     menuItem: {
-      width: "13rem",
       display: "flex",
       justifyContent: "space-between",
+      color: 'DimGray',
     },
   };
 
   return (
-    <div style={(styles.menuItem, { borderBottom: "1px outset" })}>
+    <div style={(styles.menuItem)}>
       <div
         style={styles.menuItem}
       >
-        <Typography variant="body2" component="div">
-          {font.fullname}&nbsp;
-        </Typography>
         <Typography
-          style={{ width: "100%", fontFamily: font.name }}
+          style={{ width: "100%" }}
           noWrap
           variant="body2"
           component="div"
         >
-          {font.fullname}
+          {font.name}
         </Typography>
       </div>
     </div>

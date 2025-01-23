@@ -5,17 +5,37 @@ import PropTypes from 'prop-types';
 
 export default function PithekosToolbar(PithekosToolbarProps) {
   const {
-    selectedFontsetName,
-    setSelectedFontsetName,
+    selectedFontClass,
+    setSelectedFontClass,
+    selectedHebrewFontClass,
+    setSelectedHebrewFontClass,
+    selectedMyanmarFontClass,
+    setSelectedMyanmarFontClass,
+    selectedArabicUrduFontClass,
+    setSelectedArabicUrduFontClass,
+    selectedOtherFontClass,
+    setSelectedOtherFontClass,
+    selectedFallbackFontClass,
+    setSelectedFallbackFontClass,
   } = PithekosToolbarProps;
   
   const pithekosToolbarSelectFontProps = {
-    selectedFontsetName,
-    setSelectedFontsetName,
+    selectedFontClass,
+    setSelectedFontClass,
+    selectedHebrewFontClass,
+    setSelectedHebrewFontClass,
+    selectedMyanmarFontClass,
+    setSelectedMyanmarFontClass,
+    selectedArabicUrduFontClass,
+    setSelectedArabicUrduFontClass,
+    selectedOtherFontClass,
+    setSelectedOtherFontClass,
+    selectedFallbackFontClass,
+    setSelectedFallbackFontClass,
   };
   
   return (
-    <div key="toolbar" style={{ color: "white", height: '54px', backgroundColor: "#ddcdee", width: '100%' }} >
+    <div key="toolbar" style={{ color: "white", backgroundColor: "#ddcdee", width: '100%' }} >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <div style={{ textAlign: "center", fontSize: '10px'  }} key="font-menu">
           <PithekosToolbarSelectFont {...pithekosToolbarSelectFontProps} />
@@ -27,7 +47,7 @@ export default function PithekosToolbar(PithekosToolbarProps) {
 
 PithekosToolbar.propTypes = {
   /** Selected Font Set CSS Name */
-  selectedFontsetName: PropTypes.string,
+  selectedFontClass: PropTypes.string,
   /** Set Selected Font Set CSS Name */
-  setSelectedFontsetName: PropTypes.func.isRequired,
+  setSelectedFontClass: PropTypes.func.isRequired,
 };
