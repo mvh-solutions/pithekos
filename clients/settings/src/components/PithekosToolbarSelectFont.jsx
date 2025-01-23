@@ -169,7 +169,7 @@ export default function PithekosToolbarSelectFont(PithekosToolbarSelectFontProps
           </div>
         </Grid2>
         <Grid2>
-          <div item style={{maxWidth: 275, padding: "1.25em 0"}}>
+          <div item style={{maxWidth: 275, padding: "1.25em 0 0 0"}}>
               <Box sx={{minWidth: 275}}>
                   <FormControl fullWidth style={{maxWidth: 300}} size="small">
                       <InputLabel id="select-arabic-urdu-font-label" htmlFor="select-arabic-urdu-font-id" sx={sx.inputLabel}>

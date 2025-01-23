@@ -35,7 +35,7 @@ export default function PithekosToolbar(PithekosToolbarProps) {
   };
   
   return (
-    <div key="toolbar" style={{ color: "white", backgroundColor: "#ddcdee", width: '100%' }} >
+    <div key="toolbar" style={{ width: '100%' }} >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <div style={{ textAlign: "center", fontSize: '10px'  }} key="font-menu">
           <PithekosToolbarSelectFont {...pithekosToolbarSelectFontProps} />
