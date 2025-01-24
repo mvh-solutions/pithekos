@@ -6,12 +6,13 @@ import PithekosToolbar from "./components/PithekosToolbar";
 function App() {
     const {debugRef} = useContext(debugContext);
     const i18n = useContext(i18nContext);
-    const [selectedHebrewFontClass, setSelectedHebrewFontClass] = useState('Pankosmia-EzraSIL');
-    const [selectedMyanmarFontClass, setSelectedMyanmarFontClass] = useState('Pankosmia-Padauk');
-    const [selectedArabicUrduFontClass, setSelectedArabicUrduFontClass] = useState('Pankosmia-AwamiNastaliqPankosmia-NotoNastaliqUrdu');
+    const [selectedHebrewFontClass, setSelectedHebrewFontClass] = useState('');
+    const [selectedMyanmarFontClass, setSelectedMyanmarFontClass] = useState('');
+    const [selectedArabicUrduFontClass, setSelectedArabicUrduFontClass] = useState('');
     const [selectedOtherFontClass, setSelectedOtherFontClass] = useState('');
-    const [selectedFallbackFontClass, setSelectedFallbackFontClass] = useState('Pankosmia-GentiumPlus');
+    const [selectedFallbackFontClass, setSelectedFallbackFontClass] = useState('');
     const [selectedFontClass, setSelectedFontClass] = useState('');
+    // const [activeFontClass, setActiveFontClass] = useState('');
     const [fontClass, setFontClass] = useState([]);
     useEffect(
       () => {
@@ -21,12 +22,14 @@ function App() {
           }).then()},
       []
     );
-    useEffect(() => {
+    useEffect( () => {
       setSelectedFontClass(fontClass.font_class);
-    },[fontClass.font_class])
+    },[fontClass.font_class]);
+
+    const activeFontClass = fontClass.font_class;
 
     const pithekosToolbarProps = {
-      selectedFontClass,
+      activeFontClass,
       setSelectedFontClass,
       selectedHebrewFontClass,
       setSelectedHebrewFontClass,

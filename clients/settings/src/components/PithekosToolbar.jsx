@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 export default function PithekosToolbar(PithekosToolbarProps) {
   const {
-    selectedFontClass,
+    activeFontClass,
     setSelectedFontClass,
     selectedHebrewFontClass,
     setSelectedHebrewFontClass,
@@ -20,7 +20,7 @@ export default function PithekosToolbar(PithekosToolbarProps) {
   } = PithekosToolbarProps;
   
   const pithekosToolbarSelectFontProps = {
-    selectedFontClass,
+    activeFontClass,
     setSelectedFontClass,
     selectedHebrewFontClass,
     setSelectedHebrewFontClass,
