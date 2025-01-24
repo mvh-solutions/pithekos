@@ -7,8 +7,6 @@
   font-style: normal;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./gentiumplus/GentiumPlus-Regular.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italic */
@@ -17,8 +15,6 @@
   font-style: italic;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./gentiumplus/GentiumPlus-Italic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -27,8 +23,6 @@
   font-style: normal;
   font-weight: bold; /* 700 */
   src: url(./gentiumplus/GentiumPlus-Bold.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -37,6 +31,4 @@
   font-style: italic;
   font-weight: bold; /* 700 */
   src: url(./gentiumplus/GentiumPlus-BoldItalic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }

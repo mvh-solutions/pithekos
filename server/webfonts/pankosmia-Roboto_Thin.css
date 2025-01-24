@@ -6,8 +6,6 @@
   font-style: normal;
   font-weight: normal; /* Really is Thin 100 */
   src: url(./roboto/Roboto-Thin.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italix */
@@ -16,8 +14,6 @@
   font-style: italic;
   font-weight: normal; /* Really is Thin 100 */
   src: url(./roboto/Roboto-ThinItalic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -26,8 +22,6 @@
   font-style: normal;
   font-weight: bold;
   src: url(./roboto/Roboto-Regular.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -36,6 +30,4 @@
   font-style: italic;
   font-weight: bold;
   src: url(./roboto/Roboto-Italic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }

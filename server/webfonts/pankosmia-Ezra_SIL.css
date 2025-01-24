@@ -10,8 +10,6 @@
   src: url(./ezra/SILEOT.woff2);
   unicode-range: U+0590-05FF, U+FB00-FB4F;
   font-display: swap;
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italic */
@@ -22,8 +20,6 @@
   src: url(./ezra/SILEOT.woff2);
   unicode-range: U+0590-05FF, U+FB00-FB4F;
   font-display: swap;
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -34,8 +30,6 @@
   src: url(./ezra/SILEOT.woff2);
   unicode-range: U+0590-05FF, U+FB00-FB4F;
   font-display: swap;
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -46,8 +40,6 @@
   src: url(./ezra/SILEOT.woff2);
   unicode-range: U+0590-05FF, U+FB00-FB4F;
   font-display: swap;
-  font-size: 200%;
-  padding: 2em;
 }
 
 /*

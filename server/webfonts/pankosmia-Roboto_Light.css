@@ -6,8 +6,6 @@
   font-style: normal;
   font-weight: normal; /* Really is Light 300 */
   src: url(./roboto/Roboto-Light.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italic */
@@ -16,8 +14,6 @@
   font-style: italic;
   font-weight: normal; /* Really is Light 300 */
   src: url(./roboto/Roboto-LightItalic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -26,8 +22,6 @@
   font-style: normal;
   font-weight: bold;
   src: url(./roboto/Roboto-Regular.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -36,6 +30,4 @@
   font-style: italic;
   font-weight: bold;
   src: url(./roboto/Roboto-Italic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }

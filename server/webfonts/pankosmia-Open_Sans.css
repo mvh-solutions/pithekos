@@ -7,8 +7,6 @@
   font-style: normal;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./opensans/OpenSans-VariableFont_wdth,wght.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italic */
@@ -17,8 +15,6 @@
   font-style: italic;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./opensans/OpenSans-Italic-VariableFont_wdth,wght.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -27,8 +23,6 @@
   font-style: normal;
   font-weight: bold; /* 700 This variable font also supports 300, 500, 600, and 800 (Light, Medium, SemiBold, and ExtraBold)*/
   src: url(./opensans/OpenSans-VariableFont_wdth,wght.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -37,6 +31,4 @@
   font-style: italic;
   font-weight: bold; /* 700 This variable font also supports 300, 500, 600, and 800 (Light, Medium, SemiBold, and ExtraBold)*/
   src: url(./opensans/OpenSans-Italic-VariableFont_wdth,wght.woff2);
-  font-size: 200%;
-  padding: 2em;
 }

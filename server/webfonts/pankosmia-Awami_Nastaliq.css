@@ -14,8 +14,6 @@
     font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -moz-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
-    font-size: 200%;
-    padding: 2em;
   }
 
   /* italic */
@@ -29,8 +27,6 @@
     font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -moz-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
-    font-size: 200%;
-    padding: 2em;
   }
 
   /* bold */
@@ -44,8 +40,6 @@
     font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -moz-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
-    font-size: 200%;
-    padding: 2em;
   }
 
   /* bold italic*/
@@ -59,7 +53,5 @@
     font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -moz-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
     -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "hamz" 0, "shrt" 2;
-    font-size: 200%;
-    padding: 2em;
   }
 }

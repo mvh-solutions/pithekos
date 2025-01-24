@@ -6,8 +6,6 @@
   font-style: normal;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./roboto/Roboto-Regular.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* italic */
@@ -16,8 +14,6 @@
   font-style: italic;
   font-weight: normal; /* 400 Normal (Regular) */
   src: url(./roboto/Roboto-Italic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold */
@@ -26,8 +22,6 @@
   font-style: normal;
   font-weight: bold; /* Really is Black 900 */
   src: url(./roboto/Roboto-Black.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
 
 /* bold italic */
@@ -36,6 +30,4 @@
   font-style: italic;
   font-weight: bold; /* Really is Black 900 */
   src: url(./roboto/Roboto-BlackItalic.woff2);
-  font-size: 200%;
-  padding: 2em;
 }
