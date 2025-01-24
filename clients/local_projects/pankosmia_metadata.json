@@ -36,6 +36,10 @@
       "en": "Other/Fallback",
       "fr": "Autre/Retomber"
     },
+    "fallback": {
+      "en": "Fallback",
+      "fr": "Retomber"
+    },
     "replaceawamiifnotfirefox": {
       "en": "* Noto Nastaliq Urdu 2022 if not Firefox",
       "fr": "* Noto Nastaliq Urdu 2022 sinon Firefox"
