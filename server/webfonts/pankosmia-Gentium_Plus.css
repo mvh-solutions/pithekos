@@ -1,0 +1,46 @@
+/* Copyright (c) 2000-2023, SIL International (https://www.sil.org/) with Reserved Font Names "Gentium" and "SIL".*/
+/* This Font Software is licensed under the SIL Open Font License, Version 1.1. See https://openfontlicense.org/ .*/
+
+/* normal */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: normal;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./gentiumplus/GentiumPlus-Regular.woff2);
+  font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -moz-font-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -webkit-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+}
+
+/* italic */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: italic;
+  font-weight: normal; /* 400 Normal (Regular) */
+  src: url(./gentiumplus/GentiumPlus-Italic.woff2);
+  font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -moz-font-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -webkit-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+}
+
+/* bold */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: normal;
+  font-weight: bold; /* 700 */
+  src: url(./gentiumplus/GentiumPlus-Bold.woff2);
+  font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -moz-font-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -webkit-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+}
+
+/* bold italic */
+@font-face {
+  font-family: 'Pankosmia-Gentium Plus';
+  font-style: italic;
+  font-weight: bold; /* 700 */
+  src: url(./gentiumplus/GentiumPlus-BoldItalic.woff2);
+  font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -moz-font-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+  -webkit-font-feature-settings: "smcp" 0, "c2sc" 0, "ss01" 0, "ss11" 0, "ss12" 0, "ss04" 0, "ss05" 0, "cv13" 0, "cv17" 0, "cv28" 0, "cv37" 0, "cv43" 0, "cv44" 0, "cv46" 0, "cv47" 0, "cv49" 0, "cv55" 0, "cv57" 0, "cv62" 0, "cv68" 0, "cv20" 0, "cv19" 0, "cv25" 0, "cv69" 0, "ss07" 0, "cv75" 0, "cv79" 0, "cv76" 0, "cv77" 0, "cv70" 0, "cv71" 0, "cv98" 0, "cv80" 0, "cv81" 0, "cv82" 0, "cv84" 0, "cv78" 0, "cv83" 0, "cv14" 0, "cv90" 0, "cv91" 0, "cv92" 0, "subs" 0, "sups" 0, "frac" 0;
+}

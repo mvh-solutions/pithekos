@@ -4,7 +4,7 @@ import {Grid2} from "@mui/material";
 
 import {getJson, debugContext, bcvContext} from "pithekos-lib";
 
-function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
+function TextTranslationViewerMuncher({metadata, selectedFontClass}) {
     const {systemBcv} = useContext(bcvContext);
     const {debugRef} = useContext(debugContext);
     // const i18n = useContext(i18nContext);
@@ -143,7 +143,7 @@ function TextTranslationViewerMuncher({metadata, selectedFontsetName}) {
     }
 
     return state.rendered ?
-        <div className={selectedFontsetName}>
+        <div className={selectedFontClass}>
             <Grid2 container spacing={2}>
                 {
                     Object.entries(state.rendered.headers).map(

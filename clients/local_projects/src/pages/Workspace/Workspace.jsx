@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {useLocation, useNavigate} from "react-router-dom";
 import WorkspaceCard from "./WorkspaceCard";
 import BcvPicker from "./BcvPicker";
@@ -10,6 +10,7 @@ import {
 } from 'react-tile-pane'
 import {Header} from "pithekos-lib";
 import {IconButton} from "@mui/material";
+import {getAndSetJson} from "pithekos-lib";
 
 const paneStyle = {
     width: '100%',
@@ -65,6 +66,20 @@ const Workspace = () => {
         rootPane.children.pop();
     }
     const paneList = createTilePanes(tileElements)[0];
+    const [selectedFontClass, setSelectedFontClass] = useState('');
+    const [fontClass, setFontClass] = useState([]);
+    useEffect(
+      () => {
+          getAndSetJson({
+              url: "/settings/typography",
+              setter: setFontClass
+          }).then()},
+      []
+    );
+    useEffect(() => {
+      setSelectedFontClass(fontClass.font_class)
+    },[fontClass.font_class])
+
     return <>
         <Header
             titleKey="pages:core-local-workspace:title"
@@ -72,14 +87,16 @@ const Workspace = () => {
             currentId="core-local-workspace"
             widget={<><BackToProjects/><BcvPicker/></>}
         />
-        <TileProvider
-            tilePanes={paneList}
-            rootNode={rootPane}
-        >
-            <div style={{width: '100vw', height: '100vh'}}>
-                <TileContainer/>
-            </div>
-        </TileProvider>
+        <div className={selectedFontClass}>
+          <TileProvider
+              tilePanes={paneList}
+              rootNode={rootPane}
+          >
+              <div style={{width: '100vw', height: '100vh'}}>
+                  <TileContainer/>
+              </div>
+          </TileProvider>
+        </div>
     </>
 }
 export default Workspace;

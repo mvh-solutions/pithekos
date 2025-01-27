@@ -1,0 +1,57 @@
+/* Copyright (c) 2000-2024, SIL International (https://www.sil.org/) with Reserved Font Names "Awami" and "SIL".*/
+/* This Font Software is licensed under the SIL Open Font License, Version 1.1. See https://openfontlicense.org/ .*/
+
+/* Only load if Firefox is in use. */
+@-moz-document url-prefix() {
+  /* normal */
+  @font-face {
+    font-family: 'Pankosmia-Awami Nastaliq';
+    font-style: normal;
+    font-weight: normal; /* 400 Normal (Regular) */
+    src: url(./awami/AwamiNastaliq-Regular.woff2);
+    unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+08A0-08FF, U+0870-089F, U+10EC0-10EFF;
+    font-display: swap;
+    font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -moz-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+  }
+
+  /* italic */
+  @font-face {
+    font-family: 'Pankosmia-Awami Nastaliq';
+    font-style: italic; /* Doesn't exist */
+    font-weight: normal; /* 400 Normal (Regular) */
+    src: url(./awami/AwamiNastaliq-Regular.woff2);
+    unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+08A0-08FF, U+0870-089F, U+10EC0-10EFF;
+    font-display: swap;
+    font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -moz-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+  }
+
+  /* bold */
+  @font-face {
+    font-family: 'Pankosmia-Awami Nastaliq';
+    font-style: normal;
+    font-weight: bold; /* 700 */
+    src: url(./awami/AwamiNastaliq-Bold.woff2);
+    unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+08A0-08FF, U+0870-089F, U+10EC0-10EFF;
+    font-display: swap;
+    font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -moz-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+  }
+
+  /* bold italic*/
+  @font-face {
+    font-family: 'Pankosmia-Awami Nastaliq';
+    font-style: italic; /* Doesn't exist */
+    font-weight: bold; /* 700 */
+    src: url(./awami/AwamiNastaliq-Bold.woff2);
+    unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+08A0-08FF, U+0870-089F, U+10EC0-10EFF;
+    font-display: swap;
+    font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -moz-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+    -webkit-font-feature-settings: "hehk" 0, "hedo" 1, "lamv" 0, "cv85" 0, "cv78" 1, "hamz" 0, "wdsp" 2, "agca" 3, "shrt" 2, "punc" 0;
+  }
+}

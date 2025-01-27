@@ -15,7 +15,7 @@ const contentForPath = (content, path) => {
     }
 }
 
-function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPath, setUsjNode, selectedFontsetName}) {
+function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPath, setUsjNode, selectedFontClass}) {
     if (typeof element === "string") {
         return <StringRenderer
             selectedPath={selectedPath}
@@ -31,7 +31,7 @@ function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPat
             contentPath={contentPath}
             usj={usj}
             setUsjNode={setUsjNode}
-            selectedFontsetName={selectedFontsetName}
+            selectedFontClass={selectedFontClass}
         />
     } else if (element.type === "ms") {
         return <MilestoneRenderer
@@ -66,7 +66,7 @@ function InlineRenderer({usj, element, contentPath, selectedPath, setSelectedPat
     </span>;
 }
 
-function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontsetName}) {
+function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontClass}) {
     const [editedValue, setEditedValue] = useState(contentForPath(usj, contentPath)["number"]);
     return <span
         className="usfm-v"
@@ -76,7 +76,7 @@ function VerseRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjN
             deepEqual(selectedPath, contentPath) ?
                 <>
                     <input
-                        className={`${selectedFontsetName} usfm-v`}
+                        className={`${selectedFontClass} usfm-v`}
                         style={{
                             padding: 0,
                             width: "100%"
@@ -128,12 +128,12 @@ function CharRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNo
     </span>;
 }
 
-function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontsetName}) {
+function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsjNode, selectedFontClass}) {
     const initialValue = contentForPath(usj, contentPath)
     const [editedValue, setEditedValue] = useState(initialValue);
     const paraUsfmName = `usfm-${usj.content[contentPath[0]].marker}`;
     return <span
-        className={`bare-text ${selectedFontsetName} ${paraUsfmName}`}
+        className={`bare-text ${selectedFontClass} ${paraUsfmName}`}
         style={{
             display: "inline-block",
             size: 1
@@ -144,7 +144,7 @@ function StringRenderer({usj, selectedPath, setSelectedPath, contentPath, setUsj
             deepEqual(selectedPath, contentPath) ?
                 <>
                     <input
-                        className={`${selectedFontsetName} ${paraUsfmName}`}
+                        className={`${selectedFontClass} ${paraUsfmName}`}
                         style={{
                             padding: 0,
                             width: "100%"

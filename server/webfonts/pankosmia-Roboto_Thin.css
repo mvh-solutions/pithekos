@@ -1,0 +1,33 @@
+/* Apache License, Version 2.0, January 2004, http://www.apache.org/licenses/ .*/
+
+/* normal */
+@font-face {
+  font-family: 'Pankosmia-Roboto Thin';
+  font-style: normal;
+  font-weight: normal; /* Really is Thin 100 */
+  src: url(./roboto/Roboto-Thin.woff2);
+}
+
+/* italix */
+@font-face {
+  font-family: 'Pankosmia-Roboto Thin';
+  font-style: italic;
+  font-weight: normal; /* Really is Thin 100 */
+  src: url(./roboto/Roboto-ThinItalic.woff2);
+}
+
+/* bold */
+@font-face {
+  font-family: 'Pankosmia-Roboto Thin';
+  font-style: normal;
+  font-weight: bold;
+  src: url(./roboto/Roboto-Regular.woff2);
+}
+
+/* bold italic */
+@font-face {
+  font-family: 'Pankosmia-Roboto Thin';
+  font-style: italic;
+  font-weight: bold;
+  src: url(./roboto/Roboto-Italic.woff2);
+}
